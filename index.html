@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="MISE — AI-curated complete looks from multiple stores. Shop the entire outfit in one click.">
+<meta name="theme-color" content="#1A1A1A">
+<title>MISE — Shop The Entire Look</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Outfit:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAF8F5;
+    --bg-card: #FFFFFF;
+    --bg-warm: #F3EDE7;
+    --text: #1A1A1A;
+    --text-secondary: #6B635A;
+    --text-muted: #A39D95;
+    --accent: #BE4A3C;
+    --accent-hover: #A33F33;
+    --accent-soft: #F0DDD5;
+    --border: #E8E2DA;
+    --tag-bg: #F0EAE3;
+    --shadow-sm: 0 2px 12px rgba(26,26,26,0.04);
+    --shadow-md: 0 8px 30px rgba(26,26,26,0.08);
+    --shadow-lg: 0 16px 50px rgba(26,26,26,0.12);
+    --radius: 20px;
+    --radius-sm: 12px;
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-body: 'Outfit', -apple-system, sans-serif;
+    --transition: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+  body { background: var(--bg); font-family: var(--font-body); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+  /* ═══════════════════════════════════
+     NAVIGATION
+  ═══════════════════════════════════ */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(250,248,245,0.88);
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(232,226,218,0.6);
+    height: 68px;
+    transition: all 0.4s var(--transition);
+  }
+  .nav.scrolled { height: 56px; box-shadow: var(--shadow-sm); }
+  .nav-inner {
+    max-width: 1400px; margin: 0 auto;
+    padding: 0 28px; height: 100%;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo {
+    font-family: var(--font-display);
+    font-size: 28px; font-weight: 400;
+    letter-spacing: 8px; text-transform: uppercase;
+    color: var(--text);
+    transition: font-size 0.4s var(--transition);
+  }
+  .nav.scrolled .nav-logo { font-size: 22px; }
+  .nav-logo span { color: var(--accent); font-weight: 500; }
+  .nav-links { display: flex; gap: 32px; align-items: center; }
+  .nav-link {
+    font-size: 13px; font-weight: 400; color: var(--text-secondary);
+    text-decoration: none; letter-spacing: 1px; text-transform: uppercase;
+    position: relative; transition: color 0.3s;
+  }
+  .nav-link::after {
+    content: ''; position: absolute; bottom: -4px; left: 0;
+    width: 0; height: 1.5px; background: var(--accent);
+    transition: width 0.3s var(--transition);
+  }
+  .nav-link:hover { color: var(--text); }
+  .nav-link:hover::after { width: 100%; }
+  .nav-icons { display: flex; gap: 18px; align-items: center; }
+  .nav-icon {
+    width: 20px; height: 20px; cursor: pointer;
+    opacity: 0.5; transition: opacity 0.3s;
+    stroke: var(--text); fill: none; stroke-width: 1.6;
+  }
+  .nav-icon:hover { opacity: 1; }
+
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .nav-inner { padding: 0 20px; }
+  }
+
+  /* ═══════════════════════════════════
+     HERO SECTION
+  ═══════════════════════════════════ */
+  .hero {
+    margin-top: 68px;
+    padding: 80px 28px 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: -200px; right: -150px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, var(--accent-soft) 0%, transparent 70%);
+    opacity: 0.5; pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute; bottom: -100px; left: -100px;
+    width: 350px; height: 350px;
+    background: radial-gradient(circle, rgba(190,74,60,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 4px; text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+    opacity: 0; animation: fadeUp 0.8s 0.2s ease forwards;
+  }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(40px, 8vw, 72px);
+    font-weight: 300; line-height: 1.05;
+    margin-bottom: 20px;
+    letter-spacing: -1px;
+    opacity: 0; animation: fadeUp 0.8s 0.4s ease forwards;
+  }
+  .hero h1 em {
+    font-style: italic; color: var(--accent);
+    font-weight: 400;
+  }
+  .hero-sub {
+    font-size: 16px; color: var(--text-secondary);
+    font-weight: 300; max-width: 480px;
+    margin: 0 auto; line-height: 1.7;
+    opacity: 0; animation: fadeUp 0.8s 0.6s ease forwards;
+  }
+  .hero-cta {
+    margin-top: 36px;
+    opacity: 0; animation: fadeUp 0.8s 0.8s ease forwards;
+  }
+  .hero-btn {
+    display: inline-block;
+    padding: 14px 40px;
+    background: var(--text);
+    color: white;
+    font-family: var(--font-body);
+    font-size: 12px; font-weight: 500;
+    letter-spacing: 2px; text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 100px;
+    transition: all 0.4s var(--transition);
+    border: none; cursor: pointer;
+  }
+  .hero-btn:hover {
+    background: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(190,74,60,0.25);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ═══════════════════════════════════
+     MARQUEE
+  ═══════════════════════════════════ */
+  .marquee-wrapper {
+    overflow: hidden;
+    padding: 24px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-warm);
+  }
+  .marquee-track {
+    display: flex; gap: 48px;
+    animation: marquee 30s linear infinite;
+    width: max-content;
+  }
+  .marquee-item {
+    font-family: var(--font-display);
+    font-size: 14px; font-weight: 400;
+    color: var(--text-muted);
+    letter-spacing: 3px; text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .marquee-dot {
+    color: var(--accent); font-size: 8px;
+    display: inline-flex; align-items: center;
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* ═══════════════════════════════════
+     FILTERS
+  ═══════════════════════════════════ */
+  .filter-section {
+    padding: 28px 28px 20px;
+    position: sticky; top: 68px; z-index: 80;
+    background: rgba(250,248,245,0.92);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  }
+  .filter-inner {
+    max-width: 1400px; margin: 0 auto;
+    display: flex; justify-content: space-between;
+    align-items: center; gap: 20px;
+  }
+  .filter-scroll {
+    display: flex; gap: 8px;
+    overflow-x: auto; scrollbar-width: none;
+    flex: 1;
+  }
+  .filter-scroll::-webkit-scrollbar { display: none; }
+  .filter-pill {
+    flex-shrink: 0;
+    padding: 10px 22px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: transparent;
+    font-family: var(--font-body);
+    font-size: 12px; font-weight: 400;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s var(--transition);
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+  }
+  .filter-pill:hover { border-color: var(--text); color: var(--text); }
+  .filter-pill.active {
+    background: var(--text); color: white;
+    border-color: var(--text);
+  }
+  .budget-wrap {
+    display: flex; align-items: center; gap: 12px;
+    flex-shrink: 0;
+  }
+  .budget-label {
+    font-size: 11px; color: var(--text-muted);
+    font-weight: 500; letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .budget-slider {
+    width: 120px;
+    -webkit-appearance: none; appearance: none;
+    height: 2px; background: var(--border);
+    border-radius: 4px; outline: none;
+  }
+  .budget-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--accent); cursor: pointer;
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(190,74,60,0.3);
+  }
+  .budget-value {
+    font-size: 13px; color: var(--accent);
+    font-weight: 600; min-width: 50px;
+  }
+
+  @media (max-width: 768px) {
+    .filter-inner { flex-direction: column; align-items: stretch; }
+    .budget-wrap { justify-content: center; }
+    .filter-section { top: 56px; padding: 20px 16px 16px; }
+  }
+
+  /* ═══════════════════════════════════
+     LOOKS GRID
+  ═══════════════════════════════════ */
+  .looks-section {
+    max-width: 1400px; margin: 0 auto;
+    padding: 32px 28px 100px;
+  }
+  .looks-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  @media (min-width: 640px) { .looks-grid { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1024px) { .looks-grid { grid-template-columns: 1fr 1fr 1fr; gap: 28px; } }
+
+  /* ═══════════════════════════════════
+     LOOK CARD
+  ═══════════════════════════════════ */
+  .look-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.5s var(--transition), box-shadow 0.5s var(--transition);
+    cursor: pointer;
+    opacity: 0; transform: translateY(40px);
+  }
+  .look-card.visible { opacity: 1; transform: translateY(0); transition: opacity 0.7s ease, transform 0.7s ease, box-shadow 0.5s var(--transition); }
+  .look-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); }
+
+  .look-visual { position: relative; }
+
+  .model-hero {
+    width: 100%; aspect-ratio: 3/4;
+    overflow: hidden; position: relative;
+    background: var(--bg-warm);
+  }
+  .model-hero img {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+    transition: transform 0.8s var(--transition);
+    filter: brightness(0.97);
+  }
+  .look-card:hover .model-hero img { transform: scale(1.04); }
+
+  .model-gradient {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 50%;
+    background: linear-gradient(transparent, rgba(0,0,0,0.65));
+    pointer-events: none;
+  }
+  .model-info {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 24px 20px 18px;
+    z-index: 2;
+  }
+  .model-title {
+    font-family: var(--font-display);
+    font-size: 28px; font-weight: 400;
+    color: white; line-height: 1.1;
+    margin-bottom: 6px;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.2);
+  }
+  .model-meta {
+    font-size: 12px; color: rgba(255,255,255,0.7);
+    font-weight: 300; letter-spacing: 0.3px;
+  }
+
+  .badge-ai {
+    position: absolute; top: 16px; left: 16px;
+    padding: 6px 12px;
+    background: rgba(26,26,26,0.65);
+    backdrop-filter: blur(12px);
+    border-radius: 8px;
+    font-size: 9px; color: white;
+    font-weight: 500; letter-spacing: 1.2px;
+    text-transform: uppercase; z-index: 3;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .badge-ai::before { content: '✦'; color: var(--accent); font-size: 10px; }
+
+  .btn-save {
+    position: absolute; top: 16px; right: 16px;
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 3; transition: all 0.3s;
+  }
+  .btn-save:hover { background: rgba(255,255,255,0.3); }
+  .btn-save svg {
+    width: 18px; height: 18px;
+    stroke: white; fill: none; stroke-width: 1.6;
+    transition: all 0.3s;
+  }
+  .btn-save.liked svg { fill: var(--accent); stroke: var(--accent); }
+
+  /* ─── Pieces Strip ─── */
+  .pieces-strip {
+    display: flex; gap: 0;
+    border-top: 3px solid var(--bg-card);
+  }
+  .strip-item {
+    flex: 1; aspect-ratio: 1;
+    overflow: hidden; position: relative;
+    background: var(--bg-warm);
+    border-right: 3px solid var(--bg-card);
+    cursor: pointer;
+  }
+  .strip-item:last-child { border-right: none; }
+  .strip-item img {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+    transition: transform 0.5s var(--transition);
+  }
+  .strip-item:hover img { transform: scale(1.12); }
+  .strip-label {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 20px 6px 5px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.6));
+    pointer-events: none;
+  }
+  .strip-brand {
+    font-size: 8px; color: white;
+    font-weight: 500; letter-spacing: 0.8px;
+    text-transform: uppercase; line-height: 1;
+  }
+  .strip-price {
+    font-size: 9px; color: rgba(255,255,255,0.8);
+    font-weight: 600; margin-top: 1px;
+  }
+
+  /* ─── Card Info ─── */
+  .card-info { padding: 18px 20px 22px; }
+  .card-tags {
+    display: flex; gap: 6px;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .card-tag {
+    padding: 4px 11px; border-radius: 100px;
+    background: var(--tag-bg);
+    font-size: 10px; color: var(--text-secondary);
+    font-weight: 400; letter-spacing: 0.4px;
+  }
+  .card-summary {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 16px;
+  }
+  .card-summary-left {}
+  .card-total-label {
+    font-size: 10px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 1.5px;
+    font-weight: 500;
+  }
+  .card-total-detail {
+    font-size: 11px; color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .card-total-price {
+    font-family: var(--font-display);
+    font-size: 26px; font-weight: 500;
+    color: var(--text);
+  }
+
+  .btn-shop {
+    width: 100%; padding: 15px;
+    border: none; border-radius: var(--radius-sm);
+    background: var(--text); color: white;
+    font-family: var(--font-body);
+    font-size: 12px; font-weight: 500;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.4s var(--transition);
+    position: relative; overflow: hidden;
+  }
+  .btn-shop::before {
+    content: ''; position: absolute;
+    top: 0; left: -100%; width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+    transition: left 0.6s;
+  }
+  .btn-shop:hover {
+    background: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(190,74,60,0.25);
+  }
+  .btn-shop:hover::before { left: 100%; }
+
+  /* ═══════════════════════════════════
+     MODAL
+  ═══════════════════════════════════ */
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(26,26,26,0.45);
+    backdrop-filter: blur(12px);
+    z-index: 300;
+    display: none; align-items: center; justify-content: center;
+    padding: 20px;
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .modal-bg.open { display: flex; opacity: 1; }
+  .modal {
+    background: var(--bg-card);
+    border-radius: 28px;
+    max-width: 480px; width: 100%;
+    max-height: 92vh; overflow-y: auto;
+    position: relative;
+    transform: scale(0.96) translateY(10px);
+    transition: transform 0.4s var(--transition);
+    box-shadow: var(--shadow-lg);
+  }
+  .modal-bg.open .modal { transform: scale(1) translateY(0); }
+
+  .modal-hero { width: 100%; aspect-ratio: 4/5; overflow: hidden; border-radius: 28px 28px 0 0; position: relative; }
+  .modal-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .modal-hero-overlay {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 60px 28px 24px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.7));
+  }
+  .modal-hero-title {
+    font-family: var(--font-display);
+    font-size: 34px; font-weight: 400; color: white;
+    margin-bottom: 4px;
+  }
+  .modal-hero-sub { font-size: 13px; color: rgba(255,255,255,0.7); }
+
+  .modal-close {
+    position: absolute; top: 16px; right: 16px;
+    width: 40px; height: 40px; border-radius: 50%;
+    border: none; background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(8px);
+    color: white; font-size: 20px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 5; transition: all 0.3s;
+  }
+  .modal-close:hover { background: var(--accent); }
+
+  .modal-body { padding: 28px; }
+  .modal-item {
+    display: flex; gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+  }
+  .modal-item:last-of-type { border-bottom: none; }
+  .modal-item-img {
+    width: 72px; height: 72px;
+    border-radius: var(--radius-sm);
+    overflow: hidden; flex-shrink: 0;
+    background: var(--bg-warm);
+  }
+  .modal-item-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .modal-item-info { flex: 1; }
+  .modal-item-name { font-size: 14px; font-weight: 500; margin-bottom: 3px; }
+  .modal-item-brand { font-size: 12px; color: var(--text-muted); margin-bottom: 3px; }
+  .modal-item-store { font-size: 11px; color: var(--accent); font-weight: 500; cursor: pointer; }
+  .modal-item-store:hover { text-decoration: underline; }
+  .modal-item-price { font-size: 16px; font-weight: 600; flex-shrink: 0; }
+
+  .modal-footer {
+    display: flex; justify-content: space-between;
+    align-items: center; padding: 20px 0 0;
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+  }
+  .modal-footer-label { font-size: 14px; color: var(--text-secondary); font-weight: 500; }
+  .modal-footer-price { font-family: var(--font-display); font-size: 32px; font-weight: 500; }
+  .modal-buy {
+    width: 100%; padding: 18px; margin-top: 20px;
+    border: none; border-radius: 16px;
+    background: var(--accent); color: white;
+    font-family: var(--font-body);
+    font-size: 14px; font-weight: 500;
+    letter-spacing: 1px; text-transform: uppercase;
+    cursor: pointer; transition: all 0.4s;
+  }
+  .modal-buy:hover { background: var(--accent-hover); box-shadow: 0 10px 30px rgba(190,74,60,0.3); }
+
+  /* ═══════════════════════════════════
+     FOOTER
+  ═══════════════════════════════════ */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 48px 28px;
+    text-align: center;
+    background: var(--bg-warm);
+  }
+  .footer-logo {
+    font-family: var(--font-display);
+    font-size: 22px; font-weight: 400;
+    letter-spacing: 6px; text-transform: uppercase;
+    color: var(--text); margin-bottom: 12px;
+  }
+  .footer-logo span { color: var(--accent); }
+  .footer-text {
+    font-size: 12px; color: var(--text-muted);
+    font-weight: 300; line-height: 1.8;
+    max-width: 400px; margin: 0 auto 20px;
+  }
+  .footer-links { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
+  .footer-link {
+    font-size: 11px; color: var(--text-muted);
+    text-decoration: none; letter-spacing: 1px;
+    text-transform: uppercase; transition: color 0.3s;
+  }
+  .footer-link:hover { color: var(--accent); }
+  .footer-copy {
+    margin-top: 32px; font-size: 11px;
+    color: var(--text-muted); font-weight: 300;
+  }
+
+  .bottom-spacer { height: 80px; }
+  @media (min-width: 768px) { .bottom-spacer { height: 0; } }
+
+  /* ═══════════════════════════════════
+     BOTTOM NAV (MOBILE)
+  ═══════════════════════════════════ */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: 68px;
+    background: rgba(255,255,255,0.96);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-around;
+    z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  @media (min-width: 768px) { .bottom-nav { display: none; } }
+  .bnav-item {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 3px;
+    cursor: pointer; opacity: 0.35;
+    transition: opacity 0.3s;
+    text-decoration: none; color: var(--text);
+  }
+  .bnav-item.active { opacity: 1; }
+  .bnav-item:hover { opacity: 0.7; }
+  .bnav-icon { font-size: 20px; }
+  .bnav-label {
+    font-size: 9px; font-weight: 600;
+    letter-spacing: 0.8px; text-transform: uppercase;
+  }
+  .bnav-item.active .bnav-label { color: var(--accent); }
+
+  /* ═══════════════════════════════════
+     LOADING SHIMMER
+  ═══════════════════════════════════ */
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .shimmer {
+    background: linear-gradient(90deg, var(--bg-warm) 25%, #ece5dd 50%, var(--bg-warm) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.8s infinite;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════ NAVIGATION ═══════ -->
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <div class="nav-logo"><span>M</span>ise</div>
+    <div class="nav-links">
+      <a href="#" class="nav-link">Discover</a>
+      <a href="#" class="nav-link">Trending</a>
+      <a href="#" class="nav-link">For You</a>
+    </div>
+    <div class="nav-icons">
+      <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════ HERO ═══════ -->
+<section class="hero">
+  <p class="hero-eyebrow">AI-Curated Fashion</p>
+  <h1>The <em>entire</em> look,<br>one click away</h1>
+  <p class="hero-sub">Complete outfits curated by AI from the world's best stores. You choose the style, we assemble the look — every piece shoppable.</p>
+  <div class="hero-cta">
+    <a href="#looks" class="hero-btn">Explore Looks</a>
+  </div>
+</section>
+
+<!-- ═══════ BRAND MARQUEE ═══════ -->
+<div class="marquee-wrapper">
+  <div class="marquee-track">
+    <span class="marquee-item">Sézane</span><span class="marquee-dot"> ◆ </span>
+    <span class="marquee-item">COS</span><span class="marquee-dot"> ◆ </span>
+    <span class="marquee-item">Jacquemus</span><span class="marquee-dot"> ◆ </span>
+    <span class="marquee-item">Zara</span><span class="marquee-dot"> ◆ </span>
+    <span class="marquee-item">The Frankie Shop</span><span class="marquee-dot"> ◆ </span>
+    <span class="marquee-item">Polène</span><span class="marquee-dot"> ◆ </span>
+    <span class="marquee-item">Mango</span><span class="marquee-dot"> ◆ </span>
+    <span class="marquee-item">Reformation</span><span class="marquee-dot"> ◆ </span>
+    <span class="marquee-item">Arket</span><span class="marquee-dot"> ◆ </span>
+    <span class="marquee-item">Sandro</span><span class="marquee-dot"> ◆ </span>
+    <span class="marquee-item">Mejuri</span><span class="marquee-dot"> ◆ </span>
+    <span class="marquee-item">Veja</span><span class="marquee-dot"> ◆ </span>
+    <!-- duplicate for seamless loop -->
+    <span class="marquee-item">Sézane</span><span class="marquee-dot"> ◆ </span>
+    <span class="marquee-item">COS</span><span class="marquee-dot"> ◆ </span>
+    <span class="marquee-item">Jacquemus</span><span class="marquee-dot"> ◆ </span>
+    <span class="marquee-item">Zara</span><span class="marquee-dot"> ◆ </span>
+    <span class="marquee-item">The Frankie Shop</span><span class="marquee-dot"> ◆ </span>
+    <span class="marquee-item">Polène</span><span class="marquee-dot"> ◆ </span>
+    <span class="marquee-item">Mango</span><span class="marquee-dot"> ◆ </span>
+    <span class="marquee-item">Reformation</span><span class="marquee-dot"> ◆ </span>
+    <span class="marquee-item">Arket</span><span class="marquee-dot"> ◆ </span>
+    <span class="marquee-item">Sandro</span><span class="marquee-dot"> ◆ </span>
+    <span class="marquee-item">Mejuri</span><span class="marquee-dot"> ◆ </span>
+    <span class="marquee-item">Veja</span><span class="marquee-dot"> ◆ </span>
+  </div>
+</div>
+
+<!-- ═══════ FILTERS ═══════ -->
+<section class="filter-section" id="looks">
+  <div class="filter-inner">
+    <div class="filter-scroll">
+      <button class="filter-pill active" onclick="filter('all',this)">All Looks</button>
+      <button class="filter-pill" onclick="filter('casual',this)">Casual</button>
+      <button class="filter-pill" onclick="filter('office',this)">Office</button>
+      <button class="filter-pill" onclick="filter('evening',this)">Evening</button>
+      <button class="filter-pill" onclick="filter('street',this)">Street</button>
+      <button class="filter-pill" onclick="filter('brunch',this)">Brunch</button>
+      <button class="filter-pill" onclick="filter('date',this)">Date Night</button>
+    </div>
+    <div class="budget-wrap">
+      <span class="budget-label">Budget</span>
+      <input type="range" class="budget-slider" min="100" max="1500" value="800" oninput="document.getElementById('bv').textContent='€'+this.value">
+      <span class="budget-value" id="bv">€800</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ LOOKS GRID ═══════ -->
+<section class="looks-section">
+  <div class="looks-grid" id="grid"></div>
+</section>
+
+<div class="bottom-spacer"></div>
+
+<!-- ═══════ FOOTER ═══════ -->
+<footer class="footer">
+  <div class="footer-logo"><span>M</span>ise</div>
+  <p class="footer-text">AI-curated complete looks from the world's best stores. Every piece shoppable. Every look effortless.</p>
+  <div class="footer-links">
+    <a href="#" class="footer-link">About</a>
+    <a href="#" class="footer-link">How It Works</a>
+    <a href="#" class="footer-link">Contact</a>
+    <a href="#" class="footer-link">Instagram</a>
+    <a href="#" class="footer-link">Privacy</a>
+  </div>
+  <p class="footer-copy">&copy; 2026 MISE. All rights reserved.</p>
+</footer>
+
+<!-- ═══════ BOTTOM NAV (MOBILE) ═══════ -->
+<nav class="bottom-nav">
+  <a class="bnav-item active"><span class="bnav-icon">◆</span><span class="bnav-label">Discover</span></a>
+  <a class="bnav-item"><span class="bnav-icon">♡</span><span class="bnav-label">Saved</span></a>
+  <a class="bnav-item"><span class="bnav-icon">✦</span><span class="bnav-label">For You</span></a>
+  <a class="bnav-item"><span class="bnav-icon">○</span><span class="bnav-label">Profile</span></a>
+</nav>
+
+<!-- ═══════ MODAL ═══════ -->
+<div class="modal-bg" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalInner"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════
+// LOOK DATA
+// ═══════════════════════════════════
+const looks = [
+  {
+    id:1, title:"Côte d'Azur", cat:"casual",
+    tags:["Summer","Effortless","Mediterranean"],
+    hero:"https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=600&h=800&fit=crop",
+    pieces:[
+      {name:"Linen Wrap Dress",brand:"Reformation",store:"thereformation.com",price:248,img:"https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&h=400&fit=crop"},
+      {name:"Woven Straw Tote",brand:"Polène",store:"polene-paris.com",price:390,img:"https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=400&h=400&fit=crop"},
+      {name:"Leather Sandals",brand:"Ancient Greek",store:"ancientgreeksandals.com",price:185,img:"https://images.unsplash.com/photo-1603487742131-4160ec999306?w=400&h=400&fit=crop"},
+      {name:"Gold Hoops",brand:"Mejuri",store:"mejuri.com",price:78,img:"https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&h=400&fit=crop"}
+    ]
+  },
+  {
+    id:2, title:"Power Femme", cat:"office",
+    tags:["Sharp","Confident","Tailored"],
+    hero:"https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?w=600&h=800&fit=crop",
+    pieces:[
+      {name:"Tailored Blazer",brand:"The Frankie Shop",store:"thefrankieshop.com",price:345,img:"https://images.unsplash.com/photo-1591369822096-ffd140ec948f?w=400&h=400&fit=crop"},
+      {name:"Silk Cami Top",brand:"Vince",store:"vince.com",price:195,img:"https://images.unsplash.com/photo-1564257631407-4deb1f99d992?w=400&h=400&fit=crop"},
+      {name:"Wide Leg Trousers",brand:"COS",store:"cos.com",price:135,img:"https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400&h=400&fit=crop"},
+      {name:"Pointed Heels",brand:"Sézane",store:"sezane.com",price:295,img:"https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=400&h=400&fit=crop"}
+    ]
+  },
+  {
+    id:3, title:"Midnight Silk", cat:"evening",
+    tags:["Evening","Glamour","Sleek"],
+    hero:"https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&h=800&fit=crop",
+    pieces:[
+      {name:"Slip Midi Dress",brand:"Nanushka",store:"nanushka.com",price:420,img:"https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=400&h=400&fit=crop"},
+      {name:"Strappy Sandals",brand:"Stuart Weitzman",store:"stuartweitzman.com",price:395,img:"https://images.unsplash.com/photo-1603808033192-082d6919d3e1?w=400&h=400&fit=crop"},
+      {name:"Leather Clutch",brand:"Polène",store:"polene-paris.com",price:350,img:"https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=400&h=400&fit=crop"},
+      {name:"Drop Earrings",brand:"Missoma",store:"missoma.com",price:128,img:"https://images.unsplash.com/photo-1630019852942-f89202989a59?w=400&h=400&fit=crop"}
+    ]
+  },
+  {
+    id:4, title:"Off-Duty Cool", cat:"street",
+    tags:["Streetwear","Layered","Sneakers"],
+    hero:"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=800&fit=crop",
+    pieces:[
+      {name:"Leather Jacket",brand:"Acne Studios",store:"acnestudios.com",price:1200,img:"https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop"},
+      {name:"Vintage Tee",brand:"RE/DONE",store:"shopredone.com",price:155,img:"https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=400&h=400&fit=crop"},
+      {name:"Straight Jeans",brand:"AGOLDE",store:"agolde.com",price:198,img:"https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=400&h=400&fit=crop"},
+      {name:"Chunky Sneakers",brand:"Veja",store:"veja-store.com",price:130,img:"https://images.unsplash.com/photo-1539185441755-769473a23570?w=400&h=400&fit=crop"}
+    ]
+  },
+  {
+    id:5, title:"Sunday Bloom", cat:"brunch",
+    tags:["Relaxed","Weekend","Chic"],
+    hero:"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?w=600&h=800&fit=crop",
+    pieces:[
+      {name:"Cashmere Knit",brand:"Khaite",store:"khaite.com",price:480,img:"https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=400&h=400&fit=crop"},
+      {name:"Pleated Midi Skirt",brand:"Sézane",store:"sezane.com",price:155,img:"https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=400&h=400&fit=crop"},
+      {name:"Ballet Flats",brand:"The Row",store:"therow.com",price:690,img:"https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=400&h=400&fit=crop&q=80"},
+      {name:"Silk Scarf",brand:"Totême",store:"toteme-studio.com",price:180,img:"https://images.unsplash.com/photo-1584030373081-f37b7bb4fa8e?w=400&h=400&fit=crop"}
+    ]
+  },
+  {
+    id:6, title:"Golden Hour", cat:"date",
+    tags:["Date Night","Romantic","Warm"],
+    hero:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&h=800&fit=crop",
+    pieces:[
+      {name:"One Shoulder Top",brand:"Jacquemus",store:"jacquemus.com",price:290,img:"https://images.unsplash.com/photo-1564257631407-4deb1f99d992?w=400&h=400&fit=crop&q=80"},
+      {name:"Linen Wide Pants",brand:"Faithfull",store:"faithfullthebrand.com",price:169,img:"https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=400&h=400&fit=crop"},
+      {name:"Heeled Mules",brand:"By Far",store:"byfar.com",price:380,img:"https://images.unsplash.com/photo-1603808033192-082d6919d3e1?w=400&h=400&fit=crop&q=80"},
+      {name:"Chain Necklace",brand:"Missoma",store:"missoma.com",price:98,img:"https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&h=400&fit=crop"}
+    ]
+  }
+];
+
+// ═══════════════════════════════════
+// RENDER
+// ═══════════════════════════════════
+function render(data) {
+  const g = document.getElementById('grid');
+  g.innerHTML = '';
+  data.forEach((look, i) => {
+    const total = look.pieces.reduce((s,p) => s+p.price, 0);
+    const stores = [...new Set(look.pieces.map(p=>p.store))].length;
+    const c = document.createElement('div');
+    c.className = 'look-card';
+    c.innerHTML = `
+      <div class="look-visual" onclick="openModal(${look.id})">
+        <span class="badge-ai">AI Styled</span>
+        <button class="btn-save" onclick="event.stopPropagation();this.classList.toggle('liked')">
+          <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
+        <div class="model-hero shimmer">
+          <img src="${look.hero}" alt="${look.title}" loading="lazy" onload="this.parentElement.classList.remove('shimmer')">
+          <div class="model-gradient"></div>
+          <div class="model-info">
+            <div class="model-title">${look.title}</div>
+            <div class="model-meta">${look.pieces.length} pieces · ${stores} stores · €${total}</div>
+          </div>
+        </div>
+        <div class="pieces-strip">
+          ${look.pieces.map(p=>`
+            <div class="strip-item shimmer">
+              <img src="${p.img}" alt="${p.name}" loading="lazy" onload="this.parentElement.classList.remove('shimmer')">
+              <div class="strip-label">
+                <div class="strip-brand">${p.brand}</div>
+                <div class="strip-price">€${p.price}</div>
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>
+      <div class="card-info">
+        <div class="card-tags">${look.tags.map(t=>`<span class="card-tag">${t}</span>`).join('')}</div>
+        <div class="card-summary">
+          <div class="card-summary-left">
+            <div class="card-total-label">Total Look</div>
+            <div class="card-total-detail">${look.pieces.length} pieces · ${stores} stores</div>
+          </div>
+          <div class="card-total-price">€${total}</div>
+        </div>
+        <button class="btn-shop" onclick="openModal(${look.id})">Shop This Look</button>
+      </div>`;
+    g.appendChild(c);
+    setTimeout(() => c.classList.add('visible'), 100 + i * 120);
+  });
+}
+
+// ═══════════════════════════════════
+// FILTER
+// ═══════════════════════════════════
+function filter(cat, btn) {
+  document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  render(cat==='all' ? looks : looks.filter(l=>l.cat===cat));
+}
+
+// ═══════════════════════════════════
+// MODAL
+// ═══════════════════════════════════
+function openModal(id) {
+  const look = looks.find(l=>l.id===id);
+  if(!look) return;
+  const total = look.pieces.reduce((s,p)=>s+p.price,0);
+  const sc = [...new Set(look.pieces.map(p=>p.store))].length;
+  document.getElementById('modalInner').innerHTML = `
+    <div class="modal-hero">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <img src="${look.hero}" alt="${look.title}">
+      <div class="modal-hero-overlay">
+        <div class="modal-hero-title">${look.title}</div>
+        <div class="modal-hero-sub">${look.pieces.length} pieces from ${sc} stores</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      ${look.pieces.map(p=>`
+        <div class="modal-item">
+          <div class="modal-item-img"><img src="${p.img}" alt="${p.name}"></div>
+          <div class="modal-item-info">
+            <div class="modal-item-name">${p.name}</div>
+            <div class="modal-item-brand">${p.brand}</div>
+            <div class="modal-item-store">↗ ${p.store}</div>
+          </div>
+          <div class="modal-item-price">€${p.price}</div>
+        </div>`).join('')}
+      <div class="modal-footer">
+        <span class="modal-footer-label">Total</span>
+        <span class="modal-footer-price">€${total}</span>
+      </div>
+      <button class="modal-buy" onclick="alert('Redirecting to ${sc} stores to complete your purchase...')">Buy Entire Look — €${total}</button>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ═══════════════════════════════════
+// NAV SCROLL EFFECT
+// ═══════════════════════════════════
+window.addEventListener('scroll', () => {
+  document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 40);
+});
+
+// ═══════════════════════════════════
+// INIT
+// ═══════════════════════════════════
+render(looks);
+</script>
+
+</body>
+</html>
