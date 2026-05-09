@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useLang } from './LangProvider'
 
 const BRANDS = ['Sézane', 'COS', 'Jacquemus', 'Zara', 'The Frankie Shop', 'Polène', 'Mango', 'Reformation', 'Arket', 'Sandro', 'Mejuri', 'Veja']
@@ -91,12 +92,12 @@ export default function HomeContent({ looks }) {
             const total = Number(look.total) || look.pieces.reduce((s, p) => s + (p.price || 0), 0)
             const storeCount = new Set(look.pieces.map((p) => p.store)).size
             return (
-              <div key={look.id} className="look-card visible" onClick={() => openModal(look)}>
-                <div className="look-visual">
+              <div key={look.id} className="look-card visible">
+                <Link href={`/look/${look.slug}`} className="look-visual" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
                   <span className="badge-ai">{t.badge}</span>
                   <button
                     className={`btn-save${liked[look.id] ? ' liked' : ''}`}
-                    onClick={(e) => toggleLike(e, look.id)}
+                    onClick={(e) => { e.preventDefault(); toggleLike(e, look.id) }}
                   >
                     <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                   </button>
@@ -119,7 +120,7 @@ export default function HomeContent({ looks }) {
                       </div>
                     ))}
                   </div>
-                </div>
+                </Link>
                 <div className="card-info">
                   <div className="card-tags">
                     {look.tags.map((tag, i) => (
@@ -133,7 +134,7 @@ export default function HomeContent({ looks }) {
                     </div>
                     <div className="card-total-price">€{total}</div>
                   </div>
-                  <button className="btn-shop" onClick={(e) => { e.stopPropagation(); openModal(look) }}>
+                  <button className="btn-shop" onClick={() => openModal(look)}>
                     {t.shop_btn}
                   </button>
                 </div>
