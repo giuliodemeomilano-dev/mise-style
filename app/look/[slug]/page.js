@@ -95,7 +95,7 @@ export default async function LookPage({ params }) {
         <h2>The Pieces</h2>
         <div className="pieces-grid">
           {look.pieces.map((piece, idx) => (
-            <a key={idx} href={piece.url} target="_blank" rel="noopener noreferrer sponsored" className="piece-card">
+            <a key={idx} href={`/go/${piece.id}?outfit=${look.id}`} target="_blank" rel="noopener noreferrer sponsored" className="piece-card">
               <div className="piece-image">
                 <img src={piece.img} alt={piece.name} loading="lazy" />
               </div>

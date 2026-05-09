@@ -161,7 +161,7 @@ export default function HomeContent({ looks }) {
             </div>
             <div className="modal-body">
               {modalLook.pieces.map((p, i) => (
-                <div key={i} className="modal-item">
+                <a key={i} href={`/go/${p.id}?outfit=${modalLook.id}`} target="_blank" rel="noopener noreferrer sponsored" className="modal-item" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <div className="modal-item-img"><img src={p.img} alt={p.name} /></div>
                   <div className="modal-item-info">
                     <div className="modal-item-name">{p.name}</div>
@@ -169,7 +169,7 @@ export default function HomeContent({ looks }) {
                     <div className="modal-item-store">↗ {p.store}</div>
                   </div>
                   <div className="modal-item-price">€{p.price}</div>
-                </div>
+                </a>
               ))}
               <div className="modal-footer">
                 <span className="modal-footer-label">Total</span>
