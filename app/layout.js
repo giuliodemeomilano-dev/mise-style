@@ -23,20 +23,23 @@ const outfit = Outfit({
 export const metadata = {
   title: 'MISE — Shop The Entire Look',
   description: 'AI-curated complete looks from multiple stores. Shop the entire outfit in one click.',
+}
+
+export const viewport = {
   themeColor: '#1A1A1A',
 }
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${playfair.variable} ${outfit.variable}`}>
-      <body>
-        <LangProvider>
-          <Nav />
-          {children}
-          <Footer />
-          <BottomNav />
-        </LangProvider>
-      </body>
-    </html>
-  )
+<body>
+  <LangProvider>
+  <Nav />
+{children}
+<Footer />
+  <BottomNav />
+  </LangProvider>
+  </body>
+  </html>
+)
 }
