@@ -1,3 +1,4 @@
+import Script from 'next/script'
 import { Playfair_Display, Outfit } from 'next/font/google'
 import './globals.css'
 import Nav from './components/Nav'
@@ -32,14 +33,18 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${playfair.variable} ${outfit.variable}`}>
-<body>
-  <LangProvider>
-  <Nav />
-{children}
-<Footer />
-  <BottomNav />
-  </LangProvider>
-  </body>
-  </html>
-)
+      <body>
+        <LangProvider>
+          <Nav />
+          {children}
+          <Footer />
+          <BottomNav />
+        </LangProvider>
+        <Script
+          src="https://s.skimresources.com/js/303796X1791855.skimlinks.js"
+          strategy="lazyOnload"
+        />
+      </body>
+    </html>
+  )
 }
