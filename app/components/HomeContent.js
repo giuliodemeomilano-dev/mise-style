@@ -177,7 +177,7 @@ export default function HomeContent({ looks }) {
               </div>
               <button
                 className="modal-buy"
-                onClick={() => alert(t.modal_redirect.replace('{n}', new Set(modalLook.pieces.map((p) => p.store)).size))}
+              onClick={() => window.open(`/look/${modalLook.slug}`, "_blank", "noopener,noreferrer")}
               >
                 {t.buy_btn} — €{Number(modalLook.total) || modalLook.pieces.reduce((s, p) => s + (p.price || 0), 0)}
               </button>
