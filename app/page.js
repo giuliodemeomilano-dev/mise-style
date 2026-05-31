@@ -54,6 +54,7 @@ async function getLooks() {
       hero: outfit.hero_image_url,
       total: outfit.total_price,
       pieces: sortedItems.map((item) => ({
+          id: item.products?.id,
         name: item.products?.name,
         brand: item.products?.brand,
         store: item.products?.merchant,
