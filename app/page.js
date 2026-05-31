@@ -28,6 +28,7 @@ async function getLooks() {
           merchant,
           price,
           image_url,
+          packshot_url,
           affiliate_url
         )
       )
@@ -58,7 +59,7 @@ async function getLooks() {
         brand: item.products?.brand,
         store: item.products?.merchant,
         price: item.products?.price,
-        img: item.products?.image_url,
+        img: item.products?.packshot_url || item.products?.image_url,
         url: item.products?.affiliate_url,
       })),
     }
