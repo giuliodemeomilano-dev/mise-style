@@ -177,7 +177,7 @@ export default function HomeContent({ looks }) {
               </div>
               <button
                 className="modal-buy"
-          onClick={() => { modalLook.pieces.forEach((p) => window.open(`/go/${p.id}?outfit=${modalLook.id}`, "_blank", "noopener,noreferrer")) }}
+              onClick={() => window.open(`/look/${modalLook.slug}`, "_blank", "noopener,noreferrer")}
               >
                 {t.buy_btn} — €{Number(modalLook.total) || modalLook.pieces.reduce((s, p) => s + (p.price || 0), 0)}
               </button>
