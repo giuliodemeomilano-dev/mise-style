@@ -25,7 +25,8 @@ export default function HomeContent({ looks }) {
 
   const cats = ['all', 'casual', 'office', 'evening', 'street', 'brunch', 'date']
 
-  const filtered = filter === 'all' ? looks : looks.filter((l) => l.cat === filter)
+  const byCat = filter === 'all' ? looks : looks.filter((l) => l.cat === filter)
+  const filtered = byCat.filter((l) => (Number(l.total) || l.pieces.reduce((s, p) => s + (p.price || 0), 0)) <= budget)
 
   const openModal = (look) => {
     setModalLook(look)
@@ -86,7 +87,7 @@ export default function HomeContent({ looks }) {
               value={budget}
               onChange={(e) => setBudget(Number(e.target.value))}
             />
-            <span className="budget-value">€{budget}</span>
+            <span className="budget-value">€<input type="text" inputMode="numeric" className="budget-input" title="Click to type your max budget" value={budget} onChange={(e) => { const raw = e.target.value.replace(/[^0-9]/g, ''); setBudget(raw === '' ? 0 : Number(raw)); }} onBlur={(e) => { const v = Number(e.target.value) || 100; setBudget(Math.min(1500, Math.max(100, v))); }} /></span>
           </div>
         </div>
       </section>
