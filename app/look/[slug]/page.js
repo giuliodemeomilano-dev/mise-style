@@ -31,7 +31,7 @@ export async function generateMetadata({ params }) {
 async function getOutfit(slug) {
   const { data: outfit, error } = await supabase
     .from('outfits')
-    .select('id, slug, title, description, mood, occasion, budget_tier, tags, hero_image_url, total_price, outfit_items (position, role, products (id, name, brand, merchant, price, image_url, affiliate_url))')
+    .select('id, slug, title, description, mood, occasion, budget_tier, tags, hero_image_url, total_price, outfit_items (position, role, products (id, name, brand, merchant, price, image_url, packshot_url, affiliate_url))')
     .eq('slug', slug)
     .eq('status', 'active')
     .single()
@@ -49,6 +49,7 @@ async function getOutfit(slug) {
       store: item.products?.merchant,
       price: item.products?.price,
       img: item.products?.image_url,
+      packshot: item.products?.packshot_url || item.products?.image_url,
       url: item.products?.affiliate_url,
     })),
   }
@@ -97,7 +98,7 @@ export default async function LookPage({ params }) {
           {look.pieces.map((piece, idx) => (
             <a key={idx} href={`/go/${piece.id}?outfit=${look.id}`} target="_blank" rel="noopener noreferrer sponsored" className="piece-card">
               <div className="piece-image">
-                <img src={piece.img} alt={piece.name} loading="lazy" />
+                <img src={piece.packshot} alt={piece.name} loading="lazy" />
               </div>
               <div className="piece-info">
                 <div className="piece-brand">{piece.brand}</div>
