@@ -48,7 +48,8 @@ async function getOutfit(slug) {
       brand: item.products?.brand,
       store: item.products?.merchant,
       price: item.products?.price,
-      img: item.products?.packshot_url || item.products?.image_url,
+      img: item.products?.image_url,
+      packshot: item.products?.packshot_url || item.products?.image_url,
       url: item.products?.affiliate_url,
     })),
   }
@@ -97,7 +98,7 @@ export default async function LookPage({ params }) {
           {look.pieces.map((piece, idx) => (
             <a key={idx} href={`/go/${piece.id}?outfit=${look.id}`} target="_blank" rel="noopener noreferrer sponsored" className="piece-card">
               <div className="piece-image">
-                <img src={piece.img} alt={piece.name} loading="lazy" />
+                <img src={piece.packshot} alt={piece.name} loading="lazy" />
               </div>
               <div className="piece-info">
                 <div className="piece-brand">{piece.brand}</div>

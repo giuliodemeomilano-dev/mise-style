@@ -12,10 +12,21 @@ export default function HomeContent({ looks }) {
   const [budget, setBudget] = useState(800)
   const [modalLook, setModalLook] = useState(null)
   const [liked, setLiked] = useState({})
+  const [carIdx, setCarIdx] = useState({})
+  const moveCar = (e, lookId, len, dir) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setCarIdx((prev) => {
+      const cur = prev[lookId] || 0
+      const next = (cur + dir + len) % len
+      return { ...prev, [lookId]: next }
+    })
+  }
 
   const cats = ['all', 'casual', 'office', 'evening', 'street', 'brunch', 'date']
 
-  const filtered = filter === 'all' ? looks : looks.filter((l) => l.cat === filter)
+  const byCat = filter === 'all' ? looks : looks.filter((l) => l.cat === filter)
+  const filtered = byCat.filter((l) => (Number(l.total) || l.pieces.reduce((s, p) => s + (p.price || 0), 0)) <= budget)
 
   const openModal = (look) => {
     setModalLook(look)
@@ -76,7 +87,7 @@ export default function HomeContent({ looks }) {
               value={budget}
               onChange={(e) => setBudget(Number(e.target.value))}
             />
-            <span className="budget-value">€{budget}</span>
+            <span className="budget-value">€<input type="text" inputMode="numeric" className="budget-input" title="Click to type your max budget" value={budget} onChange={(e) => { const raw = e.target.value.replace(/[^0-9]/g, ''); setBudget(raw === '' ? 0 : Number(raw)); }} onBlur={(e) => { const v = Number(e.target.value) || 100; setBudget(Math.min(1500, Math.max(100, v))); }} /></span>
           </div>
         </div>
       </section>
@@ -101,18 +112,28 @@ export default function HomeContent({ looks }) {
                   >
                     <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                   </button>
-                  <div className="model-hero">
-                    <img src={look.hero} alt={look.title} loading="lazy" />
-                    <div className="model-gradient"></div>
-                    <div className="model-info">
-                      <div className="model-title">{look.title}</div>
-                      <div className="model-meta">{look.pieces.length} {t.pieces} · {storeCount} {t.stores} · €{total}</div>
+              <div className="model-hero model-hero-clean car-wrap">
+                <img src={look.pieces[(carIdx[look.id] || 0)]?.packshot || look.hero} alt={look.title} loading="lazy" />
+                {look.pieces.length > 1 && (
+                  <>
+                    <button className="car-arrow car-prev" aria-label="prev" onClick={(e) => moveCar(e, look.id, look.pieces.length, -1)}>‹</button>
+                    <button className="car-arrow car-next" aria-label="next" onClick={(e) => moveCar(e, look.id, look.pieces.length, 1)}>›</button>
+                    <div className="car-dots">
+                      {look.pieces.map((_, di) => (
+                        <span key={di} className={`car-dot${di === (carIdx[look.id] || 0) ? ' active' : ''}`}></span>
+                      ))}
                     </div>
-                  </div>
+                  </>
+                )}
+              </div>
+              <div className="model-info-below">
+                <div className="model-title-dark">{look.title}</div>
+                <div className="model-meta-dark">{look.pieces.length} {t.pieces} · {storeCount} {t.stores} · €{total}</div>
+              </div>
                   <div className="pieces-strip">
                     {look.pieces.map((p, i) => (
                       <div key={i} className="strip-item">
-                        <img src={p.img} alt={p.name} loading="lazy" />
+                        <img src={p.packshot} alt={p.name} loading="lazy" />
                         <div className="strip-label">
                           <div className="strip-brand">{p.brand}</div>
                           <div className="strip-price">€{p.price}</div>
@@ -162,7 +183,7 @@ export default function HomeContent({ looks }) {
             <div className="modal-body">
               {modalLook.pieces.map((p, i) => (
                 <a key={i} href={`/go/${p.id}?outfit=${modalLook.id}`} target="_blank" rel="noopener noreferrer sponsored" className="modal-item" style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <div className="modal-item-img"><img src={p.img} alt={p.name} /></div>
+                  <div className="modal-item-img"><img src={p.packshot} alt={p.name} /></div>
                   <div className="modal-item-info">
                     <div className="modal-item-name">{p.name}</div>
                     <div className="modal-item-brand">{p.brand}</div>
