@@ -19,9 +19,9 @@ export default function Nav() {
         <div className="nav-logo"><span>M</span>ise</div>
         <div className="nav-right">
           <div className="nav-links">
-            <a className="nav-link">{t.nav_discover}</a>
-            <a className="nav-link">{t.nav_trending}</a>
-            <a className="nav-link">{t.nav_foryou}</a>
+            <a className="nav-link" href="#looks">{t.nav_discover}</a>
+            <a className="nav-link" href="#looks">{t.nav_trending}</a>
+            <a className="nav-link" href="#looks">{t.nav_foryou}</a>
           </div>
           <div className="lang-selector">
             <button
