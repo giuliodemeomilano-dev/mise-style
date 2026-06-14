@@ -47,6 +47,37 @@ export default function AdminPage() {
     }
   }
 
+  async function swapPiece(itemId, outfitId, currentExtId, excludeExtIds) {
+    setBusy(outfitId + ":" + itemId);
+    try {
+      const res = await fetch("/api/swap", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ current_external_id: currentExtId, exclude: excludeExtIds }),
+      });
+      const data = await res.json();
+      if (!data.ok) {
+        alert(data.reason === "no_alternatives" ? "Nessun pezzo simile disponibile in questa categoria." : (data.error || "Errore"));
+        return;
+      }
+      const applyRes = await fetch("/api/swap-apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-pw": pw },
+        body: JSON.stringify({ item_id: itemId, new_external_id: data.product.external_id, outfit_id: outfitId }),
+      });
+      const applyData = await applyRes.json();
+      if (!applyData.ok) {
+        alert(applyData.error || "Errore nel salvataggio");
+        return;
+      }
+      await loadDrafts();
+    } catch (e) {
+      alert(String(e.message || e));
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function act(id, action) {
     setBusy(id);
     try {
@@ -105,8 +136,9 @@ export default function AdminPage() {
                     const img = piecePhoto(it);
                     const p = it.products || {};
                     return (
-                      <div key={idx} style={{ flex: 1, background: "#fff", borderRadius: 4, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <div key={idx} style={{ flex: 1, background: "#fff", borderRadius: 4, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
                         {img && <img src={img} alt={p.name || ""} style={{ width: "100%", height: "100%", objectFit: "contain", padding: 8, boxSizing: "border-box" }} />}
+                        <button onClick={() => swapPiece(it.id, d.id, p.external_id, pieces.map((x) => x.products?.external_id).filter(Boolean))} disabled={busy === d.id + ":" + it.id} title="Ricarica un pezzo simile" style={{ position: "absolute", bottom: 4, right: 4, width: 26, height: 26, borderRadius: "50%", border: "none", background: "rgba(26,26,26,0.85)", color: "#fff", cursor: "pointer", fontSize: 13, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>↻</button>
                       </div>
                     );
                   })}

@@ -28,7 +28,7 @@ export async function GET(request) {
     for (const d of drafts || []) {
       const { data: items } = await supabase
         .from("outfit_items")
-        .select("role, position, products(brand, name, price, packshot_url, image_url)")
+        .select("id, role, position, products(id, external_id, category, gender, brand, name, price, packshot_url, image_url)")
         .eq("outfit_id", d.id)
         .order("position", { ascending: true });
       withItems.push({ ...d, items: items || [] });

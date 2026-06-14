@@ -254,3 +254,20 @@ body { background: var(--bg); font-family: var(--font-body); color: var(--text);
 .car-dots { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 7px; padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,0.65); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); box-shadow: 0 1px 4px rgba(0,0,0,0.08); z-index: 3; }
 .car-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(0,0,0,0.28); transition: all 0.2s ease; }
 .car-dot.active { background: #1a1a1a; transform: scale(1.25); }
+
+.gender-toggle { display: flex; justify-content: center; gap: 4px; margin: 0 0 20px; padding-bottom: 18px; border-bottom: 1px solid #eee; }
+.gender-pill { background: transparent; color: #999; border: none; padding: 10px 34px; border-radius: 22px; font-size: 14px; letter-spacing: 3px; font-weight: 400; cursor: pointer; transition: all 0.2s; }
+.gender-pill:hover { color: #1a1a1a; }
+.gender-pill.active { background: #1a1a1a; color: #fff; }
+
+.piece-card-wrap { display: flex; flex-direction: column; }
+
+.piece-card-wrap .piece-card { flex: 1; }
+
+.piece-swap { margin-top: 8px; width: 100%; padding: 9px; border: 1px solid #ddd; border-radius: 8px; background: #fff; color: #555; font-size: 12px; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; }
+
+.piece-swap:hover { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+
+.piece-swap:disabled { opacity: 0.5; cursor: default; }
+
+.pieces-total { text-align: center; margin-top: 24px; font-size: 14px; letter-spacing: 1px; color: #888; }
