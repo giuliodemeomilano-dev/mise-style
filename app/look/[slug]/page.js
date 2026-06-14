@@ -72,7 +72,7 @@ export default async function LookPage({ params }) {
       <div className="look-hero">
         <img src={look.hero_image_url} alt={look.title} />
         <div className="look-hero-overlay">
-          <Link href="/" className="back-link">← All looks</Link>
+          <Link href="/" className="back-link">← All outfits</Link>
           <div className="look-hero-inner">
           <h1>{look.title}</h1>
           <p className="look-meta">
@@ -100,7 +100,7 @@ export default async function LookPage({ params }) {
       <section className="look-total">
         <div className="total-inner">
           <div>
-            <div className="total-label">Total Look</div>
+            <div className="total-label">Total Outfit</div>
             <div className="total-detail">{look.pieces.length} pieces · {storeCount} stores</div>
           </div>
           <div className="total-price">€{total}</div>

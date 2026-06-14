@@ -73,7 +73,7 @@ export default function PiecesGrid({ pieces: initialPieces, outfitId }) {
           </div>
         ))}
       </div>
-      <div className="pieces-total">Look total · €{total.toFixed(2)}</div>
+      <div className="pieces-total">Outfit total · €{total.toFixed(2)}</div>
     </section>
   )
 }

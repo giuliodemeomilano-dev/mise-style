@@ -102,7 +102,7 @@ export default function HomeContent({ looks }) {
         <div className="looks-grid">
           {filtered.length === 0 && (
             <p style={{ color: 'var(--text-muted)', padding: 40 }}>
-              No looks match this filter yet. Try another category.
+              No outfits match this filter yet. Try another category.
             </p>
           )}
           {filtered.map((look) => {
