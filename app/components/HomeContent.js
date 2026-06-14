@@ -9,6 +9,7 @@ const BRANDS = ['SÃ©zane', 'COS', 'Jacquemus', 'Zara', 'The Frankie Shop', 'PolÃ
 export default function HomeContent({ looks }) {
   const { t } = useLang()
   const [filter, setFilter] = useState('all')
+  const [gender, setGender] = useState('women')
   const [budget, setBudget] = useState(800)
   const [modalLook, setModalLook] = useState(null)
   const [liked, setLiked] = useState({})
@@ -25,7 +26,8 @@ export default function HomeContent({ looks }) {
 
   const cats = ['all', 'casual', 'office', 'evening', 'street', 'brunch', 'date']
 
-  const byCat = filter === 'all' ? looks : looks.filter((l) => l.cat === filter)
+  const byGender = looks.filter((l) => l.gender === gender)
+  const byCat = filter === 'all' ? byGender : byGender.filter((l) => l.cat === filter)
   const filtered = byCat.filter((l) => (Number(l.total) || l.pieces.reduce((s, p) => s + (p.price || 0), 0)) <= budget)
 
   const openModal = (look) => {
@@ -65,7 +67,11 @@ export default function HomeContent({ looks }) {
       </div>
 
       <section className="filter-section" id="looks">
-        <div className="filter-inner">
+        <div className="gender-toggle">
+        <button className={`gender-pill${gender === 'women' ? ' active' : ''}`} onClick={() => setGender('women')}>WOMEN</button>
+        <button className={`gender-pill${gender === 'men' ? ' active' : ''}`} onClick={() => setGender('men')}>MEN</button>
+      </div>
+      <div className="filter-inner">
           <div className="filter-scroll">
             {cats.map((c) => (
               <button
