@@ -76,7 +76,7 @@ export default async function LookPage({ params }) {
           <div className="look-hero-inner">
           <h1>{look.title}</h1>
           <p className="look-meta">
-            {look.pieces.length} pieces · {storeCount} stores · €{total}
+            {look.pieces.length} pieces · {storeCount} stores
           </p>
           {look.tags && look.tags.length > 0 && (
             <div className="look-tags">
@@ -97,15 +97,6 @@ export default async function LookPage({ params }) {
 
       <PiecesGrid pieces={look.pieces} outfitId={look.id} />
 
-      <section className="look-total">
-        <div className="total-inner">
-          <div>
-            <div className="total-label">Total Outfit</div>
-            <div className="total-detail">{look.pieces.length} pieces · {storeCount} stores</div>
-          </div>
-          <div className="total-price">€{total}</div>
-        </div>
-      </section>
 
       <div className="bottom-spacer"></div>
     </main>
