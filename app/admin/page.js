@@ -10,6 +10,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [drafts, setDrafts] = useState([]);
+  const [published, setPublished] = useState([]);
   const [busy, setBusy] = useState(null);
 
   const loadDrafts = useCallback(async () => {
@@ -20,12 +21,18 @@ export default function AdminPage() {
     } catch (e) {}
   }, [pw]);
 
-  useEffect(() => {
-    if (authed) loadDrafts();
-  }, [authed, loadDrafts]);
+  const loadPublished = useCallback(async () => {
+    const res = await fetch("/api/drafts?status=active", { headers: { "x-admin-pw": pw } });
+    const data = await res.json();
+    if (data.ok) setPublished(data.drafts || []);
+  }, [pw]);
 
   function checkPw() {
-    if (pw && pw.length > 0) setAuthed(true);
+    if (pw.length > 0) {
+      setAuthed(true);
+      loadDrafts();
+      loadPublished();
+    }
   }
 
   async function generate() {
@@ -88,6 +95,21 @@ export default function AdminPage() {
       });
       await loadDrafts();
     } catch (e) {} finally {
+      setBusy(null);
+    }
+  }
+
+  async function deletePublished(id) {
+    if (!window.confirm("Cancellare definitivamente questo outfit pubblicato? L'azione non si può annullare.")) return;
+    setBusy(id);
+    try {
+      await fetch("/api/drafts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-pw": pw },
+        body: JSON.stringify({ id, action: "delete" }),
+      });
+      await loadPublished();
+    } finally {
       setBusy(null);
     }
   }
@@ -157,6 +179,41 @@ export default function AdminPage() {
               </div>
             </div>
           );
+        })}
+      </div>
+      <h2 style={{ fontSize: 18, fontWeight: 500, margin: "40px 0 4px" }}>Outfit pubblicati</h2>
+      <p style={{ fontSize: 12, color: "#999", margin: "0 0 16px" }}>{published.length} outfit live sul sito</p>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 18 }}>
+        {published.map((d) => {
+          const pieces = (d.items || []).filter((it) => it.products)
+          const n = pieces.length
+          return (
+            <div key={d.id} style={{ border: "1px solid #e5e5e5", borderRadius: 10, overflow: "hidden", background: "#fff", display: "flex", flexDirection: "column" }}>
+              <div style={{ background: "#f3f1ea", padding: 6 }}>
+                <div style={{ display: "flex", gap: 6, height: 200 }}>
+                  {pieces.map((it, idx) => {
+                    const img = piecePhoto(it)
+                    const p = it.products || {}
+                    return (
+                      <div key={idx} style={{ flex: 1, background: "#fff", borderRadius: 4, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        {img && <img src={img} alt={p.name || ""} style={{ width: "100%", height: "100%", objectFit: "contain", padding: 8, boxSizing: "border-box" }} />}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+              <div style={{ padding: 14, display: "flex", flexDirection: "column", flex: 1 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                  <strong style={{ fontSize: 15, fontWeight: 500 }}>{d.title}</strong>
+                  <span style={{ fontSize: 14 }}>€{Number(d.total_price).toFixed(2)}</span>
+                </div>
+                <p style={{ fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1, margin: "4px 0 12px" }}>{d.mood} · {d.occasion} · {n} pezzi</p>
+                <div style={{ display: "flex", gap: 8, marginTop: "auto" }}>
+                  <button onClick={() => deletePublished(d.id)} disabled={busy === d.id} style={{ flex: 1, padding: "8px", border: "1px solid #ccc", borderRadius: 6, background: "#fff", color: "#9a2a2a", cursor: "pointer", fontSize: 13 }}>🗑 Cancella</button>
+                </div>
+              </div>
+            </div>
+          )
         })}
       </div>
     </div>

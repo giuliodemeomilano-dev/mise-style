@@ -16,12 +16,14 @@ export async function GET(request) {
   if (!checkAuth(request)) {
     return Response.json({ ok: false, error: "Non autorizzato" }, { status: 401 });
   }
+  const { searchParams } = new URL(request.url);
+  const statusFilter = searchParams.get("status") || "draft";
   try {
     const supabase = admin();
     const { data: drafts, error } = await supabase
       .from("outfits")
       .select("id, slug, title, description, mood, occasion, total_price, hero_image_url, generated_at")
-      .eq("status", "draft")
+      .eq("status", statusFilter)
       .order("generated_at", { ascending: false });
     if (error) throw new Error(error.message);
     const withItems = [];
@@ -62,6 +64,11 @@ export async function POST(request) {
       const { error } = await supabase.from("outfits").delete().eq("id", id);
       if (error) throw new Error(error.message);
       return Response.json({ ok: true, action: "discard", id });
+    }
+    if (action === "delete") {
+      await supabase.from("outfit_items").delete().eq("outfit_id", id);
+      await supabase.from("outfits").delete().eq("id", id);
+      return Response.json({ ok: true, action: "delete", id });
     }
     return Response.json({ ok: false, error: "action non valida" }, { status: 400 });
   } catch (err) {
