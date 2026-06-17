@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Link from 'next/link'
 import { useLang } from './LangProvider'
 
@@ -14,6 +14,7 @@ export default function HomeContent({ looks }) {
   const [modalLook, setModalLook] = useState(null)
   const [liked, setLiked] = useState({})
   const [carIdx, setCarIdx] = useState({})
+  const touchStartX = useRef(null)
   const moveCar = (e, lookId, len, dir) => {
     e.preventDefault()
     e.stopPropagation()
@@ -22,6 +23,14 @@ export default function HomeContent({ looks }) {
       const next = (cur + dir + len) % len
       return { ...prev, [lookId]: next }
     })
+  }
+
+  const onSwipeEnd = (e, lookId, len) => {
+    if (touchStartX.current === null) return
+    const dx = e.changedTouches[0].clientX - touchStartX.current
+    touchStartX.current = null
+    if (Math.abs(dx) < 40) return
+    moveCar(e, lookId, len, dx < 0 ? 1 : -1)
   }
 
   const cats = ['all', 'casual', 'office', 'evening', 'street', 'brunch', 'date']
@@ -118,7 +127,7 @@ export default function HomeContent({ looks }) {
                   >
                     <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                   </button>
-              <div className="model-hero model-hero-clean car-wrap">
+              <div className="model-hero model-hero-clean car-wrap" onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX }} onTouchEnd={(e) => onSwipeEnd(e, look.id, look.pieces.length)}>
                 <img src={look.pieces[(carIdx[look.id] || 0)]?.packshot || look.hero} alt={look.title} loading="lazy" />
                 {look.pieces.length > 1 && (
                   <>
