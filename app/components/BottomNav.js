@@ -7,7 +7,7 @@ export default function BottomNav() {
 
   return (
     <nav className="bottom-nav">
-      <a className="bnav-item active">
+      <a className="bnav-item active" href="#looks" onClick={() => window.dispatchEvent(new CustomEvent('mise-view', { detail: 'discover' }))}>
         <span className="bnav-icon">◆</span>
         <span className="bnav-label">{t.nav_discover}</span>
       </a>
@@ -15,7 +15,7 @@ export default function BottomNav() {
         <span className="bnav-icon">♡</span>
         <span className="bnav-label">{t.bnav_saved}</span>
       </a>
-      <a className="bnav-item">
+      <a className="bnav-item" href="#looks" onClick={() => window.dispatchEvent(new CustomEvent('mise-view', { detail: 'new' }))}>
         <span className="bnav-icon">✦</span>
         <span className="bnav-label">{t.nav_foryou}</span>
       </a>

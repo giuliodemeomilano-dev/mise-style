@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useLang } from './LangProvider'
 
@@ -10,9 +10,16 @@ export default function HomeContent({ looks }) {
   const { t } = useLang()
   const [filter, setFilter] = useState('all')
   const [gender, setGender] = useState('women')
+  const [view, setView] = useState('discover')
   const [budget, setBudget] = useState(800)
   const [modalLook, setModalLook] = useState(null)
   const [liked, setLiked] = useState({})
+
+  useEffect(() => {
+    const onView = (e) => setView(e.detail)
+    window.addEventListener('mise-view', onView)
+    return () => window.removeEventListener('mise-view', onView)
+  }, [])
   const [carIdx, setCarIdx] = useState({})
   const touchStartX = useRef(null)
   const moveCar = (e, lookId, len, dir) => {
@@ -38,6 +45,13 @@ export default function HomeContent({ looks }) {
   const byGender = looks.filter((l) => l.gender === gender)
   const byCat = filter === 'all' ? byGender : byGender.filter((l) => l.cat === filter)
   const filtered = byCat.filter((l) => (Number(l.total) || l.pieces.reduce((s, p) => s + (p.price || 0), 0)) <= budget)
+
+  let displayed = filtered
+  if (view === 'trending') {
+    displayed = [...filtered].sort((a, b) => (b.featured || 0) - (a.featured || 0)).slice(0, 12)
+  } else if (view === 'new') {
+    displayed = [...filtered].sort((a, b) => new Date(b.created || 0) - new Date(a.created || 0))
+  }
 
   const openModal = (look) => {
     setModalLook(look)
@@ -114,7 +128,7 @@ export default function HomeContent({ looks }) {
               No outfits match this filter yet. Try another category.
             </p>
           )}
-          {filtered.map((look) => {
+          {displayed.map((look) => {
             const total = Number(look.total) || look.pieces.reduce((s, p) => s + (p.price || 0), 0)
             const storeCount = new Set(look.pieces.map((p) => p.store)).size
             return (
