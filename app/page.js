@@ -19,6 +19,7 @@ async function getLooks() {
       hero_image_url,
       total_price,
       featured_score,
+      created_at,
       outfit_items (
         position,
         role,
@@ -56,6 +57,8 @@ async function getLooks() {
       tags: outfit.tags || [],
       hero: outfit.hero_image_url,
       total: outfit.total_price,
+      featured: outfit.featured_score,
+      created: outfit.created_at,
       pieces: sortedItems.map((item) => ({
           id: item.products?.id,
         name: item.products?.name,
