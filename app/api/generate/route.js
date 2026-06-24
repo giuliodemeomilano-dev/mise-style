@@ -1,18 +1,38 @@
 import { createClient } from "@supabase/supabase-js";
 
-const STYLE_RULES = `Sei lo stylist di MISE, piattaforma europea di curatela moda premium-mix (unisex). Crei look combinando prodotti reali da un catalogo. Regole di stile MISE, NON negoziabili:
-1. COERENZA: un look = un'idea sola. Stessa stagione, stesso registro (o tutto elegante o tutto casual, mai mescolati).
-2. PALETTE: massimo 3 colori per look, ancorati sui neutri MISE (bianco, ecru, beige, navy, grigio, cuoio). Un solo colore accento. Mai due colori forti in conflitto.
-3. STRUTTURA: ogni look deve avere capo-sotto (trousers/jeans) + capo-sopra (shirt/knitwear) + scarpe (shoes), stesso gender. Un dress sostituisce sopra+sotto. Capospalla (outerwear/jacket/coat) e bag opzionali ma graditi. MAI due capi della stessa categoria.
-4. UN SOLO STATEMENT: se un pezzo è forte (prezzo alto o colore acceso), gli altri sono quieti. Mai due protagonisti.
-5. PREZZO COERENTE: pezzi nella stessa fascia. Evita di abbinare un pezzo da 400+ con pezzi sotto i 100.
-6. MULTI-BRAND incoraggiato: mischia COS, ARKET, Massimo Dutti. Usa solo external_id dalla lista fornita.
+const STYLE_RULES = `Sei il direttore stilistico di MISE, piattaforma europea di moda premium-mix (quiet luxury, unisex). Componi look come un vero stylist editoriale, non accostando capi a caso. Ogni look deve sembrare scelto da un esperto con occhio e gusto.
+
+REGOLE NON NEGOZIABILI:
+
+1. PROPORZIONE E VOLUMI: bilancia le silhouette. Se il capo sopra è oversize/ampio, il sotto è più affusolato (e viceversa). Mai tutto largo o tutto stretto.
+
+2. PALETTE STUDIATA: massimo 3 colori, ancorati ai neutri MISE (bianco, ecru, beige, cammello, navy, grigio, cuoio, oliva). O tono-su-tono, o un solo accento studiato. Mai due colori forti che litigano.
+
+3. STRUTTURA COMPLETA: ogni look ha sopra (shirt/knitwear/top) + sotto (trousers) + scarpe (shoes), stesso gender. Un dress sostituisce sopra+sotto. Capospalla (outerwear/jacket/coat) e bag opzionali ma graditi. Mai due capi della stessa categoria.
+
+4. COERENZA DI OCCASIONE (stretta): office = elegante e strutturato (blazer, camicia, scarpe rifinite), mai sneakers o capi casual. weekend/brunch = rilassato ma curato. evening/date = il più ricercato, un tocco di carattere. travel = comodo ma elegante. Le scarpe devono essere coerenti con l'occasione.
+
+5. TESSUTI E STAGIONE: abbina materiali coerenti. Lino con lino/cotone (estate), lana/cashmere (mezza stagione). Non mischiare capi pesanti con capi estivi.
+
+6. FIRMA MISE — UN SOLO STATEMENT: la maggior parte dei look è sobria ed elegante (quiet luxury). In circa 1 su 4, inserisci UN pezzo che fa la differenza (un colore, una texture, un capo particolare), ma uno solo, il resto quieto attorno. Mai due protagonisti, mai pacchiano.
+
+7. PREZZO COERENTE: pezzi della stessa fascia. Non abbinare un capo da 400+ con pezzi sotto i 100.
+
+8. VARIETÀ OBBLIGATORIA: ti viene fornita la lista degli OUTFIT GIÀ ESISTENTI. I tuoi nuovi look devono essere CHIARAMENTE DIVERSI: non ripetere la stessa combinazione di pezzi, non fare varianti minime (stessi capi, ordine diverso). Cambia capo-protagonista, palette o occasione. Se un'idea somiglia troppo a un look esistente, scartala e creane un'altra.
+
+9. MULTI-BRAND incoraggiato: mischia COS, ARKET, Massimo Dutti. Usa solo external_id dalla lista fornita.
+
 VALORI AMMESSI (usa ESATTAMENTE questi, minuscolo):
+
 - mood: classic, edgy, minimal, romantic, statement
+
 - occasion: brunch, date, evening, office, travel, weekend
+
 - budget_tier: mid (totale sotto ~350), premium (sopra ~350)
+
 - season: all-season, spring, summer
-- role per ogni pezzo: hero (capo principale), top, bottom, shoes, support (capospalla), bag, accessory`;
+
+- role per ogni pezzo: hero, top, bottom, shoes, support, bag, accessory`;
 
 export async function POST(request) {
   try {
@@ -38,10 +58,28 @@ export async function POST(request) {
     const catalog = products
       .map((p) => `${p.external_id} | ${p.brand} | ${p.category} | ${p.name}${p.color ? " | " + p.color : ""} | €${p.price}`)
       .join("\n");
+    // Outfit gia esistenti dello stesso gender (anti-doppione, regola 8)
+    const { data: existing } = await supabase
+      .from("outfits")
+      .select("title, outfit_items ( products ( brand, name ) )")
+      .eq("status", "active")
+      .eq("gender", gender);
+    const existingList = (existing || [])
+      .map((o) => {
+        const pezzi = (o.outfit_items || [])
+          .map((oi) => (oi.products ? `${oi.products.brand} ${oi.products.name}` : null))
+          .filter(Boolean)
+          .join(", ");
+        return `- ${o.title}: ${pezzi}`;
+      })
+      .join("\n");
+    const existingBlock = existingList
+      ? `OUTFIT GIA ESISTENTI (NON ripetere queste combinazioni, crea look diversi):\n${existingList}\n`
+      : "";
     const prompt = `${STYLE_RULES}
 CATALOGO DISPONIBILE (gender: ${gender}):
 ${catalog}
-Genera ${count} look completi e distinti tra loro. Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown. Formato:
+${existingBlock}Genera ${count} look completi e distinti tra loro. Rispondi SOLO con JSON valido, nessun testo prima o dopo, nessun markdown. Formato:
 {"looks":[{"title":"nome breve e distintivo (varia con colore+mood+occasione)","slug":"slug-url-lowercase-con-trattini","mood":"<mood ammesso>","occasion":"<occasion ammessa>","budget_tier":"<mid o premium>","season":"<season ammessa>","description":"1 frase","rationale":"1-2 frasi: perché questi pezzi insieme","items":[{"external_id":"...","role":"<hero|top|bottom|shoes|support|bag|accessory>"}]}]}
 Ogni external_id deve essere presente nel catalogo sopra.`;
     const aiRes = await fetch("https://api.anthropic.com/v1/messages", {
@@ -53,7 +91,7 @@ Ogni external_id deve essere presente nel catalogo sopra.`;
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-5",
-        max_tokens: 2000,
+        max_tokens: 4000,
         messages: [{ role: "user", content: prompt }],
       }),
     });
@@ -87,6 +125,7 @@ Ogni external_id deve essere presente nel catalogo sopra.`;
           season: look.season,
           total_price: total,
           status: "draft",
+          gender: gender,
           hero_image_url: hero.image_url || null,
           featured_score: 100,
         })
