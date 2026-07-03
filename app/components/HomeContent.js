@@ -40,7 +40,7 @@ export default function HomeContent({ looks }) {
     moveCar(e, lookId, len, dx < 0 ? 1 : -1)
   }
 
-  const cats = ['all', 'casual', 'office', 'evening', 'street', 'brunch', 'date']
+  const cats = ['all', 'weekend', 'travel', 'brunch', 'office', 'evening', 'date', 'casual']
 
   const byGender = looks.filter((l) => l.gender === gender)
   const byCat = filter === 'all' ? byGender : byGender.filter((l) => l.cat === filter)
