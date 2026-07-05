@@ -3,6 +3,24 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 
 export const dynamic = 'force-dynamic'
 
+// Avvolge una URL di destinazione nel deep-link di Skimlinks, così il click
+// viene monetizzato. Si attiva SOLO se la env var SKIMLINKS_ID è impostata
+// (es. "303796X1791855"): finché Skimlinks non è approvato, lascia la var vuota
+// e i link puntano direttamente al negozio, senza rompere nulla.
+function wrapAffiliate(destUrl, subId) {
+  if (!destUrl) return destUrl
+  const id = process.env.SKIMLINKS_ID
+  // Se non c'è ID o la destinazione non è http(s), redirect diretto.
+  if (!id || !/^https?:\/\//i.test(destUrl)) return destUrl
+  const parts = [
+    `id=${encodeURIComponent(id)}`,
+    'xs=1',
+    `url=${encodeURIComponent(destUrl)}`,
+  ]
+  if (subId) parts.push(`xcust=${encodeURIComponent(String(subId).slice(0, 50))}`)
+  return `https://go.skimresources.com/?${parts.join('&')}`
+}
+
 export async function GET(request, { params }) {
   const { id } = await params
   const url = new URL(request.url)
@@ -15,7 +33,7 @@ export async function GET(request, { params }) {
     .eq('id', id)
     .single()
 
-  if (error || !product) {
+  if (error || !product || !product.affiliate_url) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
@@ -43,8 +61,12 @@ export async function GET(request, { params }) {
       if (error) console.error('[click-tracking] DB insert failed:', error.message)
     })
 
-  // Redirect al link affiliato del prodotto
-  return NextResponse.redirect(product.affiliate_url, { status: 302 })
+  // Redirect al link affiliato: avvolto in Skimlinks se SKIMLINKS_ID è attivo,
+  // altrimenti diretto al negozio. xcust = outfit+prodotto per attribuzione.
+  const subId = `${outfitId ? outfitId.slice(0, 8) + '_' : ''}${product.id}`
+  const target = wrapAffiliate(product.affiliate_url, subId)
+
+  return NextResponse.redirect(target, { status: 302 })
 }
 
 async function hashString(str) {
