@@ -36,7 +36,7 @@ async function getLooks() {
       )
     `)
     .eq('status', 'active')
-    .order('featured_score', { ascending: false })
+    .order('created_at', { ascending: false })
 
   if (error) {
     console.error('Error fetching outfits:', error)
