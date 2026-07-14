@@ -9,16 +9,35 @@ export const dynamic = 'force-dynamic'
 // e i link puntano direttamente al negozio, senza rompere nulla.
 function wrapAffiliate(destUrl, subId) {
   if (!destUrl) return destUrl
-  const id = process.env.SKIMLINKS_ID
-  // Se non c'è ID o la destinazione non è http(s), redirect diretto.
-  if (!id || !/^https?:\/\//i.test(destUrl)) return destUrl
-  const parts = [
-    `id=${encodeURIComponent(id)}`,
-    'xs=1',
-    `url=${encodeURIComponent(destUrl)}`,
-  ]
-  if (subId) parts.push(`xcust=${encodeURIComponent(String(subId).slice(0, 50))}`)
-  return `https://go.skimresources.com/?${parts.join('&')}`
+  // Non ri-avvolgere link gia affiliati Awin/Hugo Boss o gia wrappati
+  if (/awin1\.com|sovrn\.co|skimresources\.com|redirect\.viglink/i.test(destUrl)) return destUrl
+  if (!/^https?:\/\//i.test(destUrl)) return destUrl
+
+  // Skimlinks se attivo
+  const skim = process.env.SKIMLINKS_ID
+  if (skim) {
+    const parts = [
+      `id=${encodeURIComponent(skim)}`,
+      'xs=1',
+      `url=${encodeURIComponent(destUrl)}`,
+    ]
+    if (subId) parts.push(`xcust=${encodeURIComponent(String(subId).slice(0, 50))}`)
+    return `https://go.skimresources.com/?${parts.join('&')}`
+  }
+
+  // Sovrn Commerce se attivo, env SOVRN_COMMERCE_KEY
+  const sovrn = process.env.SOVRN_COMMERCE_KEY
+  if (sovrn) {
+    const parts = [
+      `key=${encodeURIComponent(sovrn)}`,
+      `u=${encodeURIComponent(destUrl)}`,
+    ]
+    if (subId) parts.push(`cuid=${encodeURIComponent(String(subId).slice(0, 100))}`)
+    return `https://sovrn.co/?${parts.join('&')}`
+  }
+
+  // Nessun network attivo: redirect diretto al negozio
+  return destUrl
 }
 
 export async function GET(request, { params }) {
