@@ -26,6 +26,7 @@ export const metadata = {
   description: 'AI-curated complete outfits from multiple stores. Shop the entire outfit in one click.',
   other: {
     'fo-verify': 'e71bd8c7-b2ff-4bd4-a707-e236f359155f',
+    'google-site-verification': 'ZkrMi18AXkoaB4-6s-590s7wpD9HoyrcLgu9q-3nd4Y',
   },
 }
 
