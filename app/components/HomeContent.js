@@ -11,7 +11,7 @@ export default function HomeContent({ looks }) {
   const [filter, setFilter] = useState('all')
   const [gender, setGender] = useState('women')
   const [view, setView] = useState('discover')
-  const [budget, setBudget] = useState(800)
+  const [budget, setBudget] = useState(null)
   const [modalLook, setModalLook] = useState(null)
   const [liked, setLiked] = useState({})
 
@@ -44,7 +44,7 @@ export default function HomeContent({ looks }) {
 
   const byGender = looks.filter((l) => l.gender === gender)
   const byCat = filter === 'all' ? byGender : byGender.filter((l) => l.cat === filter)
-  const filtered = byCat.filter((l) => (Number(l.total) || l.pieces.reduce((s, p) => s + (p.price || 0), 0)) <= budget)
+  const filtered = budget == null ? byCat : byCat.filter((l) => (Number(l.total) || l.pieces.reduce((s, p) => s + (p.price || 0), 0)) <= budget)
 
   let displayed = filtered
   if (view === 'trending') {
@@ -113,10 +113,10 @@ export default function HomeContent({ looks }) {
               className="budget-slider"
               min="100"
               max="1500"
-              value={budget}
+              value={budget ?? 1500}
               onChange={(e) => setBudget(Number(e.target.value))}
             />
-            <span className="budget-value">€<input type="text" inputMode="numeric" className="budget-input" title="Click to type your max budget" value={budget} onChange={(e) => { const raw = e.target.value.replace(/[^0-9]/g, ''); setBudget(raw === '' ? 0 : Number(raw)); }} onBlur={(e) => { const v = Number(e.target.value) || 100; setBudget(Math.min(1500, Math.max(100, v))); }} /></span>
+            <span className="budget-value">€<input type="text" inputMode="numeric" className="budget-input" title="Click to type your max budget" placeholder="–" value={budget ?? ''} onChange={(e) => { const raw = e.target.value.replace(/[^0-9]/g, ''); setBudget(raw === '' ? null : Number(raw)); }} onBlur={(e) => { const s = e.target.value.trim(); if (s === '') { setBudget(null); return; } const v = Number(s) || 100; setBudget(Math.min(1500, Math.max(100, v))); }} /></span>
           </div>
         </div>
       </section>
