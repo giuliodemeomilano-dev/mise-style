@@ -27,6 +27,7 @@ export const metadata = {
   other: {
     'fo-verify': 'e71bd8c7-b2ff-4bd4-a707-e236f359155f',
     'google-site-verification': 'ZkrMi18AXkoaB4-6s-590s7wpD9HoyrcLgu9q-3nd4Y',
+    'p:domain_verify': '72c07dc3afe4160b9571f81921bccf99',
   },
 }
 
