@@ -6,7 +6,7 @@ const BASE = 'https://www.mise.style'
 
 export default async function sitemap() {
   const now = new Date()
-  const staticPaths = ['', '/about', '/how-it-works', '/contact', '/disclosure', '/privacy']
+  const staticPaths = ['', '/journal', '/about', '/how-it-works', '/contact', '/disclosure', '/privacy']
   const staticPages = staticPaths.map((p) => ({
     url: `${BASE}${p}`,
     lastModified: now,
@@ -32,5 +32,23 @@ export default async function sitemap() {
     // fallback: solo pagine statiche
   }
 
-  return [...staticPages, ...looks]
+  let guides = []
+  try {
+    const { data } = await supabaseAdmin
+      .from('guides')
+      .select('slug, published_at')
+      .eq('status', 'active')
+    guides = (data || [])
+      .filter((g) => g.slug)
+      .map((g) => ({
+        url: `${BASE}/journal/${g.slug}`,
+        lastModified: g.published_at ? new Date(g.published_at) : now,
+        changeFrequency: 'monthly',
+        priority: 0.7,
+      }))
+  } catch (e) {
+    // fallback: nessuna guida
+  }
+
+  return [...staticPages, ...looks, ...guides]
 }
