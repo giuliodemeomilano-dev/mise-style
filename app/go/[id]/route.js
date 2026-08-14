@@ -61,6 +61,22 @@ export async function GET(request, { params }) {
   const userAgent = request.headers.get('user-agent') || null
   const referer = request.headers.get('referer') || null
 
+  // First-touch attribution written by <Attribution /> into the mise_attr cookie
+  let attr = {}
+  try {
+    const cookieHeader = request.headers.get('cookie') || ''
+    const m = cookieHeader.match(/(?:^|;\s*)mise_attr=([^;]+)/)
+    if (m) attr = JSON.parse(decodeURIComponent(m[1])) || {}
+  } catch (e) {
+    attr = {}
+  }
+
+  // Tag obvious bots at write time so the clicks table stays honest
+  const isBot = userAgent
+    ? /(bot|crawler|spider|slurp|scrapy|headless|phantom|selenium|puppeteer|playwright|python|curl|wget|axios|okhttp|go-http|java\/|libwww|httpclient|meta-externalagent|facebookexternalhit|pinterest|semrush|ahrefs|mj12|dotbot|petal|yandex|dataprovider|bingpreview|applebot|amazonbot|bytespider|gptbot|ccbot|claude|anthropic|perplexity)/i.test(userAgent) ||
+      /(iPhone OS (9|10|11|12|13)_|Nexus 5X Build\/MMB29P|Android [4-6]\.)/i.test(userAgent)
+    : true
+
   // Genera un session ID lato server (semplice, basato su IP+UA hash)
   const sessionRaw = (request.headers.get('x-forwarded-for') || 'anon') + (userAgent || '')
   const sessionHash = await hashString(sessionRaw)
@@ -75,6 +91,12 @@ export async function GET(request, { params }) {
       country: country,
       referrer: referer,
       user_agent: userAgent ? userAgent.substring(0, 500) : null,
+      utm_source: attr.s || null,
+      utm_medium: attr.m || null,
+      utm_campaign: attr.c || null,
+      landing_ref: attr.r || null,
+      is_bot: isBot,
+      bot_reason: isBot ? 'ua_token' : null,
     })
     .then(({ error }) => {
       if (error) console.error('[click-tracking] DB insert failed:', error.message)
