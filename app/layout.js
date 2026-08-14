@@ -5,6 +5,7 @@ import Nav from './components/Nav'
 import Footer from './components/Footer'
 import BottomNav from './components/BottomNav'
 import { LangProvider } from './components/LangProvider'
+import Attribution from './components/Attribution'
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -39,6 +40,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${playfair.variable} ${outfit.variable}`}>
       <body>
+        <Attribution />
         <LangProvider>
           <Nav />
           {children}
