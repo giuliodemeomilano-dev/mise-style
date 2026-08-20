@@ -4,10 +4,16 @@ import { supabase } from '@/lib/supabase'
 export const runtime = 'nodejs'
 export const revalidate = 86400
 
-const W = 1000
-const H = 1500
+// Base design is authored for a 1000x1500 Pinterest pin.
+// ?format=ig renders the same design at 1080x1350 (Instagram 4:5).
+const BASE_ZONE_W = 888
+const BASE_ZONE_H = 860
 
-// Flat-lay style placements: pieces scattered and overlapping like laid on a table.
+const FORMATS = {
+  pin: { W: 1000, H: 1500, pad: 56, padY: 62, zoneH: 860, title: 76, brand: 27, occ: 25, foot: 25, site: 34, price: 66 },
+  ig: { W: 1080, H: 1350, pad: 64, padY: 56, zoneH: 700, title: 66, brand: 25, occ: 23, foot: 23, site: 30, price: 58 },
+}
+
 const LAYOUTS = {
   1: [{ l: 190, t: 90, w: 520, h: 620, r: -2 }],
   2: [
@@ -44,6 +50,8 @@ async function toDataUrl(url) {
 
 export async function GET(request, { params }) {
   const { slug } = await params
+  const { searchParams } = new URL(request.url)
+  const fmt = FORMATS[searchParams.get('format') === 'ig' ? 'ig' : 'pin']
 
   const { data: outfit } = await supabase
     .from('outfits')
@@ -69,6 +77,10 @@ export async function GET(request, { params }) {
   const layout = LAYOUTS[Math.min(tiles.length, 4)] || LAYOUTS[4]
   const total = outfit.total_price ? Math.round(Number(outfit.total_price)) : null
 
+  const contentW = fmt.W - fmt.pad * 2
+  const scale = Math.min(contentW / BASE_ZONE_W, fmt.zoneH / BASE_ZONE_H)
+  const offsetX = (contentW - BASE_ZONE_W * scale) / 2
+
   return new ImageResponse(
     (
       <div
@@ -78,18 +90,18 @@ export async function GET(request, { params }) {
           display: 'flex',
           flexDirection: 'column',
           backgroundColor: '#EDE7DE',
-          padding: '62px 56px',
+          padding: fmt.padY + 'px ' + fmt.pad + 'px',
         }}
       >
-        <div style={{ display: 'flex', fontSize: 27, letterSpacing: 11, color: '#B4552F' }}>
+        <div style={{ display: 'flex', fontSize: fmt.brand, letterSpacing: 11, color: '#B4552F' }}>
           M I S E
         </div>
 
         <div
           style={{
             display: 'flex',
-            marginTop: 20,
-            fontSize: 76,
+            marginTop: 18,
+            fontSize: fmt.title,
             lineHeight: 1.05,
             color: '#1A1A1A',
             fontWeight: 700,
@@ -100,23 +112,25 @@ export async function GET(request, { params }) {
         </div>
 
         {outfit.occasion ? (
-          <div style={{ display: 'flex', marginTop: 14, fontSize: 25, letterSpacing: 5, color: '#94897B' }}>
+          <div style={{ display: 'flex', marginTop: 12, fontSize: fmt.occ, letterSpacing: 5, color: '#94897B' }}>
             {String(outfit.occasion).toUpperCase()}
           </div>
         ) : null}
 
-        <div style={{ display: 'flex', position: 'relative', width: 888, height: 860, marginTop: 34 }}>
+        <div style={{ display: 'flex', position: 'relative', width: contentW, height: fmt.zoneH, marginTop: 28 }}>
           {tiles.map((t, i) => {
             const p = layout[i] || layout[layout.length - 1]
+            const w = Math.round(p.w * scale)
+            const h = Math.round(p.h * scale)
             return (
               <div
                 key={i}
                 style={{
                   position: 'absolute',
-                  left: p.l,
-                  top: p.t,
-                  width: p.w,
-                  height: p.h,
+                  left: Math.round(offsetX + p.l * scale),
+                  top: Math.round(p.t * scale),
+                  width: w,
+                  height: h,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -126,7 +140,7 @@ export async function GET(request, { params }) {
                   boxShadow: '0 18px 40px rgba(60,45,30,0.16)',
                 }}
               >
-                <img src={t.src} width={p.w - 26} height={p.h - 26} style={{ objectFit: 'contain' }} />
+                <img src={t.src} width={w - 24} height={h - 24} style={{ objectFit: 'contain' }} />
               </div>
             )
           })}
@@ -134,23 +148,23 @@ export async function GET(request, { params }) {
 
         <div style={{ display: 'flex', flexGrow: 1 }} />
 
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', width: 888 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', width: contentW }}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', fontSize: 25, letterSpacing: 4, color: '#94897B' }}>
+            <div style={{ display: 'flex', fontSize: fmt.foot, letterSpacing: 4, color: '#94897B' }}>
               SHOP THE ENTIRE OUTFIT
             </div>
-            <div style={{ display: 'flex', fontSize: 34, color: '#1A1A1A', marginTop: 8, fontWeight: 700 }}>
+            <div style={{ display: 'flex', fontSize: fmt.site, color: '#1A1A1A', marginTop: 8, fontWeight: 700 }}>
               mise.style
             </div>
           </div>
           {total ? (
-            <div style={{ display: 'flex', fontSize: 66, color: '#1A1A1A', fontWeight: 700 }}>
+            <div style={{ display: 'flex', fontSize: fmt.price, color: '#1A1A1A', fontWeight: 700 }}>
               {'\u20AC' + total}
             </div>
           ) : null}
         </div>
       </div>
     ),
-    { width: W, height: H }
+    { width: fmt.W, height: fmt.H }
   )
 }
