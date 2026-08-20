@@ -11,7 +11,7 @@ const BASE_ZONE_H = 860
 
 const FORMATS = {
   pin: { W: 1000, H: 1500, pad: 56, padY: 62, zoneH: 860, title: 76, brand: 27, occ: 25, foot: 25, site: 34, price: 66 },
-  ig: { W: 1080, H: 1350, pad: 64, padY: 56, zoneH: 700, title: 66, brand: 25, occ: 23, foot: 23, site: 30, price: 58 },
+  ig: { W: 1080, H: 1350, pad: 64, padY: 56, zoneH: 900, title: 66, brand: 25, occ: 23, foot: 23, site: 30, price: 58 },
 }
 
 const LAYOUTS = {
