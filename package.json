@@ -10,8 +10,7 @@
     "import": "node scripts/import-products.js"
   },
   "dependencies": {
-    "@imgly/background-removal-node": "^1.4.5",
-    "@supabase/supabase-js": "^2.105.3",
+        "@supabase/supabase-js": "^2.105.3",
     "csv-parse": "^6.2.1",
     "dotenv": "^17.4.2",
     "next": "16.2.6",
