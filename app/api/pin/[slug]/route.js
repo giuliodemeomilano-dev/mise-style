@@ -55,6 +55,13 @@ async function toDataUrl(url) {
 export async function GET(request, { params }) {
   const { slug } = await params
   const { searchParams } = new URL(request.url)
+  // Optional photographic backdrop. Keeps the packshots real — only the
+  // scene behind them is generated.
+  const BACKGROUNDS = {
+    riviera:
+      'https://d8j0ntlcm91z4.cloudfront.net/user_38aJYuFTe3dVNnSIjvrFEDuhlJG/hf_20260821_104846_f1edfb28-ae73-4f8d-a9e9-d3c9980bd140.png',
+  }
+
   const fmtKey = searchParams.get('format')
   const fmt = FORMATS[fmtKey === 'ig' ? 'ig' : fmtKey === 'reel' ? 'reel' : 'pin']
 
@@ -86,6 +93,10 @@ export async function GET(request, { params }) {
   const scale = Math.min(contentW / BASE_ZONE_W, fmt.zoneH / BASE_ZONE_H)
   const offsetX = (contentW - BASE_ZONE_W * scale) / 2
 
+  const bgData = BACKGROUNDS[searchParams.get('bg')]
+    ? await toDataUrl(BACKGROUNDS[searchParams.get('bg')])
+    : null
+
   return new ImageResponse(
     (
       <div
@@ -98,6 +109,27 @@ export async function GET(request, { params }) {
           padding: fmt.padY + 'px ' + fmt.pad + 'px',
         }}
       >
+        {bgData ? (
+          <img
+            src={bgData}
+            width={fmt.W}
+            height={fmt.H}
+            style={{ position: 'absolute', top: 0, left: 0, width: fmt.W, height: fmt.H, objectFit: 'cover' }}
+          />
+        ) : null}
+        {bgData ? (
+          <div
+            style={{
+              display: 'flex',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: fmt.W,
+              height: fmt.H,
+              backgroundColor: 'rgba(237, 231, 222, 0.58)',
+            }}
+          />
+        ) : null}
         <div style={{ display: 'flex', fontSize: fmt.brand, letterSpacing: 11, color: '#B4552F' }}>
           M I S E
         </div>
