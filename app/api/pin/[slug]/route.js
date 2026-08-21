@@ -13,7 +13,9 @@ const FORMATS = {
   pin: { W: 1000, H: 1500, pad: 56, padY: 62, zoneH: 860, title: 76, brand: 27, occ: 25, foot: 25, site: 34, price: 66 },
   ig: { W: 1080, H: 1350, pad: 64, padY: 56, zoneH: 900, title: 66, brand: 25, occ: 23, foot: 23, site: 30, price: 58 },
   // 1080x1920 — source frame for Reels / Stories / TikTok.
-  reel: { W: 1080, H: 1920, pad: 64, padY: 96, zoneH: 1180, title: 78, brand: 28, occ: 26, foot: 26, site: 36, price: 70 },
+  // zoneH is width-limited here (contentW/BASE_ZONE_W * BASE_ZONE_H), so the
+  // flat-lay hugs its content instead of leaving a dead band under it.
+  reel: { W: 1080, H: 1920, pad: 56, padY: 150, zoneH: 936, title: 80, brand: 28, occ: 26, foot: 26, site: 36, price: 72 },
 }
 
 const LAYOUTS = {
