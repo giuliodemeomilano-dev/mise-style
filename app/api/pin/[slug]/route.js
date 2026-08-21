@@ -59,7 +59,7 @@ export async function GET(request, { params }) {
   // scene behind them is generated.
   const BACKGROUNDS = {
     riviera:
-      'https://d8j0ntlcm91z4.cloudfront.net/user_38aJYuFTe3dVNnSIjvrFEDuhlJG/hf_20260821_104846_f1edfb28-ae73-4f8d-a9e9-d3c9980bd140.png',
+      'https://d8j0ntlcm91z4.cloudfront.net/user_38aJYuFTe3dVNnSIjvrFEDuhlJG/hf_20260821_105854_7e4263de-ae28-4db6-8038-c37c852f07a1.png',
   }
 
   const fmtKey = searchParams.get('format')
@@ -114,7 +114,7 @@ export async function GET(request, { params }) {
             src={bgData}
             width={fmt.W}
             height={fmt.H}
-            style={{ position: 'absolute', top: 0, left: 0, width: fmt.W, height: fmt.H, objectFit: 'cover' }}
+            style={{ position: 'absolute', top: 0, left: 0, width: fmt.W, height: fmt.H }}
           />
         ) : null}
         {bgData ? (
