@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useLang } from './LangProvider'
 
-const BRANDS = ['Sézane', 'COS', 'Jacquemus', 'Zara', 'The Frankie Shop', 'Polène', 'Mango', 'Reformation', 'Arket', 'Sandro', 'Mejuri', 'Veja']
+const BRANDS = ['COS', 'ARKET', 'Sandro', 'Massimo Dutti', 'The Frankie Shop', 'BOSS', 'Polène', 'Jacquemus', 'Mejuri', 'Castañer', 'Veja', 'Ancient Greek Sandals']
 
 export default function HomeContent({ looks }) {
   const { t } = useLang()
@@ -91,8 +91,8 @@ export default function HomeContent({ looks }) {
 
       <section className="filter-section" id="looks">
         <div className="gender-toggle">
-        <button className={`gender-pill${gender === 'women' ? ' active' : ''}`} onClick={() => setGender('women')}>WOMEN</button>
-        <button className={`gender-pill${gender === 'men' ? ' active' : ''}`} onClick={() => setGender('men')}>MEN</button>
+        <button className={`gender-pill${gender === 'women' ? ' active' : ''}`} onClick={() => setGender('women')}>{t.women}</button>
+        <button className={`gender-pill${gender === 'men' ? ' active' : ''}`} onClick={() => setGender('men')}>{t.men}</button>
       </div>
       <div className="filter-inner">
           <div className="filter-scroll">
@@ -222,7 +222,7 @@ export default function HomeContent({ looks }) {
                 </a>
               ))}
               <div className="modal-footer">
-                <span className="modal-footer-label">Total</span>
+                <span className="modal-footer-label">{t.total}</span>
                 <span className="modal-footer-price">€{Number(modalLook.total) || modalLook.pieces.reduce((s, p) => s + (p.price || 0), 0)}</span>
               </div>
               <button
