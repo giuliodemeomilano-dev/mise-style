@@ -12,6 +12,10 @@ export function LangProvider({ children }) {
     const saved = localStorage.getItem('mise-lang')
     if (saved && ['en', 'fr', 'es'].includes(saved)) {
       setLang(saved)
+      // Keep <html lang> in sync on load too, not only when the user
+      // switches - otherwise the page renders in Spanish while telling
+      // Google and screen readers it is English.
+      document.documentElement.lang = saved
     }
   }, [])
 
