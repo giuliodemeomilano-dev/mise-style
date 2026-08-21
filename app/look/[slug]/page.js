@@ -5,11 +5,39 @@ import Link from 'next/link'
 
 export const revalidate = 3600
 
+const OCCASION_LABEL = {
+  office: 'Office',
+  casual: 'Casual',
+  weekend: 'Weekend',
+  evening: 'Evening',
+  brunch: 'Brunch',
+  date: 'Date Night',
+  travel: 'Travel',
+}
+
+const SEASON_LABEL = {
+  summer: 'Summer',
+  spring: 'Spring',
+  autumn: 'Autumn',
+  winter: 'Winter',
+}
+
+// Builds a search-friendly label like "Men's Summer Office Outfit".
+// The editorial title stays as the visible headline; this is what people
+// actually type into Google.
+function seoLabel(outfit) {
+  const who =
+    outfit.gender === 'men' ? "Men's" : outfit.gender === 'women' ? "Women's" : ''
+  const season = SEASON_LABEL[outfit.season] || ''
+  const occasion = OCCASION_LABEL[outfit.occasion] || ''
+  return [who, season, occasion, 'Outfit'].filter(Boolean).join(' ')
+}
+
 export async function generateMetadata({ params }) {
   const { slug } = await params
   const { data: outfit } = await supabase
     .from('outfits')
-    .select('title, description, hero_image_url, total_price')
+    .select('title, description, hero_image_url, total_price, occasion, season, gender')
     .eq('slug', slug)
     .eq('status', 'active')
     .single()
@@ -18,11 +46,14 @@ export async function generateMetadata({ params }) {
     return { title: 'Look not found — MISE' }
   }
 
+  const seo = seoLabel(outfit)
+
   return {
-    title: outfit.title + ' — MISE',
-    description: outfit.description || 'Shop the ' + outfit.title + ' look — €' + outfit.total_price + ' across multiple stores. Curated by MISE.',
+    title: seo + ': ' + outfit.title + ' | MISE',
+    description:
+      'Shop this ' + seo.toLowerCase() + ' — ' + outfit.title + '. €' + outfit.total_price + ' across multiple stores, every piece shoppable. Curated by MISE.',
     openGraph: {
-      title: outfit.title + ' — MISE',
+      title: seo + ': ' + outfit.title + ' | MISE',
       description: outfit.description,
       images: [outfit.hero_image_url],
     },
@@ -32,7 +63,7 @@ export async function generateMetadata({ params }) {
 async function getOutfit(slug) {
   const { data: outfit, error } = await supabase
     .from('outfits')
-    .select('id, slug, title, description, mood, occasion, budget_tier, tags, hero_image_url, total_price, outfit_items (position, role, products (id, external_id, category, name, brand, merchant, price, image_url, packshot_url, affiliate_url))')
+    .select('id, slug, title, description, mood, occasion, season, gender, budget_tier, tags, hero_image_url, total_price, outfit_items (position, role, products (id, external_id, category, name, brand, merchant, price, image_url, packshot_url, affiliate_url))')
     .eq('slug', slug)
     .eq('status', 'active')
     .single()
@@ -76,7 +107,7 @@ export default async function LookPage({ params }) {
           <div className="look-hero-inner">
           <h1>{look.title}</h1>
           <p className="look-meta">
-            {look.pieces.length} pieces · {storeCount} stores
+            {seoLabel(look)} · {look.pieces.length} pieces · {storeCount} stores
           </p>
           {look.tags && look.tags.length > 0 && (
             <div className="look-tags">
