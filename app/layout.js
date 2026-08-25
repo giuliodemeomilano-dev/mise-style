@@ -24,7 +24,7 @@ const outfit = Outfit({
 
 export const metadata = {
   title: 'MISE | Shop The Entire Outfit',
-  description: 'AI-curated complete outfits from multiple stores. Shop the entire outfit in one click.',
+  description: 'Complete outfit ideas for women and men. Every piece shoppable from the world\'s best stores, in one click.',
   other: {
     'fo-verify': 'e71bd8c7-b2ff-4bd4-a707-e236f359155f',
     'google-site-verification': 'ZkrMi18AXkoaB4-6s-590s7wpD9HoyrcLgu9q-3nd4Y',
