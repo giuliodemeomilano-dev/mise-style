@@ -134,7 +134,7 @@ export default function HomeContent({ looks }) {
             return (
               <div key={look.id} className="look-card visible">
                 <Link href={`/look/${look.slug}`} className="look-visual" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
-                  <span className="badge-ai">{t.badge}</span>
+                  <span className="badge-ai">{t.filters[look.cat] || t.badge}</span>
                   <button
                     className={`btn-save${liked[look.id] ? ' liked' : ''}`}
                     onClick={(e) => { e.preventDefault(); toggleLike(e, look.id) }}
