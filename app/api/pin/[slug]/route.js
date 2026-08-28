@@ -91,10 +91,13 @@ export async function GET(request, { params }) {
     const photoSrc = origin + '/_next/image?url=' + encodeURIComponent(safe) + '&w=1200&q=75'
     // w must be one of the project's allowed widths: 1080 is rejected, 1200 is not.
     // At 1200px the result is light enough to inline, which the raw 1536x2752 never was.
-    const opt = await fetch(photoSrc, { headers: { accept: 'image/jpeg' } })
+    const opt = await fetch(photoSrc)
     if (!opt.ok) return new Response('Could not optimize img: ' + opt.status, { status: 502 })
     const photoData =
-      'data:image/jpeg;base64,' + Buffer.from(await opt.arrayBuffer()).toString('base64')
+      'data:' +
+      (opt.headers.get('content-type') || 'image/png') +
+      ';base64,' +
+      Buffer.from(await opt.arrayBuffer()).toString('base64')
     const mTotal = outfit.total_price ? Math.round(Number(outfit.total_price)) : null
     return new ImageResponse(
       (
