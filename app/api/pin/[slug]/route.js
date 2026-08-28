@@ -74,6 +74,48 @@ export async function GET(request, { params }) {
 
   if (!outfit) return new Response('Not found', { status: 404 })
 
+  // format=model renders an aspirational 2:3 pin: a generated model frame full
+  // bleed, with a solid band so the type stays legible on any photograph. Only
+  // the scene and the figure are generated. This format deliberately shows no
+  // packshots, so it never misrepresents a real product.
+  if (fmtKey === 'model') {
+    let safe = null
+    try {
+      const u = new URL(searchParams.get('img'))
+      if (u.hostname === 'd8j0ntlcm91z4.cloudfront.net') safe = u.toString()
+    } catch (e) {}
+    if (!safe) return new Response('format=model needs a Higgsfield img URL', { status: 400 })
+    const photo = await toDataUrl(safe)
+    if (!photo) return new Response('Could not fetch img', { status: 502 })
+    const mTotal = outfit.total_price ? Math.round(Number(outfit.total_price)) : null
+    return new ImageResponse(
+      (
+        <div style={{ width: '100%', height: '100%', display: 'flex', position: 'relative', backgroundColor: '#1A1A1A' }}>
+          <img src={photo} width={1000} height={1500} style={{ position: 'absolute', top: 0, left: 0, width: 1000, height: 1500, objectFit: 'cover' }} />
+          <div style={{ position: 'absolute', top: 46, left: 50, display: 'flex', fontSize: 22, letterSpacing: 13, color: '#FFFFFF', fontWeight: 600 }}>
+            MISE
+          </div>
+          <div style={{ position: 'absolute', left: 0, bottom: 0, width: 1000, display: 'flex', flexDirection: 'column', paddingTop: 44, paddingBottom: 48, backgroundColor: 'rgba(26,26,26,0.82)' }}>
+            <div style={{ width: 900, marginLeft: 50, display: 'flex', fontSize: 56, lineHeight: 1.14, color: '#F6F1EA' }}>
+              {outfit.title}
+            </div>
+            <div style={{ width: 900, marginLeft: 50, marginTop: 28, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', fontSize: 23, letterSpacing: 8, color: '#A99C8E' }}>
+                MISE.STYLE
+              </div>
+              {mTotal ? (
+                <div style={{ display: 'flex', fontSize: 58, color: '#E8A87C' }}>
+                  {'\u20AC' + mTotal}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      ),
+      { width: 1000, height: 1500 }
+    )
+  }
+
   const raw = [...(outfit.outfit_items || [])]
     .sort((a, b) => (a.position || 0) - (b.position || 0))
     .map((i) => i.products)
