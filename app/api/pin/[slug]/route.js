@@ -85,13 +85,12 @@ export async function GET(request, { params }) {
       if (u.hostname === 'd8j0ntlcm91z4.cloudfront.net') safe = u.toString()
     } catch (e) {}
     if (!safe) return new Response('format=model needs a Higgsfield img URL', { status: 400 })
-    const photo = await toDataUrl(safe)
-    if (!photo) return new Response('Could not fetch img', { status: 502 })
+    // next/og fetches the frame itself. Base64-inlining a multi-MB PNG 500s the route.
     const mTotal = outfit.total_price ? Math.round(Number(outfit.total_price)) : null
     return new ImageResponse(
       (
         <div style={{ width: '100%', height: '100%', display: 'flex', position: 'relative', backgroundColor: '#1A1A1A' }}>
-          <img src={photo} width={1000} height={1500} style={{ position: 'absolute', top: 0, left: 0, width: 1000, height: 1500, objectFit: 'cover' }} />
+          <img src={safe} width={1000} height={1500} style={{ position: 'absolute', top: 0, left: 0, width: 1000, height: 1500, objectFit: 'cover' }} />
           <div style={{ position: 'absolute', top: 46, left: 50, display: 'flex', fontSize: 22, letterSpacing: 13, color: '#FFFFFF', fontWeight: 600 }}>
             MISE
           </div>
