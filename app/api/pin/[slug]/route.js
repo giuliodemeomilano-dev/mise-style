@@ -103,21 +103,31 @@ export async function GET(request, { params }) {
       (
         <div
           style={{
-            width: '100%',
-            height: '100%',
+            width: 1000,
+            height: 1500,
             display: 'flex',
-            position: 'relative',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
             backgroundColor: '#1A1A1A',
-            // Satori honours backgroundSize reliably; objectFit on an img it does not.
             backgroundImage: 'url(' + photoData + ')',
             backgroundSize: '1000px 1500px',
-            backgroundPosition: 'center',
           }}
         >
-          <div style={{ position: 'absolute', top: 46, left: 50, display: 'flex', fontSize: 22, letterSpacing: 13, color: '#FFFFFF', fontWeight: 600 }}>
-            MISE
+          <div style={{ display: 'flex', paddingTop: 46, paddingLeft: 50 }}>
+            <div style={{ display: 'flex', fontSize: 22, letterSpacing: 13, color: '#FFFFFF' }}>
+              MISE
+            </div>
           </div>
-          <div style={{ position: 'absolute', left: 0, bottom: 0, width: 1000, display: 'flex', flexDirection: 'column', paddingTop: 44, paddingBottom: 48, backgroundColor: 'rgba(26,26,26,0.82)' }}>
+          <div
+            style={{
+              width: 1000,
+              display: 'flex',
+              flexDirection: 'column',
+              paddingTop: 44,
+              paddingBottom: 48,
+              backgroundColor: 'rgba(26,26,26,0.82)',
+            }}
+          >
             <div style={{ width: 900, marginLeft: 50, display: 'flex', fontSize: 56, lineHeight: 1.14, color: '#F6F1EA' }}>
               {outfit.title}
             </div>
