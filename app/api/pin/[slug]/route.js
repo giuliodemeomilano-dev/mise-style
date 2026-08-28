@@ -101,8 +101,19 @@ export async function GET(request, { params }) {
     const mTotal = outfit.total_price ? Math.round(Number(outfit.total_price)) : null
     return new ImageResponse(
       (
-        <div style={{ width: '100%', height: '100%', display: 'flex', position: 'relative', backgroundColor: '#1A1A1A' }}>
-          <img src={photoData} width={1000} height={1500} style={{ position: 'absolute', top: 0, left: 0, width: 1000, height: 1500, objectFit: 'cover' }} />
+        <div
+          style={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            position: 'relative',
+            backgroundColor: '#1A1A1A',
+            // Satori honours backgroundSize reliably; objectFit on an img it does not.
+            backgroundImage: 'url(' + photoData + ')',
+            backgroundSize: '1000px 1500px',
+            backgroundPosition: 'center',
+          }}
+        >
           <div style={{ position: 'absolute', top: 46, left: 50, display: 'flex', fontSize: 22, letterSpacing: 13, color: '#FFFFFF', fontWeight: 600 }}>
             MISE
           </div>
