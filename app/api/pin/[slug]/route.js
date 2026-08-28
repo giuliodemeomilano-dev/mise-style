@@ -110,7 +110,9 @@ export async function GET(request, { params }) {
             justifyContent: 'space-between',
             backgroundColor: '#1A1A1A',
             backgroundImage: 'url(' + photoData + ')',
-            backgroundSize: '1000px 1500px',
+            // 'cover' keeps the frame's aspect. Fixed px squashed a 1536x2752 source.
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
           }}
         >
           <div style={{ display: 'flex', paddingTop: 46, paddingLeft: 50 }}>
