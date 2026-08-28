@@ -85,12 +85,15 @@ export async function GET(request, { params }) {
       if (u.hostname === 'd8j0ntlcm91z4.cloudfront.net') safe = u.toString()
     } catch (e) {}
     if (!safe) return new Response('format=model needs a Higgsfield img URL', { status: 400 })
-    // next/og fetches the frame itself. Base64-inlining a multi-MB PNG 500s the route.
+    // Frames arrive at 1536x2752, far too heavy for next/og to rasterise directly.
+    // Route them through the Vercel image optimizer to get a light 1080px JPEG.
+    const origin = new URL(request.url).origin
+    const photoSrc = origin + '/_next/image?url=' + encodeURIComponent(safe) + '&w=1080&q=80'
     const mTotal = outfit.total_price ? Math.round(Number(outfit.total_price)) : null
     return new ImageResponse(
       (
         <div style={{ width: '100%', height: '100%', display: 'flex', position: 'relative', backgroundColor: '#1A1A1A' }}>
-          <img src={safe} width={1000} height={1500} style={{ position: 'absolute', top: 0, left: 0, width: 1000, height: 1500, objectFit: 'cover' }} />
+          <img src={photoSrc} width={1000} height={1500} style={{ position: 'absolute', top: 0, left: 0, width: 1000, height: 1500, objectFit: 'cover' }} />
           <div style={{ position: 'absolute', top: 46, left: 50, display: 'flex', fontSize: 22, letterSpacing: 13, color: '#FFFFFF', fontWeight: 600 }}>
             MISE
           </div>
