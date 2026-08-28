@@ -88,10 +88,9 @@ export async function GET(request, { params }) {
     // Frames arrive at 1536x2752, far too heavy for next/og to rasterise directly.
     // Route them through the Vercel image optimizer to get a light 1080px JPEG.
     const origin = new URL(request.url).origin
-    const photoSrc = origin + '/_next/image?url=' + encodeURIComponent(safe) + '&w=1080&q=80'
-    // Ask the optimizer for JPEG explicitly. It content-negotiates to webp by
-    // default and Satori cannot rasterise that. At 1080px the JPEG is small
-    // enough to inline, which the raw 1536x2752 PNG never was.
+    const photoSrc = origin + '/_next/image?url=' + encodeURIComponent(safe) + '&w=1200&q=75'
+    // w must be one of the project's allowed widths: 1080 is rejected, 1200 is not.
+    // At 1200px the result is light enough to inline, which the raw 1536x2752 never was.
     const opt = await fetch(photoSrc, { headers: { accept: 'image/jpeg' } })
     if (!opt.ok) return new Response('Could not optimize img: ' + opt.status, { status: 502 })
     const photoData =
