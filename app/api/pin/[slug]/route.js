@@ -52,6 +52,28 @@ async function toDataUrl(url) {
   }
 }
 
+// Pinterest shows only the image in the feed, so the big line has to answer
+// "what is this and who is it for", not carry an editorial name. The pretty
+// title drops to the small line underneath. Mirrors seoLabel in app/look/[slug].
+const OCCASION_LABEL = {
+  office: 'Office',
+  casual: 'Casual',
+  weekend: 'Weekend',
+  evening: 'Evening',
+  brunch: 'Brunch',
+  date: 'Date Night',
+  travel: 'Travel',
+}
+const SEASON_LABEL = { summer: 'Summer', spring: 'Spring', autumn: 'Autumn', winter: 'Winter' }
+
+function pinLabel(outfit) {
+  const who = outfit.gender === 'men' ? "Men's" : outfit.gender === 'women' ? "Women's" : ''
+  const label = [who, SEASON_LABEL[outfit.season] || '', OCCASION_LABEL[outfit.occasion] || '', 'Outfit']
+    .filter(Boolean)
+    .join(' ')
+  return label === 'Outfit' ? outfit.title || 'The complete outfit' : label
+}
+
 export async function GET(request, { params }) {
   const { slug } = await params
   const { searchParams } = new URL(request.url)
@@ -67,7 +89,7 @@ export async function GET(request, { params }) {
 
   const { data: outfit } = await supabase
     .from('outfits')
-    .select('title, occasion, season, total_price, outfit_items (position, products (name, brand, price, image_url, packshot_url))')
+    .select('title, occasion, season, gender, total_price, outfit_items (position, products (name, brand, price, image_url, packshot_url))')
     .eq('slug', slug)
     .eq('status', 'active')
     .single()
@@ -221,12 +243,12 @@ export async function GET(request, { params }) {
             letterSpacing: -1,
           }}
         >
-          {outfit.title || 'The complete outfit'}
+          {pinLabel(outfit)}
         </div>
 
-        {outfit.occasion ? (
+        {outfit.title ? (
           <div style={{ display: 'flex', marginTop: 12, fontSize: fmt.occ, letterSpacing: 5, color: '#94897B' }}>
-            {String(outfit.occasion).toUpperCase()}
+            {String(outfit.title).toUpperCase()}
           </div>
         ) : null}
 
