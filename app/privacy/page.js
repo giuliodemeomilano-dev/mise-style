@@ -1,6 +1,6 @@
 // app/privacy/page.js
 export const metadata = {
-  title: "Privacy policy — MISE",
+  title: "Privacy Policy | MISE",
   description:
     "How MISE handles data: what we collect, cookies, affiliate partners, and your rights under the GDPR.",
 };
@@ -39,33 +39,33 @@ export default function PrivacyPage() {
       <h2 style={h2}>2. What we collect</h2>
       <p style={p}>MISE does not require you to create an account, and we do not ask for your name, address or payment details. We may process:</p>
       <ul>
-        <li style={li}><strong>Usage &amp; device data</strong> — anonymised or aggregated analytics such as pages viewed, approximate region, browser type and referring site, used to understand how the site is used and improve it.</li>
-        <li style={li}><strong>Outbound-click data</strong> — when you click a piece to go to a retailer, we and our affiliate partners may record that a click happened (for example which product, time, and a non-identifying reference) so purchases can be attributed.</li>
-        <li style={li}><strong>Locally stored preferences</strong> — items you save (“wishlist”) and your language choice are stored in your own browser (local storage) and are not sent to us as personal data.</li>
+        <li style={li}><strong>Usage &amp; device data</strong>: anonymised or aggregated analytics such as pages viewed, approximate region, browser type and referring site, used to understand how the site is used and improve it.</li>
+        <li style={li}><strong>Outbound-click data</strong>: when you click a piece to go to a retailer, we and our affiliate partners may record that a click happened (for example which product, time, and a non-identifying reference) so purchases can be attributed.</li>
+        <li style={li}><strong>Locally stored preferences</strong>: items you save (“wishlist”) and your language choice are stored in your own browser (local storage) and are not sent to us as personal data.</li>
       </ul>
 
       <h2 style={h2}>3. Cookies and similar technologies</h2>
       <p style={p}>We use a small number of cookies and similar technologies:</p>
       <ul>
-        <li style={li}><strong>Essential</strong> — required for the site to function.</li>
-        <li style={li}><strong>Analytics</strong> — to measure traffic in an aggregated way.</li>
-        <li style={li}><strong>Affiliate</strong> — set by our affiliate partners (see section 5) when you click an outbound link, so a qualifying purchase can be credited to MISE.</li>
+        <li style={li}><strong>Essential</strong>: required for the site to function.</li>
+        <li style={li}><strong>Analytics</strong>: to measure traffic in an aggregated way.</li>
+        <li style={li}><strong>Affiliate</strong>: set by our affiliate partners (see section 5) when you click an outbound link, so a qualifying purchase can be credited to MISE.</li>
       </ul>
       <p style={p}>You can control or delete cookies through your browser settings. Blocking some cookies may affect how parts of the site work.</p>
 
       <h2 style={h2}>4. Why we process data and the legal basis</h2>
       <ul>
-        <li style={li}><strong>To operate and secure the site</strong> — our legitimate interest in running a functional, safe service.</li>
-        <li style={li}><strong>To measure and improve the site</strong> — our legitimate interest, using aggregated analytics; where required, on the basis of your consent.</li>
-        <li style={li}><strong>To earn affiliate commissions</strong> — our legitimate interest in funding the site; affiliate cookies are set on the basis of your consent where required.</li>
+        <li style={li}><strong>To operate and secure the site</strong>: our legitimate interest in running a functional, safe service.</li>
+        <li style={li}><strong>To measure and improve the site</strong>: our legitimate interest, using aggregated analytics; where required, on the basis of your consent.</li>
+        <li style={li}><strong>To earn affiliate commissions</strong>: our legitimate interest in funding the site; affiliate cookies are set on the basis of your consent where required.</li>
       </ul>
 
       <h2 style={h2}>5. Third parties we share data with</h2>
       <p style={p}>We use trusted providers who process data on our behalf or as independent controllers:</p>
       <ul>
-        <li style={li}><strong>Hosting &amp; infrastructure</strong> — our hosting and database providers, which process technical data needed to serve the site.</li>
-        <li style={li}><strong>Analytics</strong> — a web-analytics provider, using aggregated/anonymised data.</li>
-        <li style={li}><strong>Affiliate partners</strong> — Skimlinks and the retailers’ own affiliate programmes, which may set cookies and record outbound clicks to attribute purchases. When you leave MISE for a retailer, that retailer’s own privacy policy applies.</li>
+        <li style={li}><strong>Hosting &amp; infrastructure</strong>: our hosting and database providers, which process technical data needed to serve the site.</li>
+        <li style={li}><strong>Analytics</strong>: a web-analytics provider, using aggregated/anonymised data.</li>
+        <li style={li}><strong>Affiliate partners</strong>: Skimlinks and the retailers’ own affiliate programmes, which may set cookies and record outbound clicks to attribute purchases. When you leave MISE for a retailer, that retailer’s own privacy policy applies.</li>
       </ul>
 
       <h2 style={h2}>6. International transfers</h2>
