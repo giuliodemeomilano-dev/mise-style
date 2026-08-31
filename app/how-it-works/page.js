@@ -1,6 +1,6 @@
 // app/how-it-works/page.js
 export const metadata = {
-  title: "How it works — MISE",
+  title: "How It Works | MISE",
   description:
     "Choose a style, see the complete outfit, and shop every piece directly at the original store. Here's how MISE works.",
 };
@@ -23,7 +23,7 @@ export default function HowItWorksPage() {
         <div style={stepNum}>01</div>
         <div style={stepTitle}>Choose a style</div>
         <p style={p}>
-          Browse outfits by mood and occasion — office, weekend, evening, travel,
+          Browse outfits by mood and occasion: office, weekend, evening, travel,
           brunch, date. Filter to what you’re actually dressing for, for women or men.
         </p>
       </div>
@@ -32,8 +32,8 @@ export default function HowItWorksPage() {
         <div style={stepNum}>02</div>
         <div style={stepTitle}>See the complete outfit</div>
         <p style={p}>
-          Every MISE look is a full, balanced outfit — top, bottom, shoes and the
-          finishing pieces — assembled to work together, not a wall of single items.
+          Every MISE look is a full, balanced outfit with top, bottom, shoes and the
+          finishing pieces, assembled to work together, not a wall of single items.
         </p>
       </div>
 
@@ -42,7 +42,7 @@ export default function HowItWorksPage() {
         <div style={stepTitle}>Shop each piece at the store</div>
         <p style={p}>
           Tap any piece to go straight to it on the retailer’s website. You buy and
-          check out with the store directly — MISE holds no stock and never touches
+          check out with the store directly. MISE holds no stock and never touches
           your payment. Prices shown are for reference; the final price is always the
           retailer’s.
         </p>
