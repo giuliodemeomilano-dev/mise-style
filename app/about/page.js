@@ -1,8 +1,8 @@
 // app/about/page.js
 export const metadata = {
-  title: "About — MISE",
+  title: "About | MISE",
   description:
-    "MISE is a European fashion platform that curates complete, wearable outfits for women and men — every piece shoppable at the original store.",
+    "MISE is a European fashion platform that curates complete, wearable outfits for women and men. Every piece is shoppable at the original store.",
 };
 
 const wrap = { maxWidth: 720, margin: "0 auto", padding: "140px 24px 120px" };
@@ -25,15 +25,15 @@ export default function AboutPage() {
 
       <p style={p}>
         MISE started from a simple frustration: the hard part of dressing well
-        isn’t finding one nice piece — it’s putting the <em>whole</em> outfit
+        isn’t finding one nice piece. It’s putting the <em>whole</em> outfit
         together. The proportions, the palette, the shoes that actually finish
         the look. Most shopping sites sell you items. We build outfits.
       </p>
 
       <h2 style={h2}>What we do</h2>
       <p style={p}>
-        MISE is a European platform that curates complete, wearable outfits — for
-        women and men — from a small circle of stores we genuinely rate: COS,
+        MISE is a European platform that curates complete, wearable outfits for
+        women and men, from a small circle of stores we genuinely rate: COS,
         Massimo Dutti, ARKET and The Frankie Shop. Every look is composed with a
         quiet, minimal, European sensibility, then broken down piece by piece so
         you can shop the whole thing in a couple of clicks.
@@ -41,7 +41,7 @@ export default function AboutPage() {
 
       <h2 style={h2}>How we build the looks</h2>
       <p style={p}>
-        Each outfit is put together using a mix of technology and a human eye —
+        Each outfit is put together using a mix of technology and a human eye,
         balancing silhouette, colour and occasion the way a stylist would, not by
         stacking items at random. We keep the catalogue small and the standard
         high: if a look isn’t something we’d actually wear, it doesn’t go up.
@@ -52,7 +52,7 @@ export default function AboutPage() {
         MISE holds no stock and ships nothing. When you find a piece you like, you
         buy it directly from the retailer, at the retailer’s price. We simply point
         you to the right product. If you buy through one of our links we may earn a
-        small commission — at no extra cost to you, and without influencing which
+        small commission, at no extra cost to you and without influencing which
         outfits we build. More on that in our{" "}
         <a href="/disclosure" style={{ color: "#b0553f" }}>affiliate disclosure</a>.
       </p>
