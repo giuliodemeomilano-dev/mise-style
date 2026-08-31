@@ -1,6 +1,6 @@
 // app/disclosure/page.js
 export const metadata = {
-  title: "Affiliate disclosure — MISE",
+  title: "Affiliate Disclosure | MISE",
   description:
     "MISE is reader-supported. When you buy through our links we may earn a commission, at no extra cost to you.",
 };
@@ -20,13 +20,13 @@ export default function DisclosurePage() {
       <p style={p}>
         MISE is reader-supported. The outfits on this site link to products sold by
         third-party retailers. When you click through and make a purchase, MISE may
-        earn a commission from that retailer — <strong>at no extra cost to you</strong>.
+        earn a commission from that retailer, <strong>at no extra cost to you</strong>.
         The price you pay is exactly the same as it would be going to the store directly.
       </p>
 
       <h2 style={h2}>Commissions don’t shape our curation</h2>
       <p style={p}>
-        We build outfits around what looks good and works together — never around
+        We build outfits around what looks good and works together, never around
         which pieces pay the most. We only feature items from retailers we’d shop
         ourselves. A commission never determines whether a piece makes it into a look.
       </p>
@@ -40,8 +40,8 @@ export default function DisclosurePage() {
 
       <h2 style={h2}>Our partners</h2>
       <p style={p}>
-        MISE works with affiliate networks and retailer programmes — including
-        Skimlinks and the brands’ own partner programmes — to track qualifying
+        MISE works with affiliate networks and retailer programmes, including
+        Skimlinks and the brands’ own partner programmes, to track qualifying
         purchases. These partners may set cookies when you click an outbound link.
         You can read more in our{" "}
         <a href="/privacy" style={{ color: "#b0553f" }}>privacy policy</a>.
