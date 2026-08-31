@@ -7,7 +7,7 @@ export const revalidate = 3600
 const BASE = 'https://www.mise.style'
 
 export const metadata = {
-  title: 'Journal — MISE',
+  title: 'Journal | MISE',
   description:
     'How we think about getting dressed: notes on fabric, colour, proportion and the pieces we keep returning to.',
   alternates: { canonical: BASE + '/journal' },
@@ -31,7 +31,7 @@ export default async function JournalIndex() {
       <div style={kicker}>Journal</div>
       <h1 style={h1}>How we think about getting dressed.</h1>
       <p style={intro}>
-        Notes on fabric, colour and proportion — and on the pieces we keep coming
+        Notes on fabric, colour and proportion, and on the pieces we keep coming
         back to. Every one is built from outfits we have actually published.
       </p>
 
