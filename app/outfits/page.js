@@ -4,9 +4,9 @@ import { CATEGORIES } from '@/lib/categories'
 export const revalidate = 3600
 
 export const metadata = {
-  title: 'Outfit Ideas for Women and Men — Shop the Full Look | MISE',
+  title: 'Outfit Ideas for Women and Men: Shop the Full Look | MISE',
   description:
-    'Browse outfit ideas by occasion and season — office, casual, weekend, evening, brunch, date night, travel and summer. Every look is complete and every piece is shoppable.',
+    'Browse outfit ideas by occasion and season: office, casual, weekend, evening, brunch, date night, travel and summer. Every look is complete and every piece is shoppable.',
   alternates: { canonical: 'https://www.mise.style/outfits' },
 }
 
@@ -50,7 +50,7 @@ export default function OutfitsIndex() {
 
       <p style={{ maxWidth: 640, color: 'var(--text-muted)', lineHeight: 1.6, margin: '0 0 36px' }}>
         Complete outfits put together across brands, sorted by where you are actually going.
-        Every piece is linked — buy the whole look or just the part you are missing.
+        Every piece is linked, so buy the whole look or just the part you are missing.
       </p>
 
       {group('For women', women)}
