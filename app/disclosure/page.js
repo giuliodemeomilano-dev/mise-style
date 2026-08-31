@@ -40,9 +40,10 @@ export default function DisclosurePage() {
 
       <h2 style={h2}>Our partners</h2>
       <p style={p}>
-        MISE works with affiliate networks and retailer programmes, including
-        Skimlinks and the brands’ own partner programmes, to track qualifying
-        purchases. These partners may set cookies when you click an outbound link.
+        MISE works with affiliate networks and retailer partner programmes to
+        track qualifying purchases. We currently work with Awin. If we add other
+        networks we will list them here. These partners may set cookies when you
+        click an outbound link.
         You can read more in our{" "}
         <a href="/privacy" style={{ color: "#b0553f" }}>privacy policy</a>.
       </p>
