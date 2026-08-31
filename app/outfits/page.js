@@ -32,7 +32,7 @@ export default function OutfitsIndex() {
           >
             <div style={{ fontSize: 16, marginBottom: 6 }}>{c.title}</div>
             <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-              {c.intro.split('—')[0].trim()}
+              {c.intro.split(':')[0].trim()}
             </div>
           </Link>
         ))}
