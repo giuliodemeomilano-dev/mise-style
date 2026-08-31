@@ -1,7 +1,7 @@
 // app/contact/page.js
 export const metadata = {
-  title: "Contact — MISE",
-  description: "Get in touch with MISE — questions, press, or partnerships.",
+  title: "Contact | MISE",
+  description: "Get in touch with MISE about questions, press or partnerships.",
 };
 
 const wrap = { maxWidth: 720, margin: "0 auto", padding: "140px 24px 120px" };
@@ -25,7 +25,7 @@ export default function ContactPage() {
 
       <p style={{ ...p, marginTop: 40, color: "#8a8378" }}>
         MISE is an independent, European fashion-curation project. We don’t sell or
-        ship products — every piece is bought directly from the original retailer.
+        ship products. Every piece is bought directly from the original retailer.
       </p>
     </main>
   );
