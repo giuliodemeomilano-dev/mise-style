@@ -65,7 +65,7 @@ export default function PrivacyPage() {
       <ul>
         <li style={li}><strong>Hosting &amp; infrastructure</strong>: our hosting and database providers, which process technical data needed to serve the site.</li>
         <li style={li}><strong>Analytics</strong>: a web-analytics provider, using aggregated/anonymised data.</li>
-        <li style={li}><strong>Affiliate partners</strong>: Skimlinks and the retailers’ own affiliate programmes, which may set cookies and record outbound clicks to attribute purchases. When you leave MISE for a retailer, that retailer’s own privacy policy applies.</li>
+        <li style={li}><strong>Affiliate partners</strong>: Awin and the retailers’ own affiliate programmes, which may set cookies and record outbound clicks to attribute purchases. When you leave MISE for a retailer, that retailer’s own privacy policy applies.</li>
       </ul>
 
       <h2 style={h2}>6. International transfers</h2>
