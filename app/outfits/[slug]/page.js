@@ -12,10 +12,10 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }) {
   const { slug } = await params
   const cat = findCategory(slug)
-  if (!cat) return { title: 'Outfits — MISE' }
+  if (!cat) return { title: 'Outfits | MISE' }
 
   return {
-    title: cat.title + ' — Shop the Full Look | MISE',
+    title: cat.title + ': Shop the Full Look | MISE',
     description: cat.intro,
     alternates: { canonical: 'https://www.mise.style/outfits/' + cat.slug },
     openGraph: {
@@ -79,7 +79,7 @@ export default async function CategoryPage({ params }) {
         <div className="looks-grid">
           {looks.length === 0 && (
             <p style={{ color: 'var(--text-muted)', padding: 40 }}>
-              No outfits in this category yet — new looks are added every day.
+              No outfits in this category yet. New looks are added every day.
             </p>
           )}
           {looks.map((look) => (
