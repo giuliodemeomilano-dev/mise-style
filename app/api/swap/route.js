@@ -64,7 +64,20 @@ export async function POST(request) {
           return p >= refPrice * 0.6 && p <= refPrice * 1.4;
         })
       : candidates;
-    const shortlist = inBand.length > 0 ? inBand : candidates;
+    // Once the in-band options are used up, report no_alternatives so the client
+    // loops back to the original piece. Falling back to the full list here was
+    // what still let a 165 EUR polo turn into a 36 EUR tee.
+    const shortlist = inBand;
+    if (shortlist.length === 0) {
+      return Response.json(
+        {
+          ok: false,
+          error: "Nessun pezzo simile disponibile in questa fascia di prezzo",
+          reason: "no_alternatives",
+        },
+        { status: 200 }
+      );
+    }
     shortlist.sort(
       (a, b) =>
         Math.abs((Number(a.price) || 0) - refPrice) -
