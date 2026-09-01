@@ -20,7 +20,12 @@ export default function PiecesGrid({ pieces: initialPieces, outfitId }) {
       const res = await fetch('/api/swap', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ current_external_id: piece.external_id, exclude }),
+        body: JSON.stringify({
+          current_external_id: piece.external_id,
+          exclude,
+          // Anchor on the piece the outfit was actually built around.
+          anchor_price: Number(initialPieces[idx]?.price) || null,
+        }),
       })
       const data = await res.json()
       if (!data.ok) {
