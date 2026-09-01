@@ -1,17 +1,22 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 export default function PiecesGrid({ pieces: initialPieces, outfitId }) {
   const [pieces, setPieces] = useState(initialPieces)
   const [busy, setBusy] = useState(null)
+  // Everything already shown in each slot. Without this the swap kept landing
+  // on the same two or three items and bouncing back to the original.
+  const seen = useRef({})
 
   async function changePiece(idx) {
     const piece = pieces[idx]
     if (!piece.external_id) return
     setBusy(idx)
     try {
-      const exclude = pieces.map((p) => p.external_id).filter(Boolean)
+      const history = seen.current[idx] || []
+      const onScreen = pieces.map((p) => p.external_id).filter(Boolean)
+      const exclude = [...new Set([...onScreen, ...history])]
       const res = await fetch('/api/swap', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -20,10 +25,22 @@ export default function PiecesGrid({ pieces: initialPieces, outfitId }) {
       const data = await res.json()
       if (!data.ok) {
         if (data.reason === 'no_alternatives') {
-          alert('No similar piece available for this item.')
+          if (history.length > 0) {
+            // Cycle exhausted: quietly start again from the original piece
+            // instead of telling the visitor there is nothing left.
+            seen.current[idx] = []
+            setPieces((prev) => {
+              const next = [...prev]
+              next[idx] = initialPieces[idx]
+              return next
+            })
+          } else {
+            alert('No similar piece available for this item.')
+          }
         }
         return
       }
+      seen.current[idx] = [...history, piece.external_id]
       setPieces((prev) => {
         const next = [...prev]
         next[idx] = {
