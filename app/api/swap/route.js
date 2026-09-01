@@ -60,8 +60,10 @@ export async function POST(request) {
         Math.abs((Number(a.price) || 0) - refPrice) -
         Math.abs((Number(b.price) || 0) - refPrice)
     );
-    const pool = candidates.slice(0, Math.min(3, candidates.length));
-    const chosen = pool[Math.floor(Math.random() * pool.length)];
+    // Deterministic: closest in price first. The client sends everything it has
+    // already shown for this slot in `exclude`, so each click genuinely advances
+    // instead of bouncing between the same two or three items at random.
+    const chosen = candidates[0];
     return Response.json({
       ok: true,
       product: {
