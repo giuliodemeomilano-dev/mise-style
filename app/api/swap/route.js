@@ -32,7 +32,7 @@ export async function POST(request) {
     const { data: candidates, error: candErr } = await supabase
       .from("products")
       .select(
-        "external_id, name, brand, merchant, category, gender, price, image_url, packshot_url, affiliate_url"
+        "id, external_id, name, brand, merchant, category, gender, price, image_url, packshot_url, affiliate_url"
       )
       .eq("in_stock", true)
       .eq("category", current.category)
@@ -65,6 +65,9 @@ export async function POST(request) {
     return Response.json({
       ok: true,
       product: {
+        // /go/<id> needs the row id. Without it the swapped link was /go/undefined,
+        // which 404s and loses the click.
+        id: chosen.id,
         external_id: chosen.external_id,
         name: chosen.name,
         brand: chosen.brand,
