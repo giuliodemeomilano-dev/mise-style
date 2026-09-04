@@ -227,6 +227,35 @@ export async function GET(request, { params }) {
         if (c) tiles[i].src = c
       }
     }
+    // DETERMINISTIC FRAMING. `focus=<top>,<bottom>` are the fractions of the source
+    // image height where the figure really starts and ends, measured from the alpha
+    // mask of the background-removed frame, and `ar` is the source width/height. With
+    // those two numbers the crop is arithmetic, so the model is never beheaded or cut
+    // off at the ankles whatever shape the photo pane is. Guessed percentages did that
+    // repeatedly. Defaults keep older URLs rendering.
+    const fp = (searchParams.get('focus') || '').split(',').map(Number)
+    const fTop = Number.isFinite(fp[0]) ? Math.max(0, Math.min(1, fp[0])) : 0.04
+    const fBot = Number.isFinite(fp[1]) ? Math.max(0, Math.min(1, fp[1])) : 0.96
+    const srcAR = Number(searchParams.get('ar')) || 768 / 1376
+    const photoPane = (W, H) => {
+      let dW = W
+      let dH = Math.round(W / srcAR)
+      if (dH < H) {
+        dH = H
+        dW = Math.round(H * srcAR)
+      }
+      const pad = Math.round(0.02 * dH)
+      const start = Math.max(0, Math.round(fTop * dH) - pad)
+      const end = Math.min(dH, Math.round(fBot * dH) + pad)
+      let y = Math.round(start - (H - (end - start)) / 2)
+      y = Math.max(0, Math.min(y, Math.max(0, dH - H)))
+      const x = Math.max(0, Math.round((dW - W) / 2))
+      return (
+        <div style={{ width: W, height: H, display: 'flex', overflow: 'hidden' }}>
+          <img src={photoData} width={dW} height={dH} style={{ marginTop: -y, marginLeft: -x }} />
+        </div>
+      )
+    }
     const PHOTO_W = 600
     const COL_W = 1000 - PHOTO_W
     const PAD = 26
@@ -245,16 +274,7 @@ export async function GET(request, { params }) {
     return new ImageResponse(
       (
         <div style={{ width: 1000, height: 1500, display: 'flex', flexDirection: 'row', backgroundColor: '#E3D8C8' }}>
-          <div
-            style={{
-              width: PHOTO_W,
-              height: 1500,
-              display: 'flex',
-              backgroundImage: 'url(' + photoData + ')',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }}
-          />
+          {photoPane(PHOTO_W, 1500)}
           <div style={{ width: COL_W, height: 1500, display: 'flex', flexDirection: 'column', paddingTop: 54, paddingLeft: PAD, backgroundColor: '#E3D8C8' }}>
             <div style={{ display: 'flex', fontSize: 26, letterSpacing: 15, color: '#1A1A1A', fontWeight: 700 }}>
               MISE
