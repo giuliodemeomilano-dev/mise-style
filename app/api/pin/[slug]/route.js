@@ -206,17 +206,40 @@ export async function GET(request, { params }) {
       (opt.headers.get('content-type') || 'image/png') +
       ';base64,' +
       Buffer.from(await opt.arrayBuffer()).toString('base64')
+    // Optional cutouts: ?cut=<url>,<url>,... in the same order as the pieces.
+    // Background-free PNGs float on the cream column instead of sitting in white boxes.
+    const cutParam = searchParams.get('cut')
+    const cuts = cutParam
+      ? cutParam
+          .split(',')
+          .map((c) => c.trim())
+          .filter((c) => {
+            try {
+              return new URL(c).hostname === 'd8j0ntlcm91z4.cloudfront.net'
+            } catch (e) {
+              return false
+            }
+          })
+      : []
+    for (let i = 0; i < tiles.length; i++) {
+      if (cuts[i]) {
+        const c = await toDataUrl(cuts[i])
+        if (c) tiles[i].src = c
+      }
+    }
+    const PHOTO_W = 620
+    const COL_W = 1000 - PHOTO_W
     const n = Math.max(1, tiles.length)
-    const avail = 1500 - 74 - 76
-    const gap = 14
-    const tileH = Math.floor((avail - gap * (n - 1)) / n)
-    const imgH = tileH - 40
+    const headerH = 150
+    const footerH = 120
+    const rowH = Math.floor((1500 - headerH - footerH) / n)
+    const thumb = Math.min(rowH - 26, 178)
     return new ImageResponse(
       (
         <div style={{ width: 1000, height: 1500, display: 'flex', flexDirection: 'row', backgroundColor: '#EDE7DE' }}>
           <div
             style={{
-              width: 600,
+              width: PHOTO_W,
               height: 1500,
               display: 'flex',
               backgroundImage: 'url(' + photoData + ')',
@@ -224,27 +247,37 @@ export async function GET(request, { params }) {
               backgroundPosition: 'center',
             }}
           />
-          <div style={{ width: 400, height: 1500, display: 'flex', flexDirection: 'column', paddingTop: 40, paddingBottom: 36, backgroundColor: '#EDE7DE' }}>
-            <div style={{ display: 'flex', marginLeft: 28, fontSize: 20, letterSpacing: 10, color: '#B4552F', marginBottom: 14 }}>
-              MISE
+          <div style={{ width: COL_W, height: 1500, display: 'flex', flexDirection: 'column', backgroundColor: '#EDE7DE' }}>
+            <div style={{ width: COL_W, height: headerH, display: 'flex', flexDirection: 'column', paddingTop: 62, paddingLeft: 46 }}>
+              <div style={{ display: 'flex', fontSize: 26, letterSpacing: 15, color: '#1A1A1A', fontWeight: 700 }}>
+                MISE
+              </div>
+              <div style={{ display: 'flex', marginTop: 12, fontSize: 15, letterSpacing: 5, color: '#94897B' }}>
+                {String(pinLabel(outfit)).toUpperCase()}
+              </div>
             </div>
             {tiles.map((t, i) => (
-              <div key={i} style={{ display: 'flex', flexDirection: 'column', width: 344, height: tileH, marginLeft: 28, marginTop: i === 0 ? 0 : gap }}>
-                <div style={{ width: 344, height: imgH, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF' }}>
-                  <img src={t.src} width={300} height={imgH - 28} style={{ objectFit: 'contain' }} />
+              <div key={i} style={{ width: COL_W, height: rowH, display: 'flex', flexDirection: 'row', alignItems: 'center', paddingLeft: 46 }}>
+                <div style={{ width: thumb, height: thumb, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <img src={t.src} width={thumb} height={thumb} style={{ objectFit: 'contain' }} />
                 </div>
-                <div style={{ display: 'flex', marginTop: 8, fontSize: 17, letterSpacing: 3, color: '#5C5249' }}>
-                  {String(t.category || 'piece').toUpperCase() + '  \u00B7  \u20AC' + Math.round(Number(t.price) || 0)}
+                <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 22 }}>
+                  <div style={{ display: 'flex', fontSize: 17, letterSpacing: 3, color: '#5C5249' }}>
+                    {String(t.category || 'piece').toUpperCase()}
+                  </div>
+                  <div style={{ display: 'flex', marginTop: 7, fontSize: 24, color: '#1A1A1A' }}>
+                    {'\u20AC' + Math.round(Number(t.price) || 0)}
+                  </div>
                 </div>
               </div>
             ))}
             <div style={{ display: 'flex', flexGrow: 1 }} />
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', width: 344, marginLeft: 28 }}>
-              <div style={{ display: 'flex', fontSize: 16, letterSpacing: 3, color: '#94897B' }}>
+            <div style={{ width: COL_W - 92, marginLeft: 46, marginBottom: 46, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', fontSize: 16, letterSpacing: 4, color: '#94897B' }}>
                 MISE.STYLE
               </div>
               {total ? (
-                <div style={{ display: 'flex', fontSize: 40, color: '#1A1A1A', fontWeight: 700 }}>
+                <div style={{ display: 'flex', fontSize: 44, color: '#1A1A1A', fontWeight: 700 }}>
                   {'\u20AC' + total}
                 </div>
               ) : null}
