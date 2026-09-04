@@ -229,11 +229,13 @@ export async function GET(request, { params }) {
     }
     const PHOTO_W = 560
     const COL_W = 1000 - PHOTO_W
-    const n = Math.max(1, tiles.length)
-    const headerH = 140
-    const footerH = 110
-    const rowH = Math.floor((1500 - headerH - footerH) / n)
-    const thumb = Math.min(rowH - 24, 218)
+    const PAD = 34
+    const INNER = COL_W - PAD * 2
+    // The hero piece (first item, the garment) gets a taller card: a dress read
+    // tiny inside a square while the sandals filled theirs.
+    const heroH = 300
+    const restH = 210
+    const gap = 16
     return new ImageResponse(
       (
         <div style={{ width: 1000, height: 1500, display: 'flex', flexDirection: 'row', backgroundColor: '#EDE7DE' }}>
@@ -247,49 +249,48 @@ export async function GET(request, { params }) {
               backgroundPosition: 'center',
             }}
           />
-          <div style={{ width: COL_W, height: 1500, display: 'flex', flexDirection: 'column', backgroundColor: '#EDE7DE' }}>
-            <div style={{ width: COL_W, height: headerH, display: 'flex', flexDirection: 'column', paddingTop: 62, paddingLeft: 46 }}>
-              <div style={{ display: 'flex', fontSize: 26, letterSpacing: 15, color: '#1A1A1A', fontWeight: 700 }}>
-                MISE
-              </div>
-              <div style={{ display: 'flex', marginTop: 12, fontSize: 15, letterSpacing: 5, color: '#94897B' }}>
-                {String(pinLabel(outfit)).toUpperCase()}
-              </div>
+          <div style={{ width: COL_W, height: 1500, display: 'flex', flexDirection: 'column', paddingTop: 54, paddingLeft: PAD }}>
+            <div style={{ display: 'flex', fontSize: 26, letterSpacing: 15, color: '#1A1A1A', fontWeight: 700 }}>
+              MISE
             </div>
-            {tiles.map((t, i) => (
-              <div key={i} style={{ width: COL_W, height: rowH, display: 'flex', flexDirection: 'row', alignItems: 'center', paddingLeft: 46 }}>
-                <div
-                  style={{
-                    width: thumb,
-                    height: thumb,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    // Soft card, not a hard white box. Without it an ecru or white
-                    // garment cut out of its background vanishes into the cream.
-                    backgroundColor: 'rgba(255,255,255,0.72)',
-                    borderRadius: 10,
-                  }}
-                >
-                  <img src={t.src} width={thumb - 24} height={thumb - 24} style={{ objectFit: 'contain' }} />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 20 }}>
-                  <div style={{ display: 'flex', fontSize: 17, letterSpacing: 3, color: '#5C5249' }}>
-                    {String(t.category || 'piece').toUpperCase()}
+            <div style={{ display: 'flex', width: INNER, marginTop: 10, marginBottom: 26, fontSize: 15, letterSpacing: 4, color: '#94897B' }}>
+              {String(pinLabel(outfit)).toUpperCase()}
+            </div>
+            {tiles.map((t, i) => {
+              const h = i === 0 ? heroH : restH
+              const cardW = i === 0 ? 236 : 200
+              return (
+                <div key={i} style={{ width: INNER, height: h, marginBottom: gap, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                  <div
+                    style={{
+                      width: cardW,
+                      height: h,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: 'rgba(255,255,255,0.72)',
+                      borderRadius: 10,
+                    }}
+                  >
+                    <img src={t.src} width={cardW - 28} height={h - 28} style={{ objectFit: 'contain' }} />
                   </div>
-                  <div style={{ display: 'flex', marginTop: 7, fontSize: 24, color: '#1A1A1A' }}>
-                    {'\u20AC' + Math.round(Number(t.price) || 0)}
+                  <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 20 }}>
+                    <div style={{ display: 'flex', fontSize: 17, letterSpacing: 3, color: '#5C5249' }}>
+                      {String(t.category || 'piece').toUpperCase()}
+                    </div>
+                    <div style={{ display: 'flex', marginTop: 7, fontSize: 26, color: '#1A1A1A' }}>
+                      {'\u20AC' + Math.round(Number(t.price) || 0)}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-            <div style={{ display: 'flex', flexGrow: 1 }} />
-            <div style={{ width: COL_W - 92, marginLeft: 46, marginBottom: 46, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+              )
+            })}
+            <div style={{ width: INNER, marginTop: 10, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', fontSize: 16, letterSpacing: 4, color: '#94897B' }}>
                 MISE.STYLE
               </div>
               {total ? (
-                <div style={{ display: 'flex', fontSize: 44, color: '#1A1A1A', fontWeight: 700 }}>
+                <div style={{ display: 'flex', fontSize: 46, color: '#1A1A1A', fontWeight: 700 }}>
                   {'\u20AC' + total}
                 </div>
               ) : null}
