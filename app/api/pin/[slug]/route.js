@@ -281,7 +281,7 @@ export async function GET(request, { params }) {
               )
             })}
             <div style={{ display: 'flex', flexGrow: 1 }} />
-            <div style={{ width: INNER, marginBottom: 44, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+            <div style={{ width: INNER, marginBottom: 44, display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', fontSize: 15, letterSpacing: 4, color: '#8A7F72' }}>
                 MISE.STYLE
               </div>
