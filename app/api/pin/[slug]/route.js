@@ -265,7 +265,7 @@ export async function GET(request, { params }) {
             </div>
             {tiles.map((t, i) => {
               const h = i === 0 ? heroH : restH
-              const cardW = i === 0 ? 250 : 208
+              const cardW = i === 0 ? 310 : 268
               return (
                 <div key={i} style={{ width: INNER, height: h, marginBottom: gap, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                   <div
