@@ -231,11 +231,18 @@ export async function GET(request, { params }) {
     const COL_W = 1000 - PHOTO_W
     const PAD = 34
     const INNER = COL_W - PAD * 2
-    // The hero piece (first item, the garment) gets a taller card: a dress read
-    // tiny inside a square while the sandals filled theirs.
-    const heroH = 300
-    const restH = 210
-    const gap = 16
+    // Fill the column instead of using fixed heights: with 3 fixed cards the stack
+    // ended at 850 of 1500 and left half a column of empty cream.
+    // The hero piece (the garment) gets 1.4x the height of the rest: a dress reads
+    // tiny inside a square while sandals fill theirs.
+    const n = Math.max(1, tiles.length)
+    const gap = 18
+    const headerH = 150
+    const footerH = 130
+    const avail = 1500 - headerH - footerH - gap * n
+    const unit = avail / (1.4 + (n - 1))
+    const heroH = Math.floor(unit * 1.4)
+    const restH = Math.floor(unit)
     return new ImageResponse(
       (
         <div style={{ width: 1000, height: 1500, display: 'flex', flexDirection: 'row', backgroundColor: '#EDE7DE' }}>
@@ -258,7 +265,7 @@ export async function GET(request, { params }) {
             </div>
             {tiles.map((t, i) => {
               const h = i === 0 ? heroH : restH
-              const cardW = i === 0 ? 236 : 200
+              const cardW = i === 0 ? 250 : 208
               return (
                 <div key={i} style={{ width: INNER, height: h, marginBottom: gap, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                   <div
@@ -285,7 +292,8 @@ export async function GET(request, { params }) {
                 </div>
               )
             })}
-            <div style={{ width: INNER, marginTop: 10, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', flexGrow: 1 }} />
+            <div style={{ width: INNER, marginBottom: 46, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', fontSize: 16, letterSpacing: 4, color: '#94897B' }}>
                 MISE.STYLE
               </div>
