@@ -227,13 +227,13 @@ export async function GET(request, { params }) {
         if (c) tiles[i].src = c
       }
     }
-    const PHOTO_W = 620
+    const PHOTO_W = 560
     const COL_W = 1000 - PHOTO_W
     const n = Math.max(1, tiles.length)
-    const headerH = 150
-    const footerH = 120
+    const headerH = 140
+    const footerH = 110
     const rowH = Math.floor((1500 - headerH - footerH) / n)
-    const thumb = Math.min(rowH - 26, 178)
+    const thumb = Math.min(rowH - 20, 260)
     return new ImageResponse(
       (
         <div style={{ width: 1000, height: 1500, display: 'flex', flexDirection: 'row', backgroundColor: '#EDE7DE' }}>
@@ -261,7 +261,7 @@ export async function GET(request, { params }) {
                 <div style={{ width: thumb, height: thumb, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <img src={t.src} width={thumb} height={thumb} style={{ objectFit: 'contain' }} />
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 22 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 16 }}>
                   <div style={{ display: 'flex', fontSize: 17, letterSpacing: 3, color: '#5C5249' }}>
                     {String(t.category || 'piece').toUpperCase()}
                   </div>
