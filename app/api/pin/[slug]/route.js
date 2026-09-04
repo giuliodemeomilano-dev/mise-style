@@ -181,11 +181,89 @@ export async function GET(request, { params }) {
   const tiles = []
   for (const p of raw) {
     const src = await toDataUrl(p.packshot_url || p.image_url)
-    if (src) tiles.push({ src })
+    if (src) tiles.push({ src, category: p.category, price: p.price })
   }
 
   const layout = LAYOUTS[Math.min(tiles.length, 4)] || LAYOUTS[4]
   const total = outfit.total_price ? Math.round(Number(outfit.total_price)) : null
+
+  // format=split: model photo on the left, real packshots stacked on the right
+  // with category and price. The photo sells the look, the column proves the
+  // pieces. Mirrors a Pinterest layout Giulio found performing well (2026-09-02).
+  if (fmtKey === 'split') {
+    let safe = null
+    try {
+      const u = new URL(searchParams.get('img'))
+      if (u.hostname === 'd8j0ntlcm91z4.cloudfront.net') safe = u.toString()
+    } catch (e) {}
+    if (!safe) return new Response('format=split needs a Higgsfield img URL', { status: 400 })
+    const origin = new URL(request.url).origin
+    const photoSrc = origin + '/_next/image?url=' + encodeURIComponent(safe) + '&w=1200&q=75'
+    const opt = await fetch(photoSrc)
+    if (!opt.ok) return new Response('Could not optimize img: ' + opt.status, { status: 502 })
+    const photoData =
+      'data:' +
+      (opt.headers.get('content-type') || 'image/png') +
+      ';base64,' +
+      Buffer.from(await opt.arrayBuffer()).toString('base64')
+    const n = Math.max(1, tiles.length)
+    const avail = 1500 - 74 - 76
+    const gap = 14
+    const tileH = Math.floor((avail - gap * (n - 1)) / n)
+    const imgH = tileH - 40
+    return new ImageResponse(
+      (
+        <div style={{ width: 1000, height: 1500, display: 'flex', flexDirection: 'row', backgroundColor: '#EDE7DE' }}>
+          <div
+            style={{
+              width: 600,
+              height: 1500,
+              display: 'flex',
+              backgroundImage: 'url(' + photoData + ')',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          />
+          <div style={{ width: 400, height: 1500, display: 'flex', flexDirection: 'column', paddingTop: 40, paddingBottom: 36, backgroundColor: '#EDE7DE' }}>
+            <div style={{ display: 'flex', marginLeft: 28, fontSize: 20, letterSpacing: 10, color: '#B4552F', marginBottom: 14 }}>
+              MISE
+            </div>
+            {tiles.map((t, i) => (
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', width: 344, height: tileH, marginLeft: 28, marginTop: i === 0 ? 0 : gap }}>
+                <div
+                  style={{
+                    width: 344,
+                    height: imgH,
+                    display: 'flex',
+                    backgroundColor: '#FFFFFF',
+                    backgroundImage: 'url(' + t.src + ')',
+                    backgroundSize: '84% 84%',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'center',
+                  }}
+                />
+                <div style={{ display: 'flex', marginTop: 8, fontSize: 17, letterSpacing: 3, color: '#5C5249' }}>
+                  {String(t.category || 'piece').toUpperCase() + '  \u00B7  \u20AC' + Math.round(Number(t.price) || 0)}
+                </div>
+              </div>
+            ))}
+            <div style={{ display: 'flex', flexGrow: 1 }} />
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', width: 344, marginLeft: 28 }}>
+              <div style={{ display: 'flex', fontSize: 16, letterSpacing: 3, color: '#94897B' }}>
+                MISE.STYLE
+              </div>
+              {total ? (
+                <div style={{ display: 'flex', fontSize: 40, color: '#1A1A1A', fontWeight: 700 }}>
+                  {'\u20AC' + total}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      ),
+      { width: 1000, height: 1500 }
+    )
+  }
 
   const contentW = fmt.W - fmt.pad * 2
   const scale = Math.min(contentW / BASE_ZONE_W, fmt.zoneH / BASE_ZONE_H)
