@@ -190,7 +190,7 @@ export async function GET(request, { params }) {
   // format=split: model photo on the left, real packshots stacked on the right
   // with category and price. The photo sells the look, the column proves the
   // pieces. Mirrors a Pinterest layout Giulio found performing well (2026-09-02).
-  if (fmtKey === 'split') {
+  if (fmtKey === 'split' || fmtKey === 'row' || fmtKey === 'stack') {
     let safe = null
     try {
       const u = new URL(searchParams.get('img'))
@@ -254,6 +254,83 @@ export async function GET(request, { params }) {
         <div style={{ width: W, height: H, display: 'flex', overflow: 'hidden' }}>
           <img src={photoData} width={dW} height={dH} style={{ marginTop: -y, marginLeft: -x }} />
         </div>
+      )
+    }
+    // Shared furniture for the row and stack layouts. Same cream, same type, same
+    // deterministic framing; only the arrangement changes, which is what gives
+    // Pinterest three genuinely different creatives per look instead of one template.
+    const CREAM = '#E3D8C8'
+    const eyebrowTxt = String(pinLabel(outfit) || '').toUpperCase()
+    const totalTxt = total ? '\u20AC' + total : ''
+    const n2 = Math.max(1, tiles.length)
+    const STRIP_W = 908
+    const CELL = Math.floor(STRIP_W / n2)
+    const strip = (cellH, light) => (
+      <div style={{ width: STRIP_W, marginLeft: 46, display: 'flex' }}>
+        {tiles.map((t, i) => (
+          <div key={i} style={{ width: CELL, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ width: CELL - 26, height: cellH, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <img src={t.src} width={CELL - 26} height={cellH} style={{ objectFit: 'contain' }} />
+            </div>
+            <div style={{ display: 'flex', marginTop: 14, fontSize: 17, letterSpacing: 4, color: light ? 'rgba(255,255,255,0.78)' : '#6B6055' }}>
+              {String(t.category || 'piece').toUpperCase()}
+            </div>
+            <div style={{ display: 'flex', marginTop: 4, fontSize: 30, color: light ? '#FFFFFF' : '#1A1A1A' }}>
+              {'\u20AC' + Math.round(Number(t.price) || 0)}
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+
+    // format=row: photo on top, the pieces in a row underneath on cream.
+    if (fmtKey === 'row') {
+      return new ImageResponse(
+        (
+          <div style={{ width: 1000, height: 1500, display: 'flex', flexDirection: 'column', backgroundColor: CREAM }}>
+            {photoPane(1000, 840)}
+            <div style={{ width: 1000, height: 660, display: 'flex', flexDirection: 'column', paddingTop: 28, paddingBottom: 34, backgroundColor: CREAM }}>
+              <div style={{ marginLeft: 46, display: 'flex', fontSize: 22, letterSpacing: 13, color: '#1A1A1A', fontWeight: 700 }}>MISE</div>
+              <div style={{ marginLeft: 46, marginTop: 14, display: 'flex', fontSize: 18, letterSpacing: 5, color: '#6B6055' }}>{eyebrowTxt}</div>
+              <div style={{ marginLeft: 46, marginTop: 8, display: 'flex', fontSize: 44, color: '#1A1A1A' }}>{outfit.title}</div>
+              <div style={{ marginTop: 20, display: 'flex' }}>{strip(250, false)}</div>
+              <div style={{ display: 'flex', flexGrow: 1 }} />
+              <div style={{ width: 908, marginLeft: 46, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', marginBottom: 8, fontSize: 18, letterSpacing: 5, color: '#8A7F72' }}>MISE.STYLE</div>
+                {total ? <div style={{ display: 'flex', fontSize: 48, color: '#1A1A1A', fontWeight: 700 }}>{totalTxt}</div> : null}
+              </div>
+            </div>
+          </div>
+        ),
+        { width: 1000, height: 1500 }
+      )
+    }
+
+    // format=stack: the pieces present at the top on cream, the photo fills below
+    // with the title over a dark gradient.
+    if (fmtKey === 'stack') {
+      return new ImageResponse(
+        (
+          <div style={{ width: 1000, height: 1500, display: 'flex', flexDirection: 'column', backgroundColor: CREAM }}>
+            <div style={{ width: 1000, height: 560, display: 'flex', flexDirection: 'column', paddingTop: 42, backgroundColor: CREAM }}>
+              <div style={{ width: 1000, display: 'flex', justifyContent: 'center', fontSize: 24, letterSpacing: 14, color: '#1A1A1A', fontWeight: 700 }}>MISE</div>
+              <div style={{ marginTop: 26, display: 'flex' }}>{strip(270, false)}</div>
+            </div>
+            <div style={{ width: 1000, height: 940, display: 'flex', position: 'relative' }}>
+              {photoPane(1000, 940)}
+              <div style={{ position: 'absolute', left: 0, top: 500, width: 1000, height: 440, display: 'flex', backgroundImage: 'linear-gradient(to bottom, rgba(20,16,12,0), rgba(20,16,12,0.84))' }} />
+              <div style={{ position: 'absolute', left: 46, top: 690, width: 908, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', fontSize: 18, letterSpacing: 5, color: 'rgba(255,255,255,0.72)' }}>{eyebrowTxt}</div>
+                <div style={{ display: 'flex', marginTop: 8, fontSize: 46, color: '#FFFFFF' }}>{outfit.title}</div>
+                <div style={{ width: 908, marginTop: 18, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', marginBottom: 8, fontSize: 18, letterSpacing: 5, color: 'rgba(255,255,255,0.72)' }}>MISE.STYLE</div>
+                  {total ? <div style={{ display: 'flex', fontSize: 46, color: '#FFFFFF', fontWeight: 700 }}>{totalTxt}</div> : null}
+                </div>
+              </div>
+            </div>
+          </div>
+        ),
+        { width: 1000, height: 1500 }
       )
     }
     const PHOTO_W = 600
