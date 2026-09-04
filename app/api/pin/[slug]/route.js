@@ -268,15 +268,14 @@ export async function GET(request, { params }) {
       const ok = p.length === 5 && p.every((x) => Number.isFinite(x))
       if (!ok) return <img src={tile.src} width={W} height={H} style={{ objectFit: 'contain' }} />
       const ar = p[0] || 1
-      const bw = Math.max(0.02, p[4] - p[3])
-      const bh = Math.max(0.02, p[2] - p[1])
-      // Leave a margin so a piece never touches the edge of its cell, and so the
-      // pieces read as a set rather than as one product zoomed to the frame.
-      const k = Math.min((W * 0.9) / (ar * bw), (H * 0.84) / bh)
-      const rW = Math.round(ar * k)
-      const rH = Math.round(k)
-      const mx = Math.round((W - rW * bw) / 2 - p[3] * rW)
-      const my = Math.round((H - rH * bh) / 2 - p[1] * rH)
+      // Keep exactly the size objectFit:contain would give, so a bag stays a bag and
+      // does not blow up to the height of a dress. The box is used ONLY to recentre:
+      // the object's own midpoint is moved to the middle of the cell, which is what
+      // was wrong before, since the cutout inherits the packshot's empty canvas.
+      const rW = Math.round(Math.min(W, H * ar))
+      const rH = Math.round(rW / ar)
+      const mx = Math.round(W / 2 - ((p[3] + p[4]) / 2) * rW)
+      const my = Math.round(H / 2 - ((p[1] + p[2]) / 2) * rH)
       return (
         <div style={{ width: W, height: H, display: 'flex', overflow: 'hidden' }}>
           <img src={tile.src} width={rW} height={rH} style={{ marginLeft: mx, marginTop: my }} />
