@@ -227,9 +227,9 @@ export async function GET(request, { params }) {
         if (c) tiles[i].src = c
       }
     }
-    const PHOTO_W = 560
+    const PHOTO_W = 490
     const COL_W = 1000 - PHOTO_W
-    const PAD = 34
+    const PAD = 30
     const INNER = COL_W - PAD * 2
     // Fill the column instead of using fixed heights: with 3 fixed cards the stack
     // ended at 850 of 1500 and left half a column of empty cream.
@@ -279,7 +279,9 @@ export async function GET(request, { params }) {
                       borderRadius: 10,
                     }}
                   >
-                    <img src={t.src} width={cardW - 28} height={h - 28} style={{ objectFit: 'contain' }} />
+                    {/* Only 10px inset: the packshots already carry their own white margin,
+                        so a big inset here shrank the product twice over. */}
+                    <img src={t.src} width={cardW - 10} height={h - 10} style={{ objectFit: 'contain' }} />
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 20 }}>
                     <div style={{ display: 'flex', fontSize: 17, letterSpacing: 3, color: '#5C5249' }}>
