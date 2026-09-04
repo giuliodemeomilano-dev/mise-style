@@ -269,11 +269,11 @@ export async function GET(request, { params }) {
                   <div style={{ width: INNER, height: h, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <img src={t.src} width={INNER} height={h} style={{ objectFit: 'contain' }} />
                   </div>
-                  <div style={{ height: labelH, display: 'flex', alignItems: 'baseline', marginTop: 6 }}>
+                  <div style={{ width: INNER, height: labelH, display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginTop: 6 }}>
                     <div style={{ display: 'flex', fontSize: 17, letterSpacing: 3, color: '#6B6055' }}>
                       {String(t.category || 'piece').toUpperCase()}
                     </div>
-                    <div style={{ display: 'flex', marginLeft: 14, fontSize: 26, color: '#1A1A1A' }}>
+                    <div style={{ display: 'flex', fontSize: 26, color: '#1A1A1A' }}>
                       {'\u20AC' + Math.round(Number(t.price) || 0)}
                     </div>
                   </div>
