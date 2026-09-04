@@ -270,7 +270,9 @@ export async function GET(request, { params }) {
       const ar = p[0] || 1
       const bw = Math.max(0.02, p[4] - p[3])
       const bh = Math.max(0.02, p[2] - p[1])
-      const k = Math.min(W / (ar * bw), H / bh)
+      // Leave a margin so a piece never touches the edge of its cell, and so the
+      // pieces read as a set rather than as one product zoomed to the frame.
+      const k = Math.min((W * 0.9) / (ar * bw), (H * 0.84) / bh)
       const rW = Math.round(ar * k)
       const rH = Math.round(k)
       const mx = Math.round((W - rW * bw) / 2 - p[3] * rW)
