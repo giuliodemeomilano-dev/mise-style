@@ -233,7 +233,7 @@ export async function GET(request, { params }) {
     const headerH = 140
     const footerH = 110
     const rowH = Math.floor((1500 - headerH - footerH) / n)
-    const thumb = Math.min(rowH - 20, 260)
+    const thumb = Math.min(rowH - 24, 218)
     return new ImageResponse(
       (
         <div style={{ width: 1000, height: 1500, display: 'flex', flexDirection: 'row', backgroundColor: '#EDE7DE' }}>
@@ -258,10 +258,22 @@ export async function GET(request, { params }) {
             </div>
             {tiles.map((t, i) => (
               <div key={i} style={{ width: COL_W, height: rowH, display: 'flex', flexDirection: 'row', alignItems: 'center', paddingLeft: 46 }}>
-                <div style={{ width: thumb, height: thumb, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <img src={t.src} width={thumb} height={thumb} style={{ objectFit: 'contain' }} />
+                <div
+                  style={{
+                    width: thumb,
+                    height: thumb,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    // Soft card, not a hard white box. Without it an ecru or white
+                    // garment cut out of its background vanishes into the cream.
+                    backgroundColor: 'rgba(255,255,255,0.72)',
+                    borderRadius: 10,
+                  }}
+                >
+                  <img src={t.src} width={thumb - 24} height={thumb - 24} style={{ objectFit: 'contain' }} />
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 20 }}>
                   <div style={{ display: 'flex', fontSize: 17, letterSpacing: 3, color: '#5C5249' }}>
                     {String(t.category || 'piece').toUpperCase()}
                   </div>
