@@ -256,6 +256,31 @@ export async function GET(request, { params }) {
         </div>
       )
     }
+    // A background-removed PNG keeps the packshot's original canvas, so a bag that sat
+    // low in its product photo also sits low in the column and looks badly placed.
+    // `cutbox=<ar>,<top>,<bottom>,<left>,<right>;...` carries each cutout's real alpha
+    // box, one group per piece in the same order, measured the same way as `focus`.
+    // With it every product is optically centred in its cell and drawn at the same
+    // visual size instead of inheriting whatever padding the brand shot had.
+    const boxes = (searchParams.get('cutbox') || '').split(';')
+    const tileImg = (tile, W, H, i) => {
+      const p = String(boxes[i] || '').split(',').map(Number)
+      const ok = p.length === 5 && p.every((x) => Number.isFinite(x))
+      if (!ok) return <img src={tile.src} width={W} height={H} style={{ objectFit: 'contain' }} />
+      const ar = p[0] || 1
+      const bw = Math.max(0.02, p[4] - p[3])
+      const bh = Math.max(0.02, p[2] - p[1])
+      const k = Math.min(W / (ar * bw), H / bh)
+      const rW = Math.round(ar * k)
+      const rH = Math.round(k)
+      const mx = Math.round((W - rW * bw) / 2 - p[3] * rW)
+      const my = Math.round((H - rH * bh) / 2 - p[1] * rH)
+      return (
+        <div style={{ width: W, height: H, display: 'flex', overflow: 'hidden' }}>
+          <img src={tile.src} width={rW} height={rH} style={{ marginLeft: mx, marginTop: my }} />
+        </div>
+      )
+    }
     // Shared furniture for the row and stack layouts. Same cream, same type, same
     // deterministic framing; only the arrangement changes, which is what gives
     // Pinterest three genuinely different creatives per look instead of one template.
@@ -270,7 +295,7 @@ export async function GET(request, { params }) {
         {tiles.map((t, i) => (
           <div key={i} style={{ width: CELL, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div style={{ width: CELL - 26, height: cellH, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <img src={t.src} width={CELL - 26} height={cellH} style={{ objectFit: 'contain' }} />
+              {tileImg(t, CELL - 26, cellH, i)}
             </div>
             <div style={{ display: 'flex', marginTop: 14, fontSize: 17, letterSpacing: 4, color: light ? 'rgba(255,255,255,0.78)' : '#6B6055' }}>
               {String(t.category || 'piece').toUpperCase()}
@@ -364,7 +389,7 @@ export async function GET(request, { params }) {
               return (
                 <div key={i} style={{ width: INNER, marginBottom: gapV, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   <div style={{ width: INNER, height: h, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <img src={t.src} width={INNER} height={h} style={{ objectFit: 'contain' }} />
+                    {tileImg(t, INNER, h, i)}
                   </div>
                   <div style={{ width: INNER, height: labelH, display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginTop: 6 }}>
                     <div style={{ display: 'flex', fontSize: 17, letterSpacing: 3, color: '#6B6055' }}>
