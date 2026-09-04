@@ -89,7 +89,7 @@ export async function GET(request, { params }) {
 
   const { data: outfit } = await supabase
     .from('outfits')
-    .select('title, occasion, season, gender, total_price, outfit_items (position, products (name, brand, price, image_url, packshot_url))')
+    .select('title, occasion, season, gender, total_price, outfit_items (position, role, products (name, brand, price, image_url, packshot_url))')
     .eq('slug', slug)
     .eq('status', 'active')
     .single()
@@ -174,14 +174,14 @@ export async function GET(request, { params }) {
 
   const raw = [...(outfit.outfit_items || [])]
     .sort((a, b) => (a.position || 0) - (b.position || 0))
-    .map((i) => i.products)
+    .map((i) => (i.products ? { ...i.products, role: i.role } : null))
     .filter(Boolean)
     .slice(0, 4)
 
   const tiles = []
   for (const p of raw) {
     const src = await toDataUrl(p.packshot_url || p.image_url)
-    if (src) tiles.push({ src, category: p.category, price: p.price })
+    if (src) tiles.push({ src, category: p.category || p.role, price: p.price })
   }
 
   const layout = LAYOUTS[Math.min(tiles.length, 4)] || LAYOUTS[4]
@@ -230,18 +230,9 @@ export async function GET(request, { params }) {
             </div>
             {tiles.map((t, i) => (
               <div key={i} style={{ display: 'flex', flexDirection: 'column', width: 344, height: tileH, marginLeft: 28, marginTop: i === 0 ? 0 : gap }}>
-                <div
-                  style={{
-                    width: 344,
-                    height: imgH,
-                    display: 'flex',
-                    backgroundColor: '#FFFFFF',
-                    backgroundImage: 'url(' + t.src + ')',
-                    backgroundSize: '84% 84%',
-                    backgroundRepeat: 'no-repeat',
-                    backgroundPosition: 'center',
-                  }}
-                />
+                <div style={{ width: 344, height: imgH, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF' }}>
+                  <img src={t.src} width={300} height={imgH - 28} style={{ objectFit: 'contain' }} />
+                </div>
                 <div style={{ display: 'flex', marginTop: 8, fontSize: 17, letterSpacing: 3, color: '#5C5249' }}>
                   {String(t.category || 'piece').toUpperCase() + '  \u00B7  \u20AC' + Math.round(Number(t.price) || 0)}
                 </div>
