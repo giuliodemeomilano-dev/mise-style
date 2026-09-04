@@ -227,25 +227,24 @@ export async function GET(request, { params }) {
         if (c) tiles[i].src = c
       }
     }
-    const PHOTO_W = 490
+    const PHOTO_W = 600
     const COL_W = 1000 - PHOTO_W
-    const PAD = 30
+    const PAD = 26
     const INNER = COL_W - PAD * 2
-    // Fill the column instead of using fixed heights: with 3 fixed cards the stack
-    // ended at 850 of 1500 and left half a column of empty cream.
-    // The hero piece (the garment) gets 1.4x the height of the rest: a dress reads
-    // tiny inside a square while sandals fill theirs.
+    // No white cards: the cutouts sit straight on the column. The column cream is
+    // a shade deeper than the page cream so an ecru or white garment still reads.
+    // The label goes UNDER each piece, which frees the full column width for the
+    // product; with the label beside it, the product was squeezed to half the space.
     const n = Math.max(1, tiles.length)
-    const gap = 18
-    const headerH = 150
-    const footerH = 130
-    const avail = 1500 - headerH - footerH - gap * n
-    const unit = avail / (1.4 + (n - 1))
-    const heroH = Math.floor(unit * 1.4)
-    const restH = Math.floor(unit)
+    const gapV = 14
+    const labelH = 44
+    const headerH = 140
+    const footerH = 120
+    const avail = 1500 - headerH - footerH - gapV * n - labelH * n
+    const unit = avail / (1.35 + (n - 1))
     return new ImageResponse(
       (
-        <div style={{ width: 1000, height: 1500, display: 'flex', flexDirection: 'row', backgroundColor: '#EDE7DE' }}>
+        <div style={{ width: 1000, height: 1500, display: 'flex', flexDirection: 'row', backgroundColor: '#E3D8C8' }}>
           <div
             style={{
               width: PHOTO_W,
@@ -256,38 +255,25 @@ export async function GET(request, { params }) {
               backgroundPosition: 'center',
             }}
           />
-          <div style={{ width: COL_W, height: 1500, display: 'flex', flexDirection: 'column', paddingTop: 54, paddingLeft: PAD }}>
+          <div style={{ width: COL_W, height: 1500, display: 'flex', flexDirection: 'column', paddingTop: 54, paddingLeft: PAD, backgroundColor: '#E3D8C8' }}>
             <div style={{ display: 'flex', fontSize: 26, letterSpacing: 15, color: '#1A1A1A', fontWeight: 700 }}>
               MISE
             </div>
-            <div style={{ display: 'flex', width: INNER, marginTop: 10, marginBottom: 26, fontSize: 15, letterSpacing: 4, color: '#94897B' }}>
+            <div style={{ display: 'flex', width: INNER, marginTop: 10, marginBottom: 22, fontSize: 14, letterSpacing: 4, color: '#8A7F72' }}>
               {String(pinLabel(outfit)).toUpperCase()}
             </div>
             {tiles.map((t, i) => {
-              const h = i === 0 ? heroH : restH
-              const cardW = i === 0 ? 310 : 268
+              const h = Math.floor(i === 0 ? unit * 1.35 : unit)
               return (
-                <div key={i} style={{ width: INNER, height: h, marginBottom: gap, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                  <div
-                    style={{
-                      width: cardW,
-                      height: h,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: 'rgba(255,255,255,0.72)',
-                      borderRadius: 10,
-                    }}
-                  >
-                    {/* Only 10px inset: the packshots already carry their own white margin,
-                        so a big inset here shrank the product twice over. */}
-                    <img src={t.src} width={cardW - 10} height={h - 10} style={{ objectFit: 'contain' }} />
+                <div key={i} style={{ width: INNER, marginBottom: gapV, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <div style={{ width: INNER, height: h, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <img src={t.src} width={INNER} height={h} style={{ objectFit: 'contain' }} />
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 20 }}>
-                    <div style={{ display: 'flex', fontSize: 17, letterSpacing: 3, color: '#5C5249' }}>
+                  <div style={{ height: labelH, display: 'flex', alignItems: 'baseline', marginTop: 6 }}>
+                    <div style={{ display: 'flex', fontSize: 17, letterSpacing: 3, color: '#6B6055' }}>
                       {String(t.category || 'piece').toUpperCase()}
                     </div>
-                    <div style={{ display: 'flex', marginTop: 7, fontSize: 26, color: '#1A1A1A' }}>
+                    <div style={{ display: 'flex', marginLeft: 14, fontSize: 26, color: '#1A1A1A' }}>
                       {'\u20AC' + Math.round(Number(t.price) || 0)}
                     </div>
                   </div>
@@ -295,8 +281,8 @@ export async function GET(request, { params }) {
               )
             })}
             <div style={{ display: 'flex', flexGrow: 1 }} />
-            <div style={{ width: INNER, marginBottom: 46, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', fontSize: 16, letterSpacing: 4, color: '#94897B' }}>
+            <div style={{ width: INNER, marginBottom: 44, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', fontSize: 15, letterSpacing: 4, color: '#8A7F72' }}>
                 MISE.STYLE
               </div>
               {total ? (
