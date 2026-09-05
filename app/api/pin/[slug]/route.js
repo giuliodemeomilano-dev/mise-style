@@ -255,7 +255,12 @@ export async function GET(request, { params }) {
       const pad = Math.round(0.02 * dH)
       const start = Math.max(0, Math.round(fTop * dH) - pad)
       const end = Math.min(dH, Math.round(fBot * dH) + pad)
-      let y = Math.round(start - (H - (end - start)) / 2)
+      // If the whole figure fits, centre it. If the pane is too short for a full body,
+      // which happens in `row` where the photo is wide, anchor to the TOP of the figure:
+      // head down to mid-calf is a normal editorial crop, a beheaded model is not.
+      let y = end - start <= H
+        ? Math.round(start - (H - (end - start)) / 2)
+        : Math.round(start - H * 0.06)
       y = Math.max(0, Math.min(y, Math.max(0, dH - H)))
       const x = Math.max(0, Math.round((dW - W) / 2))
       return (
