@@ -227,6 +227,14 @@ export async function GET(request, { params }) {
         if (c) tiles[i].src = c
       }
     }
+    // `ig=1` renders the same layouts at Instagram's 1080x1440 (3:4) instead of the
+    // Pinterest 1000x1500 (2:3). Instagram's profile grid crops to 3:4, so a 2:3 pin
+    // posted to the feed loses the MISE mark at the top and part of the total at the
+    // bottom. Everything below is expressed against CW/CH so one set of code serves both.
+    const IG = searchParams.get('ig') === '1' || searchParams.get('ig') === 'true'
+    const CW = IG ? 1080 : 1000
+    const CH = IG ? 1440 : 1500
+
     // DETERMINISTIC FRAMING. `focus=<top>,<bottom>` are the fractions of the source
     // image height where the figure really starts and ends, measured from the alpha
     // mask of the background-removed frame, and `ar` is the source width/height. With
@@ -289,7 +297,7 @@ export async function GET(request, { params }) {
     const eyebrowTxt = String(pinLabel(outfit) || '').toUpperCase()
     const totalTxt = total ? '\u20AC' + total : ''
     const n2 = Math.max(1, tiles.length)
-    const STRIP_W = 908
+    const STRIP_W = CW - 92
     const CELL = Math.floor(STRIP_W / n2)
     const strip = (cellH, light) => (
       <div style={{ width: STRIP_W, marginLeft: 46, display: 'flex' }}>
@@ -313,22 +321,22 @@ export async function GET(request, { params }) {
     if (fmtKey === 'row') {
       return new ImageResponse(
         (
-          <div style={{ width: 1000, height: 1500, display: 'flex', flexDirection: 'column', backgroundColor: CREAM }}>
-            {photoPane(1000, 840)}
-            <div style={{ width: 1000, height: 660, display: 'flex', flexDirection: 'column', paddingTop: 28, paddingBottom: 34, backgroundColor: CREAM }}>
+          <div style={{ width: CW, height: CH, display: 'flex', flexDirection: 'column', backgroundColor: CREAM }}>
+            {photoPane(CW, Math.round(CH * 0.56))}
+            <div style={{ width: CW, height: CH - Math.round(CH * 0.56), display: 'flex', flexDirection: 'column', paddingTop: 28, paddingBottom: 34, backgroundColor: CREAM }}>
               <div style={{ marginLeft: 46, display: 'flex', fontSize: 22, letterSpacing: 13, color: '#1A1A1A', fontWeight: 700 }}>MISE</div>
               <div style={{ marginLeft: 46, marginTop: 14, display: 'flex', fontSize: 18, letterSpacing: 5, color: '#6B6055' }}>{eyebrowTxt}</div>
               <div style={{ marginLeft: 46, marginTop: 8, display: 'flex', fontSize: 44, color: '#1A1A1A' }}>{outfit.title}</div>
               <div style={{ marginTop: 20, display: 'flex' }}>{strip(250, false)}</div>
               <div style={{ display: 'flex', flexGrow: 1 }} />
-              <div style={{ width: 908, marginLeft: 46, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+              <div style={{ width: STRIP_W, marginLeft: 46, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', marginBottom: 8, fontSize: 18, letterSpacing: 5, color: '#8A7F72' }}>MISE.STYLE</div>
                 {total ? <div style={{ display: 'flex', fontSize: 48, color: '#1A1A1A', fontWeight: 700 }}>{totalTxt}</div> : null}
               </div>
             </div>
           </div>
         ),
-        { width: 1000, height: 1500 }
+        { width: CW, height: CH }
       )
     }
 
@@ -337,18 +345,18 @@ export async function GET(request, { params }) {
     if (fmtKey === 'stack') {
       return new ImageResponse(
         (
-          <div style={{ width: 1000, height: 1500, display: 'flex', flexDirection: 'column', backgroundColor: CREAM }}>
-            <div style={{ width: 1000, height: 560, display: 'flex', flexDirection: 'column', paddingTop: 42, backgroundColor: CREAM }}>
-              <div style={{ width: 1000, display: 'flex', justifyContent: 'center', fontSize: 24, letterSpacing: 14, color: '#1A1A1A', fontWeight: 700 }}>MISE</div>
+          <div style={{ width: CW, height: CH, display: 'flex', flexDirection: 'column', backgroundColor: CREAM }}>
+            <div style={{ width: CW, height: Math.round(CH * 0.373), display: 'flex', flexDirection: 'column', paddingTop: 42, backgroundColor: CREAM }}>
+              <div style={{ width: CW, display: 'flex', justifyContent: 'center', fontSize: 24, letterSpacing: 14, color: '#1A1A1A', fontWeight: 700 }}>MISE</div>
               <div style={{ marginTop: 26, display: 'flex' }}>{strip(270, false)}</div>
             </div>
-            <div style={{ width: 1000, height: 940, display: 'flex', position: 'relative' }}>
-              {photoPane(1000, 940)}
-              <div style={{ position: 'absolute', left: 0, top: 500, width: 1000, height: 440, display: 'flex', backgroundImage: 'linear-gradient(to bottom, rgba(20,16,12,0), rgba(20,16,12,0.84))' }} />
-              <div style={{ position: 'absolute', left: 46, top: 690, width: 908, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ width: CW, height: CH - Math.round(CH * 0.373), display: 'flex', position: 'relative' }}>
+              {photoPane(CW, CH - Math.round(CH * 0.373))}
+              <div style={{ position: 'absolute', left: 0, top: Math.round((CH - Math.round(CH * 0.373)) * 0.53), width: CW, height: Math.round((CH - Math.round(CH * 0.373)) * 0.47), display: 'flex', backgroundImage: 'linear-gradient(to bottom, rgba(20,16,12,0), rgba(20,16,12,0.84))' }} />
+              <div style={{ position: 'absolute', left: 46, top: Math.round((CH - Math.round(CH * 0.373)) * 0.734), width: STRIP_W, display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', fontSize: 18, letterSpacing: 5, color: 'rgba(255,255,255,0.72)' }}>{eyebrowTxt}</div>
                 <div style={{ display: 'flex', marginTop: 8, fontSize: 46, color: '#FFFFFF' }}>{outfit.title}</div>
-                <div style={{ width: 908, marginTop: 18, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+                <div style={{ width: STRIP_W, marginTop: 18, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', marginBottom: 8, fontSize: 18, letterSpacing: 5, color: 'rgba(255,255,255,0.72)' }}>MISE.STYLE</div>
                   {total ? <div style={{ display: 'flex', fontSize: 46, color: '#FFFFFF', fontWeight: 700 }}>{totalTxt}</div> : null}
                 </div>
@@ -356,11 +364,11 @@ export async function GET(request, { params }) {
             </div>
           </div>
         ),
-        { width: 1000, height: 1500 }
+        { width: CW, height: CH }
       )
     }
-    const PHOTO_W = 600
-    const COL_W = 1000 - PHOTO_W
+    const PHOTO_W = Math.round(CW * 0.6)
+    const COL_W = CW - PHOTO_W
     const PAD = 26
     const INNER = COL_W - PAD * 2
     // No white cards: the cutouts sit straight on the column. The column cream is
@@ -372,13 +380,13 @@ export async function GET(request, { params }) {
     const labelH = 44
     const headerH = 140
     const footerH = 120
-    const avail = 1500 - headerH - footerH - gapV * n - labelH * n
+    const avail = CH - headerH - footerH - gapV * n - labelH * n
     const unit = avail / (1.35 + (n - 1))
     return new ImageResponse(
       (
-        <div style={{ width: 1000, height: 1500, display: 'flex', flexDirection: 'row', backgroundColor: '#E3D8C8' }}>
-          {photoPane(PHOTO_W, 1500)}
-          <div style={{ width: COL_W, height: 1500, display: 'flex', flexDirection: 'column', paddingTop: 54, paddingLeft: PAD, backgroundColor: '#E3D8C8' }}>
+        <div style={{ width: CW, height: CH, display: 'flex', flexDirection: 'row', backgroundColor: '#E3D8C8' }}>
+          {photoPane(PHOTO_W, CH)}
+          <div style={{ width: COL_W, height: CH, display: 'flex', flexDirection: 'column', paddingTop: 54, paddingLeft: PAD, backgroundColor: '#E3D8C8' }}>
             <div style={{ display: 'flex', fontSize: 26, letterSpacing: 15, color: '#1A1A1A', fontWeight: 700 }}>
               MISE
             </div>
@@ -417,7 +425,7 @@ export async function GET(request, { params }) {
           </div>
         </div>
       ),
-      { width: 1000, height: 1500 }
+      { width: CW, height: CH }
     )
   }
 
