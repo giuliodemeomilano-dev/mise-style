@@ -233,7 +233,9 @@ export async function GET(request, { params }) {
     // bottom. Everything below is expressed against CW/CH so one set of code serves both.
     const IG = searchParams.get('ig') === '1' || searchParams.get('ig') === 'true'
     const CW = IG ? 1080 : 1000
-    const CH = IG ? 1440 : 1500
+    // ig=1 gives 1080x1440 (3:4), the tallest feed image that still fits the profile
+    // grid uncropped. ig=45 gives 1080x1350 (4:5), the safest size everywhere.
+    const CH = IG ? (searchParams.get('ig') === '45' ? 1350 : 1440) : 1500
 
     // DETERMINISTIC FRAMING. `focus=<top>,<bottom>` are the fractions of the source
     // image height where the figure really starts and ends, measured from the alpha
