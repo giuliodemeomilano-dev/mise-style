@@ -231,7 +231,7 @@ export async function GET(request, { params }) {
     // Pinterest 1000x1500 (2:3). Instagram's profile grid crops to 3:4, so a 2:3 pin
     // posted to the feed loses the MISE mark at the top and part of the total at the
     // bottom. Everything below is expressed against CW/CH so one set of code serves both.
-    const IG = searchParams.get('ig') === '1' || searchParams.get('ig') === 'true'
+    const IG = ['1', 'true', '45'].includes(searchParams.get('ig'))
     const CW = IG ? 1080 : 1000
     // ig=1 gives 1080x1440 (3:4), the tallest feed image that still fits the profile
     // grid uncropped. ig=45 gives 1080x1350 (4:5), the safest size everywhere.
