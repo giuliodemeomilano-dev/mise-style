@@ -277,3 +277,35 @@ body { background: var(--bg); font-family: var(--font-body); color: var(--text);
 .piece-swap:disabled { opacity: 0.5; cursor: default; }
 
 .pieces-total { text-align: center; margin-top: 24px; font-size: 14px; letter-spacing: 1px; color: #888; }
+
+/* ---- Look hero, rebuilt 2026-09-05 ----------------------------------------
+   The old .look-hero blew ONE packshot up to full width, so the cover of every
+   look was a single garment stretched across the screen (and the same image was
+   the og:image). Two new layouts replace it: a split with the full-length model
+   photo when the outfit has one, and a strip of the three packshots on cream
+   when it does not. The old .look-hero rules are left untouched so reverting is
+   a single commit. ------------------------------------------------------- */
+.look-hero-split { display: flex; background: var(--bg-card); border-bottom: 1px solid var(--border); }
+.look-hero-photo { width: 44%; max-width: 620px; aspect-ratio: 2 / 3; background: var(--bg-warm); overflow: hidden; }
+.look-hero-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.look-hero-text { flex: 1; padding: 56px 56px 48px; display: flex; flex-direction: column; justify-content: center; }
+.look-kicker { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+.look-hero-text h1 { font-family: var(--font-display); font-size: clamp(30px, 3.6vw, 48px); font-weight: 500; line-height: 1.1; margin-top: 14px; }
+.look-hero-text .look-meta { color: var(--text-secondary); font-size: 13px; letter-spacing: 0.05em; margin-top: 12px; }
+.look-hero-desc { font-family: var(--font-display); font-style: italic; color: var(--text-secondary); font-size: 19px; line-height: 1.6; margin-top: 24px; max-width: 460px; }
+.look-hero-total { margin-top: 26px; font-size: 15px; }
+.back-link-inline { display: inline-block; font-size: 12px; letter-spacing: 0.06em; color: var(--text-secondary); text-decoration: none; margin-bottom: 26px; }
+.back-link-inline:hover { color: var(--text); }
+.look-hero-flat { display: flex; align-items: center; background: var(--bg-warm); min-height: 420px; border-bottom: 1px solid var(--border); }
+.look-hero-flat .look-hero-text { width: 38%; flex: none; }
+.look-hero-strip { flex: 1; display: flex; align-items: center; gap: 16px; padding-right: 48px; }
+.look-hero-cell { flex: 1; background: var(--bg-card); border-radius: 10px; aspect-ratio: 2 / 3; max-height: 330px; overflow: hidden; }
+.look-hero-cell img { width: 100%; height: 100%; object-fit: contain; display: block; }
+@media (max-width: 900px) {
+  .look-hero-split, .look-hero-flat { flex-direction: column; align-items: stretch; }
+  .look-hero-photo { width: 100%; max-width: none; }
+  .look-hero-flat .look-hero-text { width: 100%; }
+  .look-hero-text { padding: 30px 22px 34px; }
+  .look-hero-strip { padding: 0 22px 30px; }
+  .look-hero-cell { max-height: 240px; }
+}
