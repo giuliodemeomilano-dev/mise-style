@@ -89,7 +89,7 @@ export async function GET(request, { params }) {
 
   const { data: outfit } = await supabase
     .from('outfits')
-    .select('title, occasion, season, gender, total_price, outfit_items (position, role, products (name, brand, price, image_url, packshot_url))')
+    .select('title, occasion, season, gender, total_price, outfit_items (position, role, products (name, brand, price, image_url, packshot_url, cutout_url, cutout_box))')
     .eq('slug', slug)
     .eq('status', 'active')
     .single()
@@ -178,10 +178,19 @@ export async function GET(request, { params }) {
     .filter(Boolean)
     .slice(0, 4)
 
+  // Prefer the stored cut-out. Since 2026-09-06 most products carry one, produced
+  // free by /api/cutout, so the pieces float on the cream instead of sitting in
+  // their own white boxes and the daily task no longer has to pay a credit per
+  // packshot just to get a transparent PNG. cutout_url is stored as a path, so it
+  // has to be resolved against this request's origin before fetching.
+  const selfOrigin = new URL(request.url).origin
+  const abs = (u) => (u && u.startsWith('/') ? selfOrigin + u : u)
   const tiles = []
   for (const p of raw) {
-    const src = await toDataUrl(p.packshot_url || p.image_url)
-    if (src) tiles.push({ src, category: p.category || p.role, price: p.price })
+    const src =
+      (await toDataUrl(abs(p.cutout_url))) || (await toDataUrl(p.packshot_url || p.image_url))
+    if (src)
+      tiles.push({ src, category: p.category || p.role, price: p.price, box: p.cutout_box })
   }
 
   const layout = LAYOUTS[Math.min(tiles.length, 4)] || LAYOUTS[4]
@@ -279,7 +288,8 @@ export async function GET(request, { params }) {
     // visual size instead of inheriting whatever padding the brand shot had.
     const boxes = (searchParams.get('cutbox') || '').split(';')
     const tileImg = (tile, W, H, i) => {
-      const p = String(boxes[i] || '').split(',').map(Number)
+      // An explicit ?cutbox wins, otherwise the box saved with the product.
+      const p = String(boxes[i] || tile.box || '').split(',').map(Number)
       const ok = p.length === 5 && p.every((x) => Number.isFinite(x))
       if (!ok) return <img src={tile.src} width={W} height={H} style={{ objectFit: 'contain' }} />
       const ar = p[0] || 1
