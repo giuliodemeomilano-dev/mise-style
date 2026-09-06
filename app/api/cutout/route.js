@@ -37,7 +37,7 @@ const MIN_LIGHT = 600    // sum of the background RGB: light backgrounds only
 const MIN_CLEARED = 0.15
 const MAX_CLEARED = 0.92
 const MAX_CENTRE_BG = 0.98
-const MIN_KEPT = 0.03   // the product has to survive as at least this much of the frame
+const MIN_KEPT = 0.05   // the product has to survive as at least this much of the frame
 
 function dist(a, b) {
   const dr = a[0] - b[0]
@@ -148,9 +148,11 @@ export async function GET(request) {
     // How much of the frame the product still occupies once the flood has run. This
     // is the check that catches a pale garment on a pale sweep: the fill walks
     // straight through it and all that survives is a faint outline, so the product
-    // collapses to almost nothing. Measured 2026-09-06, good results keep 0.07 to
-    // 0.33 of the frame while the sand-on-off-white short that came out gutted kept
-    // 0.015 and the white shirt dress 0.027.
+    // collapses to almost nothing. Calibrated 2026-09-06 on 60 real product photos:
+    // everything that cut cleanly kept 0.064 or more of the frame, and everything
+    // gutted kept 0.033 or less (a sand short on off-white 0.015, a white shirt
+    // dress 0.027, a pale yellow pleated dress 0.033). The gap is wide and empty, so
+    // the line sits in the middle of it.
     //
     // Judging by the COLOUR of what survives was tried first and does not work: the
     // gutted short scores 0.76 there and a white short that cuts cleanly scores
