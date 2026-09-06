@@ -228,7 +228,7 @@ export async function GET(request) {
         cleared: +ratio.toFixed(3),
         frameLeft: +frameRatio.toFixed(4),
         size: W + 'x' + H,
-      })
+      }, { headers: { 'Access-Control-Allow-Origin': '*' } })
     }
     if (verdict !== 'cut' && !force) return send(input, ctype)
 
@@ -237,7 +237,11 @@ export async function GET(request) {
       .toBuffer()
     return send(out, 'image/png')
   } catch (e) {
-    if (debug) return Response.json({ verdict: 'threw', error: String(e).slice(0, 200) })
+    if (debug)
+      return Response.json(
+        { verdict: 'threw', error: String(e).slice(0, 200) },
+        { headers: { 'Access-Control-Allow-Origin': '*' } }
+      )
     return send(input, ctype)
   }
 }
