@@ -93,7 +93,11 @@ async function getOutfit(slug) {
 
 // Same maths as the homepage card: the cut-out keeps its original canvas, so without
 // the measured box every figure lands at a different size. "ar,top,bottom,left,right".
-function cutFit(box, fill) {
+// cellAr is the box's OWN width/height. Percentage width resolves against the box
+// width and percentage top against its height, so without it the vertical maths is
+// off by exactly the cell ratio. The homepage cells are square and hid the bug; this
+// panel is 2:3 and the figure came out 50% too tall, head cut off.
+function cutFit(box, fill, cellAr = 1) {
   if (!box) return undefined
   const p = String(box).split(',').map(Number)
   if (p.length !== 5 || p.some((n) => !Number.isFinite(n))) return undefined
@@ -101,8 +105,8 @@ function cutFit(box, fill) {
   const cw = right - left
   const ch = bottom - top
   if (!(ar > 0 && cw > 0 && ch > 0)) return undefined
-  const w = Math.min(fill / cw, (fill * ar) / ch)
-  const h = w / ar
+  const w = Math.min(fill / cw, (fill * ar) / (ch * cellAr))
+  const h = (w * cellAr) / ar
   return {
     position: 'absolute',
     width: `${(w * 100).toFixed(3)}%`,
@@ -128,7 +132,7 @@ export default async function LookPage({ params }) {
       {hasModel ? (
         <div className="look-hero-split">
           <div className="look-hero-photo">
-            <img src={look.model_image_url} style={cutFit(look.model_box, 0.94)} alt={look.title} />
+            <img src={look.model_image_url} style={cutFit(look.model_box, 0.94, 2 / 3)} alt={look.title} />
           </div>
           <div className="look-hero-text">
             <Link href="/" className="back-link-inline">← All outfits</Link>
