@@ -9,11 +9,13 @@ export const runtime = 'nodejs'
 // flood from the borders lifts them with no AI and no credits. This exists for the
 // ~660 products with no paid cut-out, so they can still sit on the MISE cream.
 //
-// IT REFUSES RATHER THAN RUINS. A pale garment on a white background is the case
-// that breaks this technique: the fill can walk straight into the dress. Every
-// result is therefore sanity-checked, and anything suspicious returns the ORIGINAL
-// image untouched. A visible grey box is a far smaller sin than a dress with a
-// hole in it, on a site where people are deciding whether to buy the thing.
+// IT REFUSES RATHER THAN RUINS. A pale garment on a pale background is the case
+// that breaks this technique: the fill walks straight into the garment. Every
+// result is sanity-checked and anything suspicious returns the ORIGINAL image
+// untouched. A visible grey box is a far smaller sin than a dress with a hole in
+// it, on a site where people are deciding whether to buy the thing.
+//
+// Add &debug=1 to get the measurements as JSON instead of an image.
 
 const ALLOWED = [
   'media.cos.com',
@@ -28,6 +30,13 @@ const ALLOWED = [
 const MAX = 1000 // work at this size: plenty for the site and ~6x faster than full
 const TOL = 26   // colour distance that still counts as background
 const SOFT = 14  // extra distance that gets a feathered alpha instead of a hard cut
+
+// Refusal thresholds, all calibrated on real product photos 2026-09-06.
+const CORNER_SPREAD = 18 // corners must agree or it is a scene, not a sweep
+const MIN_LIGHT = 600    // sum of the background RGB: light backgrounds only
+const MIN_CLEARED = 0.15
+const MAX_CLEARED = 0.92
+const MAX_CENTRE_BG = 0.55
 
 function dist(a, b) {
   const dr = a[0] - b[0]
@@ -48,6 +57,7 @@ function send(buf, type) {
 export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const raw = searchParams.get('url')
+  const debug = searchParams.get('debug') === '1'
   if (!raw) return new Response('missing url', { status: 400 })
 
   let src
@@ -76,17 +86,28 @@ export async function GET(request) {
     const H = info.height
     const C = info.channels
     const at = (x, y) => (y * W + x) * C
-    const corner = (x, y) => [data[at(x, y)], data[at(x, y) + 1], data[at(x, y) + 2]]
-    const cs = [corner(2, 2), corner(W - 3, 2), corner(2, H - 3), corner(W - 3, H - 3)]
+    const px = (x, y) => [data[at(x, y)], data[at(x, y) + 1], data[at(x, y) + 2]]
+    const cs = [px(2, 2), px(W - 3, 2), px(2, H - 3), px(W - 3, H - 3)]
     const bg = [0, 1, 2].map((i) =>
       Math.round(cs.reduce((s, c) => s + c[i], 0) / cs.length)
     )
+    const spread = Math.max(...cs.map((c) => dist(c, bg)))
 
-    // The four corners must agree. If they do not, this is a scene or a gradient,
-    // not a studio sweep, and the technique does not apply.
-    if (Math.max(...cs.map((c) => dist(c, bg))) > 18) return send(input, ctype)
-    // Light backgrounds only.
-    if (bg[0] + bg[1] + bg[2] < 600) return send(input, ctype)
+    // How much of the MIDDLE of the frame is already background-coloured. This is
+    // the tell for a pale garment on a pale sweep: the product sits in the centre,
+    // so if the centre reads as background there is nothing separating the two and
+    // the flood will eat the garment. Measured: a clean case runs 0.15 to 0.35
+    // (Sunspel chino 0.15, BOSS white linen shorts 0.33) while the failures run
+    // 0.72 and up (Orlebar Brown sand shorts 0.77, an Orbal necklace 0.93).
+    let centre = 0
+    let centreTot = 0
+    for (let y = Math.round(H * 0.25); y < H * 0.75; y++) {
+      for (let x = Math.round(W * 0.25); x < W * 0.75; x++) {
+        centreTot++
+        if (dist(px(x, y), bg) <= TOL) centre++
+      }
+    }
+    const centreBg = centre / centreTot
 
     const seen = new Uint8Array(W * H)
     const stack = []
@@ -121,18 +142,50 @@ export async function GET(request) {
       stack.push(x, y + 1)
       stack.push(x, y - 1)
     }
-
-    // A real packshot leaves roughly a fifth to nine tenths of the frame as
-    // background. Outside that range the fill either did nothing or escaped into
-    // the garment, so hand back the original rather than guess.
     const ratio = cleared / (W * H)
-    if (ratio < 0.15 || ratio > 0.92) return send(input, ctype)
+
+    // Any leftover opaque pixel in the outer frame means the flood stopped early,
+    // which happens on gradient or two-tone backgrounds.
+    const m = Math.max(2, Math.round(Math.min(W, H) * 0.03))
+    let frameLeft = 0
+    let frameTot = 0
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        if (x < m || y < m || x >= W - m || y >= H - m) {
+          frameTot++
+          if (!seen[y * W + x]) frameLeft++
+        }
+      }
+    }
+    const frameRatio = frameLeft / frameTot
+
+    let verdict = 'cut'
+    if (spread > CORNER_SPREAD) verdict = 'not-a-studio-sweep'
+    else if (bg[0] + bg[1] + bg[2] < MIN_LIGHT) verdict = 'background-too-dark'
+    else if (centreBg > MAX_CENTRE_BG) verdict = 'garment-same-colour-as-background'
+    else if (ratio < MIN_CLEARED) verdict = 'cleared-too-little'
+    else if (ratio > MAX_CLEARED) verdict = 'cleared-too-much'
+    else if (frameRatio > 0.01) verdict = 'flood-stopped-early'
+
+    if (debug) {
+      return Response.json({
+        verdict,
+        bg: bg.join(','),
+        spread: +spread.toFixed(1),
+        centreBg: +centreBg.toFixed(3),
+        cleared: +ratio.toFixed(3),
+        frameLeft: +frameRatio.toFixed(4),
+        size: W + 'x' + H,
+      })
+    }
+    if (verdict !== 'cut') return send(input, ctype)
 
     const out = await sharp(data, { raw: { width: W, height: H, channels: C } })
       .png({ compressionLevel: 9 })
       .toBuffer()
     return send(out, 'image/png')
   } catch (e) {
+    if (debug) return Response.json({ verdict: 'threw', error: String(e).slice(0, 200) })
     return send(input, ctype)
   }
 }
