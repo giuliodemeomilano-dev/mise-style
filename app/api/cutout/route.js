@@ -72,7 +72,11 @@ export async function GET(request) {
   // garment, and painting those pixels white is INVISIBLE because they were already
   // white. So every product can be normalised onto one background with no risk,
   // which is what lets the site show every piece the same way.
-  const flat = searchParams.get('flat') === '1'
+  // flat=1 means white; flat=<rrggbb> composites onto that colour instead.
+  const flatParam = searchParams.get('flat')
+  const flat = Boolean(flatParam)
+  const flatColor =
+    flatParam && /^[0-9a-fA-F]{6}$/.test(flatParam) ? '#' + flatParam : '#FFFFFF'
   if (!raw) return new Response('missing url', { status: 400 })
 
   let src
@@ -277,7 +281,7 @@ export async function GET(request) {
     // above is identical, so the box is still the CONTENT box and the piece is still
     // optically centred; only the delivery differs.
     let pipe = sharp(data, { raw: { width: W, height: H, channels: C } })
-    if (flat) pipe = pipe.flatten({ background: '#FFFFFF' })
+    if (flat) pipe = pipe.flatten({ background: flatColor })
     const out = await pipe.png({ compressionLevel: 9 }).toBuffer()
     return send(out, 'image/png')
   } catch (e) {
