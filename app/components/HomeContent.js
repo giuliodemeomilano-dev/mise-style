@@ -134,7 +134,9 @@ export default function HomeContent({ looks }) {
             // The card leads with the model photo when the outfit has one, then the
             // packshots follow as the next slides, so you see the look worn and then
             // each piece on its own.
-            const slides = (look.model ? [look.model] : []).concat(look.pieces.map((p) => p.packshot || look.hero))
+            const slides = (look.model ? [{ src: look.model, kind: 'model' }] : []).concat(
+              look.pieces.map((p) => ({ src: p.packshot || look.hero, kind: p.cut ? 'cut' : 'raw' }))
+            )
             const slideIdx = (carIdx[look.id] || 0) % slides.length
             return (
               <div key={look.id} className="look-card visible">
@@ -147,7 +149,7 @@ export default function HomeContent({ looks }) {
                     <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                   </button>
               <div className="model-hero model-hero-clean car-wrap" onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX }} onTouchEnd={(e) => onSwipeEnd(e, look.id, slides.length)}>
-                <img src={slides[slideIdx]} className={look.model && slideIdx === 0 ? 'is-model' : undefined} alt={look.title} loading="lazy" />
+                <img src={slides[slideIdx].src} className={slides[slideIdx].kind === 'raw' ? undefined : 'is-' + slides[slideIdx].kind} alt={look.title} loading="lazy" />
                 {slides.length > 1 && (
                   <>
                     <button className="car-arrow car-prev" aria-label="prev" onClick={(e) => moveCar(e, look.id, slides.length, -1)}>‹</button>
@@ -167,7 +169,7 @@ export default function HomeContent({ looks }) {
                   <div className="pieces-strip">
                     {look.pieces.map((p, i) => (
                       <div key={i} className="strip-item">
-                        <img src={p.packshot} alt={p.name} loading="lazy" />
+                        <img src={p.packshot} className={p.cut ? 'is-cut' : undefined} alt={p.name} loading="lazy" />
                         <div className="strip-label">
                           <div className="strip-brand">{p.brand}</div>
                           <div className="strip-price">€{p.price}</div>
