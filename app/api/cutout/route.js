@@ -158,8 +158,35 @@ export async function GET(request) {
     // gutted short scores 0.76 there and a white short that cuts cleanly scores
     // 0.47, so the two are the wrong way round. Do not bring that test back.
     let kept = 0
-    for (let i = 0; i < W * H; i++) if (data[i * C + 3] >= 250) kept++
+    let top = H
+    let bottom = 0
+    let left = W
+    let right = 0
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        if (data[(y * W + x) * C + 3] < 250) continue
+        kept++
+        if (y < top) top = y
+        if (y > bottom) bottom = y
+        if (x < left) left = x
+        if (x > right) right = x
+      }
+    }
     const keptRatio = kept / (W * H)
+
+    // The alpha bounding box, as the fractions the site and the pin renderer both
+    // take as cutbox. Removing the background does not crop the canvas, so without
+    // this a cut-out garment stays wherever the brand happened to place it in its
+    // own frame and a row of three pieces looks like it is drifting.
+    const box = kept
+      ? [
+          (W / H).toFixed(4),
+          (top / H).toFixed(4),
+          ((bottom + 1) / H).toFixed(4),
+          (left / W).toFixed(4),
+          ((right + 1) / W).toFixed(4),
+        ].join(',')
+      : null
 
     // Any leftover opaque pixel in the outer frame means the flood stopped early,
     // which happens on gradient or two-tone backgrounds.
@@ -192,6 +219,7 @@ export async function GET(request) {
         spread: +spread.toFixed(1),
         centreBg: +centreBg.toFixed(3),
         kept: +keptRatio.toFixed(3),
+        box,
         cleared: +ratio.toFixed(3),
         frameLeft: +frameRatio.toFixed(4),
         size: W + 'x' + H,
