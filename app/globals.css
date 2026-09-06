@@ -107,7 +107,12 @@ body { background: var(--bg); font-family: var(--font-body); color: var(--text);
 
 .pieces-strip { display: flex; gap: 0; border-top: 3px solid var(--bg-card); }
 .strip-item { flex: 1; aspect-ratio: 1; overflow: hidden; position: relative; background: var(--bg-card); border-right: 3px solid var(--bg-card); cursor: pointer; }
-.strip-item:has(img.is-cut) { background: var(--bg-warm); }
+/* EVERY piece sits on the same white, 2026-09-06. Giulio asked for one thing:
+   make them all look the same. The cut-out is free on about 86% of the catalogue
+   and the rest is a pale garment on a pale sweep, where removing the background
+   would eat the garment. White is the one ground where both look identical, so it
+   is the only honest way to make the row uniform without ruining anything. The
+   cut-outs still earn their keep: they centre the piece and they carry the pins. */
 .strip-item:last-child { border-right: none; }
 /* contain, not cover: packshots are 2:3 and a square cell cropped a third off
    every garment, so trousers lost their hems in the strip. */
@@ -330,7 +335,7 @@ body { background: var(--bg); font-family: var(--font-body); color: var(--text);
 /* A cut-out garment gets the same cream as the cut-out figure, so one card is one
    colour. A RAW packshot keeps the white box, because it carries its own white
    background and cream behind it would just draw a rectangle. */
-.model-hero-clean:has(img.is-model), .model-hero-clean:has(img.is-cut) { background: var(--bg-warm); }
+.model-hero-clean:has(img.is-model) { background: var(--bg-warm); }
 .model-hero-clean img.is-model {
   padding: 0 !important;
   -webkit-mask-image: none !important;
