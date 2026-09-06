@@ -32,6 +32,7 @@ async function getLooks() {
           price,
           image_url,
           packshot_url,
+          cutout_url,
           affiliate_url
         )
       )
@@ -68,7 +69,10 @@ async function getLooks() {
         store: item.products?.merchant,
         price: item.products?.price,
         img: item.products?.image_url,
-        packshot: item.products?.packshot_url || item.products?.image_url,
+        // cutout_url is the same packshot with the background removed. The daily task
+        // already makes one for the pieces it pins, so preferring it costs nothing and
+        // lets the garment sit on the MISE cream instead of its own grey box.
+        packshot: item.products?.cutout_url || item.products?.packshot_url || item.products?.image_url,
         url: item.products?.affiliate_url,
       })),
     }
