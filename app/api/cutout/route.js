@@ -43,6 +43,8 @@ const MIN_CLEARED = 0.15
 const MAX_FRAME_LEFT = 0.06 // leftover opaque pixels allowed in the outer border
 const MIN_KEPT = 0.01   // a floor against an empty result
 const MIN_FILL = 0.13   // the product must fill this much of its OWN bounding box
+const VIVID_D = 60      // colour distance at which a pixel is unmistakably product
+const MIN_VIVID = 0.80  // ...or nearly everything that survived is that vivid
 
 function dist(a, b) {
   const dr = a[0] - b[0]
@@ -195,14 +197,17 @@ export async function GET(request) {
     // gutted short scores 0.76 there and a white short that cuts cleanly scores
     // 0.47, so the two are the wrong way round. Do not bring that test back.
     let kept = 0
+    let vivid = 0
     let top = H
     let bottom = 0
     let left = W
     let right = 0
     for (let y = 0; y < H; y++) {
       for (let x = 0; x < W; x++) {
-        if (data[(y * W + x) * C + 3] < 250) continue
+        const q = (y * W + x) * C
+        if (data[q + 3] < 250) continue
         kept++
+        if (dist([data[q], data[q + 1], data[q + 2]], bg) > VIVID_D) vivid++
         if (y < top) top = y
         if (y > bottom) bottom = y
         if (x < left) left = x
@@ -221,6 +226,11 @@ export async function GET(request) {
     // short that the fill walked through leaves a big box with almost nothing in it.
     const boxArea = kept ? (bottom - top + 1) * (right - left + 1) : 0
     const fill = boxArea ? kept / boxArea : 0
+    // A necklace or a thin sandal strap fills almost none of its box and yet cuts
+    // perfectly, because what survives is unmistakably the product. Density alone
+    // refused those; density OR vividness keeps them. A gutted pale garment fails
+    // both: it is sparse AND what is left of it is the colour of the sweep.
+    const vividRatio = kept ? vivid / kept : 0
 
     const box = kept
       ? [
@@ -253,7 +263,7 @@ export async function GET(request) {
     } else if (alreadyCut) verdict = keptRatio > 0.005 ? 'already-transparent' : 'empty'
     else if (spread > CORNER_SPREAD) verdict = 'not-a-studio-sweep'
     else if (bg[0] + bg[1] + bg[2] < MIN_LIGHT) verdict = 'background-too-dark'
-    else if (keptRatio < MIN_KEPT || fill < MIN_FILL)
+    else if (keptRatio < MIN_KEPT || (fill < MIN_FILL && vividRatio < MIN_VIVID))
       verdict = 'garment-same-colour-as-background'
     else if (ratio < MIN_CLEARED) verdict = 'cleared-too-little'
     else if (frameRatio > MAX_FRAME_LEFT) verdict = 'flood-stopped-early'
@@ -266,6 +276,7 @@ export async function GET(request) {
         centreBg: +centreBg.toFixed(3),
         kept: +keptRatio.toFixed(3),
         fill: +fill.toFixed(3),
+        vivid: +vividRatio.toFixed(3),
         box,
         cleared: +ratio.toFixed(3),
         frameLeft: +frameRatio.toFixed(4),
