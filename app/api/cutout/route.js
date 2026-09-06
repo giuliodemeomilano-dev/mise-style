@@ -44,7 +44,7 @@ const MAX_FRAME_LEFT = 0.06 // leftover opaque pixels allowed in the outer borde
 const MIN_KEPT = 0.01   // a floor against an empty result
 const MIN_FILL = 0.13   // the product must fill this much of its OWN bounding box
 const VIVID_D = 60      // colour distance at which a pixel is unmistakably product
-const MIN_VIVID = 0.80  // ...or nearly everything that survived is that vivid
+const MIN_VIVID = 0.70  // ...or nearly everything that survived is that vivid
 
 function dist(a, b) {
   const dr = a[0] - b[0]
