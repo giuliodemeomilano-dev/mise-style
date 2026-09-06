@@ -43,6 +43,7 @@ const MIN_CLEARED = 0.15
 const MAX_CLEARED = 0.92
 const MAX_CENTRE_BG = 0.98
 const MIN_KEPT = 0.05   // the product has to survive as at least this much of the frame
+const MIN_FILL = 0.16   // and as at least this much of its own bounding box
 
 function dist(a, b) {
   const dr = a[0] - b[0]
@@ -101,6 +102,16 @@ export async function GET(request) {
     )
     const spread = Math.max(...cs.map((c) => dist(c, bg)))
 
+    // SOME PACKSHOTS ARE ALREADY CUT OUT. Polene ships transparent PNGs and so do a
+    // few Mejuri and Shopify files. Their corners have alpha 0, which ensureAlpha
+    // reports as RGB 0,0,0, so the light-background test used to reject them as
+    // 'background-too-dark' and the site left them in a white box for nothing.
+    // Nothing needs cutting here, only measuring.
+    const cornerAlpha = [at(2, 2), at(W - 3, 2), at(2, H - 3), at(W - 3, H - 3)].map(
+      (i) => data[i + 3]
+    )
+    const alreadyCut = C === 4 && cornerAlpha.every((a) => a < 8)
+
     // How much of the MIDDLE of the frame is already background-coloured. Kept only
     // as a backstop for an empty or near-empty frame: it does NOT separate a pale
     // garment from a thin one. Measured 2026-09-06, a flat sandal that cuts
@@ -117,6 +128,9 @@ export async function GET(request) {
 
     const seen = new Uint8Array(W * H)
     const stack = []
+    // An already-transparent file needs no fill: seed nothing and let the pass below
+    // simply measure the alpha that is already there.
+    if (!alreadyCut) {
     for (let x = 0; x < W; x++) {
       stack.push(x, 0)
       stack.push(x, H - 1)
@@ -124,6 +138,7 @@ export async function GET(request) {
     for (let y = 0; y < H; y++) {
       stack.push(0, y)
       stack.push(W - 1, y)
+    }
     }
 
     let cleared = 0
@@ -183,6 +198,13 @@ export async function GET(request) {
     // take as cutbox. Removing the background does not crop the canvas, so without
     // this a cut-out garment stays wherever the brand happened to place it in its
     // own frame and a row of three pieces looks like it is drifting.
+    // How densely the product fills its own bounding box. This is what separates a
+    // SMALL product from a GUTTED one, and the frame-fraction alone could not: a pair
+    // of ballet flats is tiny in its frame but solid inside its box, while a pale
+    // short that the fill walked through leaves a big box with almost nothing in it.
+    const boxArea = kept ? (bottom - top + 1) * (right - left + 1) : 0
+    const fill = boxArea ? kept / boxArea : 0
+
     const box = kept
       ? [
           (W / H).toFixed(4),
@@ -209,7 +231,8 @@ export async function GET(request) {
     const frameRatio = frameLeft / frameTot
 
     let verdict = 'cut'
-    if (spread > CORNER_SPREAD) verdict = 'not-a-studio-sweep'
+    if (alreadyCut) verdict = keptRatio > 0.005 ? 'already-transparent' : 'empty'
+    else if (spread > CORNER_SPREAD) verdict = 'not-a-studio-sweep'
     else if (bg[0] + bg[1] + bg[2] < MIN_LIGHT) verdict = 'background-too-dark'
     else if (centreBg > MAX_CENTRE_BG) verdict = 'nothing-but-background'
     else if (keptRatio < MIN_KEPT) verdict = 'garment-same-colour-as-background'
@@ -224,12 +247,16 @@ export async function GET(request) {
         spread: +spread.toFixed(1),
         centreBg: +centreBg.toFixed(3),
         kept: +keptRatio.toFixed(3),
+        fill: +fill.toFixed(3),
         box,
         cleared: +ratio.toFixed(3),
         frameLeft: +frameRatio.toFixed(4),
         size: W + 'x' + H,
       }, { headers: { 'Access-Control-Allow-Origin': '*' } })
     }
+    // Already transparent: the original file IS the cut-out, so hand it back as it
+    // came rather than re-encoding it. Only the box was needed.
+    if (verdict === 'already-transparent') return send(input, ctype)
     if (verdict !== 'cut' && !force) return send(input, ctype)
 
     const out = await sharp(data, { raw: { width: W, height: H, channels: C } })
