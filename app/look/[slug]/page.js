@@ -63,7 +63,7 @@ export async function generateMetadata({ params }) {
 async function getOutfit(slug) {
   const { data: outfit, error } = await supabase
     .from('outfits')
-    .select('id, slug, title, description, mood, occasion, season, gender, budget_tier, tags, hero_image_url, model_image_url, total_price, outfit_items (position, role, products (id, external_id, category, name, brand, merchant, price, image_url, packshot_url, affiliate_url))')
+    .select('id, slug, title, description, mood, occasion, season, gender, budget_tier, tags, hero_image_url, model_image_url, total_price, outfit_items (position, role, products (id, external_id, category, name, brand, merchant, price, image_url, packshot_url, cutout_url, affiliate_url))')
     .eq('slug', slug)
     .eq('status', 'active')
     .single()
@@ -83,7 +83,8 @@ async function getOutfit(slug) {
       store: item.products?.merchant,
       price: item.products?.price,
       img: item.products?.image_url,
-      packshot: item.products?.packshot_url || item.products?.image_url,
+      // Prefer the background-removed version when the daily task has made one.
+      packshot: item.products?.cutout_url || item.products?.packshot_url || item.products?.image_url,
       url: item.products?.affiliate_url,
     })),
   }
