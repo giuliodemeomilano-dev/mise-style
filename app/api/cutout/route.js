@@ -37,8 +37,7 @@ const MIN_LIGHT = 600    // sum of the background RGB: light backgrounds only
 const MIN_CLEARED = 0.15
 const MAX_CLEARED = 0.92
 const MAX_CENTRE_BG = 0.98
-const SOLID_D = 45      // colour distance at which a pixel is clearly not background
-const MIN_SOLID = 0.45  // share of the kept pixels that must be clearly not background
+const MIN_KEPT = 0.03   // the product has to survive as at least this much of the frame
 
 function dist(a, b) {
   const dr = a[0] - b[0]
@@ -146,20 +145,19 @@ export async function GET(request) {
     }
     const ratio = cleared / (W * H)
 
-    // Of everything the flood KEPT, how much is clearly a different colour from the
-    // background. This is the tell for a pale garment on a pale sweep. When the
-    // garment has real colour the kept pixels are the garment and this runs high;
-    // when the garment matches the sweep the flood walks through it and all that
-    // survives is a faint outline and a shadow, so this collapses.
+    // How much of the frame the product still occupies once the flood has run. This
+    // is the check that catches a pale garment on a pale sweep: the fill walks
+    // straight through it and all that survives is a faint outline, so the product
+    // collapses to almost nothing. Measured 2026-09-06, good results keep 0.07 to
+    // 0.33 of the frame while the sand-on-off-white short that came out gutted kept
+    // 0.015 and the white shirt dress 0.027.
+    //
+    // Judging by the COLOUR of what survives was tried first and does not work: the
+    // gutted short scores 0.76 there and a white short that cuts cleanly scores
+    // 0.47, so the two are the wrong way round. Do not bring that test back.
     let kept = 0
-    let solid = 0
-    for (let i = 0; i < W * H; i++) {
-      if (data[i * C + 3] < 250) continue
-      kept++
-      const p = i * C
-      if (dist([data[p], data[p + 1], data[p + 2]], bg) > SOLID_D) solid++
-    }
-    const solidRatio = kept ? solid / kept : 0
+    for (let i = 0; i < W * H; i++) if (data[i * C + 3] >= 250) kept++
+    const keptRatio = kept / (W * H)
 
     // Any leftover opaque pixel in the outer frame means the flood stopped early,
     // which happens on gradient or two-tone backgrounds.
@@ -180,7 +178,7 @@ export async function GET(request) {
     if (spread > CORNER_SPREAD) verdict = 'not-a-studio-sweep'
     else if (bg[0] + bg[1] + bg[2] < MIN_LIGHT) verdict = 'background-too-dark'
     else if (centreBg > MAX_CENTRE_BG) verdict = 'nothing-but-background'
-    else if (solidRatio < MIN_SOLID) verdict = 'garment-same-colour-as-background'
+    else if (keptRatio < MIN_KEPT) verdict = 'garment-same-colour-as-background'
     else if (ratio < MIN_CLEARED) verdict = 'cleared-too-little'
     else if (ratio > MAX_CLEARED) verdict = 'cleared-too-much'
     else if (frameRatio > 0.01) verdict = 'flood-stopped-early'
@@ -191,8 +189,7 @@ export async function GET(request) {
         bg: bg.join(','),
         spread: +spread.toFixed(1),
         centreBg: +centreBg.toFixed(3),
-        solid: +solidRatio.toFixed(3),
-        keptPct: +(kept / (W * H)).toFixed(3),
+        kept: +keptRatio.toFixed(3),
         cleared: +ratio.toFixed(3),
         frameLeft: +frameRatio.toFixed(4),
         size: W + 'x' + H,
