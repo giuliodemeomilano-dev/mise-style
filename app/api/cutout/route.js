@@ -37,7 +37,7 @@ const TOL = 26   // colour distance that still counts as background
 const SOFT = 14  // extra distance that gets a feathered alpha instead of a hard cut
 
 // Refusal thresholds, all calibrated on real product photos 2026-09-06.
-const CORNER_SPREAD = 18 // corners must agree or it is a scene, not a sweep
+const CORNER_SPREAD = 60 // beyond this the corners disagree so much it is a scene
 const MIN_LIGHT = 480    // sum of the background RGB: light backgrounds only
 const MIN_CLEARED = 0.15
 const MAX_FRAME_LEFT = 0.06 // leftover opaque pixels allowed in the outer border
@@ -114,6 +114,15 @@ export async function GET(request) {
     )
     const spread = Math.max(...cs.map((c) => dist(c, bg)))
 
+    // THE TOLERANCE HAS TO FOLLOW THE BACKGROUND. Plenty of packshots are shot on a
+    // soft GRADIENT rather than a flat sweep: a Massimo Dutti tank measured 2026-09-06
+    // has corners 26.6 apart, so a fixed tolerance of 26 could not walk from one
+    // corner to the other and left a fifth of the border uncleared, which reads as a
+    // grey box with a bite out of it. Widening the tolerance to comfortably span the
+    // measured spread fixes those, and it is safe because the result is still judged
+    // by fill and vivid afterwards.
+    const tol = Math.max(TOL, Math.round(spread * 1.7))
+
     // SOME PACKSHOTS ARE ALREADY CUT OUT. Polene ships transparent PNGs and so do a
     // few Mejuri and Shopify files. Their corners have alpha 0, which ensureAlpha
     // reports as RGB 0,0,0, so the light-background test used to reject them as
@@ -135,7 +144,7 @@ export async function GET(request) {
     for (let y = Math.round(H * 0.25); y < H * 0.75; y++) {
       for (let x = Math.round(W * 0.25); x < W * 0.75; x++) {
         centreTot++
-        if (dist(px(x, y), bg) <= TOL) centre++
+        if (dist(px(x, y), bg) <= tol) centre++
       }
     }
     const centreBg = centre / centreTot
@@ -165,12 +174,12 @@ export async function GET(request) {
       seen[idx] = 1
       const p = idx * C
       const d = dist([data[p], data[p + 1], data[p + 2]], bg)
-      if (d > TOL + SOFT) continue
-      if (d <= TOL) {
+      if (d > tol + SOFT) continue
+      if (d <= tol) {
         data[p + 3] = 0
         cleared++
       } else {
-        data[p + 3] = Math.round((255 * (d - TOL)) / SOFT)
+        data[p + 3] = Math.round((255 * (d - tol)) / SOFT)
       }
       stack.push(x + 1, y)
       stack.push(x - 1, y)
@@ -273,6 +282,7 @@ export async function GET(request) {
         verdict,
         bg: bg.join(','),
         spread: +spread.toFixed(1),
+        tol,
         centreBg: +centreBg.toFixed(3),
         kept: +keptRatio.toFixed(3),
         fill: +fill.toFixed(3),
