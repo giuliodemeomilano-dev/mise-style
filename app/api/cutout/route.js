@@ -66,6 +66,13 @@ export async function GET(request) {
   const debug = searchParams.get('debug') === '1'
   // &force=1 cuts even when the checks say no. For calibrating by eye, never for the site.
   const force = searchParams.get('force') === '1'
+  // &flat=1 paints the background PURE WHITE instead of making it transparent, and
+  // never refuses. It is the answer for the packshots the cut-out cannot handle: a
+  // pale garment on a pale sweep is exactly the case where the fill walks into the
+  // garment, and painting those pixels white is INVISIBLE because they were already
+  // white. So every product can be normalised onto one background with no risk,
+  // which is what lets the site show every piece the same way.
+  const flat = searchParams.get('flat') === '1'
   if (!raw) return new Response('missing url', { status: 400 })
 
   let src
@@ -236,8 +243,10 @@ export async function GET(request) {
     }
     const frameRatio = frameLeft / frameTot
 
-    let verdict = 'cut'
-    if (alreadyCut) verdict = keptRatio > 0.005 ? 'already-transparent' : 'empty'
+    let verdict = flat ? 'flattened' : 'cut'
+    if (flat) {
+      // nothing to judge: painting white over white cannot damage anything
+    } else if (alreadyCut) verdict = keptRatio > 0.005 ? 'already-transparent' : 'empty'
     else if (spread > CORNER_SPREAD) verdict = 'not-a-studio-sweep'
     else if (bg[0] + bg[1] + bg[2] < MIN_LIGHT) verdict = 'background-too-dark'
     else if (keptRatio < MIN_KEPT || fill < MIN_FILL)
@@ -262,11 +271,14 @@ export async function GET(request) {
     // Already transparent: the original file IS the cut-out, so hand it back as it
     // came rather than re-encoding it. Only the box was needed.
     if (verdict === 'already-transparent') return send(input, ctype)
-    if (verdict !== 'cut' && !force) return send(input, ctype)
+    if (verdict !== 'cut' && verdict !== 'flattened' && !force) return send(input, ctype)
 
-    const out = await sharp(data, { raw: { width: W, height: H, channels: C } })
-      .png({ compressionLevel: 9 })
-      .toBuffer()
+    // In flat mode the transparency is composited back onto pure white. The measuring
+    // above is identical, so the box is still the CONTENT box and the piece is still
+    // optically centred; only the delivery differs.
+    let pipe = sharp(data, { raw: { width: W, height: H, channels: C } })
+    if (flat) pipe = pipe.flatten({ background: '#FFFFFF' })
+    const out = await pipe.png({ compressionLevel: 9 }).toBuffer()
     return send(out, 'image/png')
   } catch (e) {
     if (debug)
