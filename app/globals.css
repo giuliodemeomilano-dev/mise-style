@@ -106,7 +106,8 @@ body { background: var(--bg); font-family: var(--font-body); color: var(--text);
 .btn-save.liked svg { fill: var(--accent); stroke: var(--accent); }
 
 .pieces-strip { display: flex; gap: 0; border-top: 3px solid var(--bg-card); }
-.strip-item { flex: 1; aspect-ratio: 1; overflow: hidden; position: relative; background: var(--bg-warm); border-right: 3px solid var(--bg-card); cursor: pointer; }
+.strip-item { flex: 1; aspect-ratio: 1; overflow: hidden; position: relative; background: var(--bg-card); border-right: 3px solid var(--bg-card); cursor: pointer; }
+.strip-item:has(img.is-cut) { background: var(--bg-warm); }
 .strip-item:last-child { border-right: none; }
 /* contain, not cover: packshots are 2:3 and a square cell cropped a third off
    every garment, so trousers lost their hems in the strip. */
@@ -323,7 +324,10 @@ body { background: var(--bg); font-family: var(--font-body); color: var(--text);
    as a cut. The model slide therefore drops the mask and the padding and sits on
    the MISE cream, so the letterbox bands beside a 9:16 figure look like a
    deliberate mat instead of a gap. The figure is never cropped. ---------- */
-.model-hero-clean:has(img.is-model) { background: var(--bg-warm); }
+/* A cut-out garment gets the same cream as the cut-out figure, so one card is one
+   colour. A RAW packshot keeps the white box, because it carries its own white
+   background and cream behind it would just draw a rectangle. */
+.model-hero-clean:has(img.is-model), .model-hero-clean:has(img.is-cut) { background: var(--bg-warm); }
 .model-hero-clean img.is-model {
   padding: 0 !important;
   -webkit-mask-image: none !important;
