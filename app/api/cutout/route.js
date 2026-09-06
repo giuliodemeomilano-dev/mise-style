@@ -38,9 +38,9 @@ const SOFT = 14  // extra distance that gets a feathered alpha instead of a hard
 
 // Refusal thresholds, all calibrated on real product photos 2026-09-06.
 const CORNER_SPREAD = 18 // corners must agree or it is a scene, not a sweep
-const MIN_LIGHT = 600    // sum of the background RGB: light backgrounds only
+const MIN_LIGHT = 480    // sum of the background RGB: light backgrounds only
 const MIN_CLEARED = 0.15
-const MAX_CENTRE_BG = 0.98
+const MAX_FRAME_LEFT = 0.06 // leftover opaque pixels allowed in the outer border
 const MIN_KEPT = 0.01   // a floor against an empty result
 const MIN_FILL = 0.13   // the product must fill this much of its OWN bounding box
 
@@ -111,10 +111,12 @@ export async function GET(request) {
     )
     const alreadyCut = C === 4 && cornerAlpha.every((a) => a < 8)
 
-    // How much of the MIDDLE of the frame is already background-coloured. Kept only
-    // as a backstop for an empty or near-empty frame: it does NOT separate a pale
-    // garment from a thin one. Measured 2026-09-06, a flat sandal that cuts
-    // perfectly scores 0.71 and a pale short that cuts badly scores 0.77.
+    // How much of the MIDDLE of the frame is already background-coloured. Reported
+    // for diagnosis only, NOT used to decide any more. It was a criterion for a few
+    // hours on 2026-09-06 and it was wrong: it cannot separate a pale garment from a
+    // thin one, so it refused espadrilles, sneakers, sandals and necklaces, whose
+    // centre is genuinely empty. A flat sandal that cuts perfectly scores 0.71 and a
+    // pale short that cuts badly scores 0.77. `fill` is the criterion.
     let centre = 0
     let centreTot = 0
     for (let y = Math.round(H * 0.25); y < H * 0.75; y++) {
@@ -238,11 +240,10 @@ export async function GET(request) {
     if (alreadyCut) verdict = keptRatio > 0.005 ? 'already-transparent' : 'empty'
     else if (spread > CORNER_SPREAD) verdict = 'not-a-studio-sweep'
     else if (bg[0] + bg[1] + bg[2] < MIN_LIGHT) verdict = 'background-too-dark'
-    else if (centreBg > MAX_CENTRE_BG) verdict = 'nothing-but-background'
     else if (keptRatio < MIN_KEPT || fill < MIN_FILL)
       verdict = 'garment-same-colour-as-background'
     else if (ratio < MIN_CLEARED) verdict = 'cleared-too-little'
-    else if (frameRatio > 0.01) verdict = 'flood-stopped-early'
+    else if (frameRatio > MAX_FRAME_LEFT) verdict = 'flood-stopped-early'
 
     if (debug) {
       return Response.json({
