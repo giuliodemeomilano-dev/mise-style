@@ -25,6 +25,11 @@ const ALLOWED = [
   'mejuri.com',
   'eu.sunspel.com',
   'd8j0ntlcm91z4.cloudfront.net',
+  'media.arket.com',
+  'eu.sandro-paris.com',
+  'media.veja-store.com',
+  'media.occtoo.com',
+  'www.jacquemus.com',
 ]
 
 const MAX = 1000 // work at this size: plenty for the site and ~6x faster than full
