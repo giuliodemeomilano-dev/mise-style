@@ -201,10 +201,21 @@ export async function GET(request) {
     // that clears the frame is the right one, and on a white-on-grey packshot that
     // rung is 8 or 12, which stops dead at the garment.
     const ladder = [8, 12, 18, 26, Math.max(34, Math.round(spread * 1.7))]
+    const clean = (x) => x.frameLeft <= MAX_FRAME_LEFT && x.cleared >= MIN_CLEARED
+    const good = (x) => x.kept >= MIN_KEPT && (x.fill >= MIN_FILL || x.vivid >= MIN_VIVID)
     let r = null
     for (const tol of ladder) {
-      r = flood(tol)
-      if (r.frameLeft <= MAX_FRAME_LEFT && r.cleared >= MIN_CLEARED) break
+      const x = flood(tol)
+      if (!r || (clean(x) && !clean(r))) r = x
+      // Take the first rung that both clears the border AND leaves a believable
+      // product. A narrow tolerance saves a pale garment; a wider one is what a thin
+      // chain needs, because at 8 it keeps a halo of near-background that drowns the
+      // vividness. Walking the ladder serves both instead of trading one for the other.
+      if (clean(x) && good(x)) {
+        r = x
+        break
+      }
+      if (clean(x) && clean(r) && x.tol > r.tol) r = x
     }
 
     let verdict = 'cut'
