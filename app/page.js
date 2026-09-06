@@ -33,6 +33,7 @@ async function getLooks() {
           image_url,
           packshot_url,
           cutout_url,
+          cutout_box,
           affiliate_url
         )
       )
@@ -76,6 +77,9 @@ async function getLooks() {
         // Tells the card whether this image is a cut-out on transparency (so it can
         // sit on the MISE cream) or a raw packshot that carries its own white box.
         cut: Boolean(item.products?.cutout_url),
+        // Alpha bounding box of the cut-out, "ar,top,bottom,left,right". Without it the
+        // garment sits wherever the brand left it inside its own frame.
+        box: item.products?.cutout_box || null,
         url: item.products?.affiliate_url,
       })),
     }
