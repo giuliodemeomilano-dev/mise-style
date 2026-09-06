@@ -6,6 +6,34 @@ import { useLang } from './LangProvider'
 
 const BRANDS = ['COS', 'ARKET', 'Sandro', 'Massimo Dutti', 'The Frankie Shop', 'BOSS', 'Polène', 'Jacquemus', 'Mejuri', 'Castañer', 'Veja', 'Ancient Greek Sandals']
 
+
+// The cut-outs keep the brand's original canvas, so the garment sits wherever the
+// brand happened to place it. cutout_box is its measured alpha bounding box,
+// "ar,top,bottom,left,right" as fractions. This centres the garment in the cell and
+// scales it to a constant share of the box, which is what makes a row of pieces
+// look aligned instead of drifting. Falls back to plain contain when absent.
+const FILL = 0.78
+function cutFit(box) {
+  if (!box) return undefined
+  const p = String(box).split(',').map(Number)
+  if (p.length !== 5 || p.some((n) => !Number.isFinite(n))) return undefined
+  const [ar, top, bottom, left, right] = p
+  const cw = right - left
+  const ch = bottom - top
+  if (!(ar > 0 && cw > 0 && ch > 0)) return undefined
+  const w = Math.min(FILL / cw, (FILL * ar) / ch)
+  const h = w / ar
+  return {
+    position: 'absolute',
+    width: `${(w * 100).toFixed(3)}%`,
+    height: 'auto',
+    padding: 0,
+    objectFit: 'fill',
+    left: `${((0.5 - ((left + right) / 2) * w) * 100).toFixed(3)}%`,
+    top: `${((0.5 - ((top + bottom) / 2) * h) * 100).toFixed(3)}%`,
+  }
+}
+
 export default function HomeContent({ looks }) {
   const { t } = useLang()
   const [filter, setFilter] = useState('all')
@@ -135,7 +163,7 @@ export default function HomeContent({ looks }) {
             // packshots follow as the next slides, so you see the look worn and then
             // each piece on its own.
             const slides = (look.model ? [{ src: look.model, kind: 'model' }] : []).concat(
-              look.pieces.map((p) => ({ src: p.packshot || look.hero, kind: p.cut ? 'cut' : 'raw' }))
+              look.pieces.map((p) => ({ src: p.packshot || look.hero, kind: p.cut ? 'cut' : 'raw', box: p.box }))
             )
             const slideIdx = (carIdx[look.id] || 0) % slides.length
             return (
@@ -149,7 +177,7 @@ export default function HomeContent({ looks }) {
                     <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                   </button>
               <div className="model-hero model-hero-clean car-wrap" onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX }} onTouchEnd={(e) => onSwipeEnd(e, look.id, slides.length)}>
-                <img src={slides[slideIdx].src} className={slides[slideIdx].kind === 'raw' ? undefined : 'is-' + slides[slideIdx].kind} alt={look.title} loading="lazy" />
+                <img src={slides[slideIdx].src} className={slides[slideIdx].kind === 'raw' ? undefined : 'is-' + slides[slideIdx].kind} style={cutFit(slides[slideIdx].box)} alt={look.title} loading="lazy" />
                 {slides.length > 1 && (
                   <>
                     <button className="car-arrow car-prev" aria-label="prev" onClick={(e) => moveCar(e, look.id, slides.length, -1)}>‹</button>
@@ -169,7 +197,7 @@ export default function HomeContent({ looks }) {
                   <div className="pieces-strip">
                     {look.pieces.map((p, i) => (
                       <div key={i} className="strip-item">
-                        <img src={p.packshot} className={p.cut ? 'is-cut' : undefined} alt={p.name} loading="lazy" />
+                        <img src={p.packshot} className={p.cut ? 'is-cut' : undefined} style={cutFit(p.box)} alt={p.name} loading="lazy" />
                         <div className="strip-label">
                           <div className="strip-brand">{p.brand}</div>
                           <div className="strip-price">€{p.price}</div>
