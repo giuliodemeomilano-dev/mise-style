@@ -40,10 +40,9 @@ const SOFT = 14  // extra distance that gets a feathered alpha instead of a hard
 const CORNER_SPREAD = 18 // corners must agree or it is a scene, not a sweep
 const MIN_LIGHT = 600    // sum of the background RGB: light backgrounds only
 const MIN_CLEARED = 0.15
-const MAX_CLEARED = 0.92
 const MAX_CENTRE_BG = 0.98
-const MIN_KEPT = 0.05   // the product has to survive as at least this much of the frame
-const MIN_FILL = 0.16   // and as at least this much of its own bounding box
+const MIN_KEPT = 0.01   // a floor against an empty result
+const MIN_FILL = 0.13   // the product must fill this much of its OWN bounding box
 
 function dist(a, b) {
   const dr = a[0] - b[0]
@@ -168,11 +167,16 @@ export async function GET(request) {
     // How much of the frame the product still occupies once the flood has run. This
     // is the check that catches a pale garment on a pale sweep: the fill walks
     // straight through it and all that survives is a faint outline, so the product
-    // collapses to almost nothing. Calibrated 2026-09-06 on 60 real product photos:
-    // everything that cut cleanly kept 0.064 or more of the frame, and everything
-    // gutted kept 0.033 or less (a sand short on off-white 0.015, a white shirt
-    // dress 0.027, a pale yellow pleated dress 0.033). The gap is wide and empty, so
-    // the line sits in the middle of it.
+    // collapses to almost nothing.
+    //
+    // WHAT IT IS MEASURED AGAINST MATTERS. The first version compared the survivor
+    // to the whole FRAME, and that quietly refused every SMALL product: a pair of
+    // ballet flats or a flat sandal occupies very little of its frame and scored the
+    // same as a gutted dress. Giulio spotted it on the live homepage. The honest
+    // question is how densely the product fills its OWN bounding box, which is what
+    // `fill` below answers. Calibrated 2026-09-06: clean cuts run 0.18 to 0.83
+    // (a white BOSS linen short is the low one at 0.18), gutted ones run 0.03 to
+    // 0.08. The gap is wide and empty, so the line sits in the middle of it.
     //
     // Judging by the COLOUR of what survives was tried first and does not work: the
     // gutted short scores 0.76 there and a white short that cuts cleanly scores
@@ -235,9 +239,9 @@ export async function GET(request) {
     else if (spread > CORNER_SPREAD) verdict = 'not-a-studio-sweep'
     else if (bg[0] + bg[1] + bg[2] < MIN_LIGHT) verdict = 'background-too-dark'
     else if (centreBg > MAX_CENTRE_BG) verdict = 'nothing-but-background'
-    else if (keptRatio < MIN_KEPT) verdict = 'garment-same-colour-as-background'
+    else if (keptRatio < MIN_KEPT || fill < MIN_FILL)
+      verdict = 'garment-same-colour-as-background'
     else if (ratio < MIN_CLEARED) verdict = 'cleared-too-little'
-    else if (ratio > MAX_CLEARED) verdict = 'cleared-too-much'
     else if (frameRatio > 0.01) verdict = 'flood-stopped-early'
 
     if (debug) {
