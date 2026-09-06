@@ -108,7 +108,9 @@ body { background: var(--bg); font-family: var(--font-body); color: var(--text);
 .pieces-strip { display: flex; gap: 0; border-top: 3px solid var(--bg-card); }
 .strip-item { flex: 1; aspect-ratio: 1; overflow: hidden; position: relative; background: var(--bg-warm); border-right: 3px solid var(--bg-card); cursor: pointer; }
 .strip-item:last-child { border-right: none; }
-.strip-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.5s var(--transition); }
+/* contain, not cover: packshots are 2:3 and a square cell cropped a third off
+   every garment, so trousers lost their hems in the strip. */
+.strip-item img { width: 100%; height: 100%; object-fit: contain; padding: 6px; box-sizing: border-box; display: block; transition: transform 0.5s var(--transition); }
 .strip-item:hover img { transform: scale(1.12); }
 .strip-label { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px 6px 5px; background: linear-gradient(transparent, rgba(0,0,0,0.6)); pointer-events: none; }
 .strip-brand { font-size: 8px; color: white; font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase; line-height: 1; }
@@ -310,4 +312,18 @@ body { background: var(--bg); font-family: var(--font-body); color: var(--text);
   .look-hero-text { padding: 30px 22px 34px; }
   .look-hero-strip { padding: 0 22px 30px; }
   .look-hero-cell { max-height: 240px; }
+}
+
+/* ---- Model slide on the homepage card (2026-09-06) ------------------------
+   .model-hero-clean was built for PACKSHOTS: white box, 18px padding and a fade
+   mask that ghosts all four edges so a packshot on white blends into the card.
+   Applied to a real PHOTOGRAPH that mask eats the edges of the picture and reads
+   as a cut. The model slide therefore drops the mask and the padding and sits on
+   the MISE cream, so the letterbox bands beside a 9:16 figure look like a
+   deliberate mat instead of a gap. The figure is never cropped. ---------- */
+.model-hero-clean:has(img.is-model) { background: var(--bg-warm); }
+.model-hero-clean img.is-model {
+  padding: 0 !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
 }
