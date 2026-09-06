@@ -36,7 +36,9 @@ const CORNER_SPREAD = 18 // corners must agree or it is a scene, not a sweep
 const MIN_LIGHT = 600    // sum of the background RGB: light backgrounds only
 const MIN_CLEARED = 0.15
 const MAX_CLEARED = 0.92
-const MAX_CENTRE_BG = 0.55
+const MAX_CENTRE_BG = 0.98
+const SOLID_D = 45      // colour distance at which a pixel is clearly not background
+const MIN_SOLID = 0.45  // share of the kept pixels that must be clearly not background
 
 function dist(a, b) {
   const dr = a[0] - b[0]
@@ -58,6 +60,8 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const raw = searchParams.get('url')
   const debug = searchParams.get('debug') === '1'
+  // &force=1 cuts even when the checks say no. For calibrating by eye, never for the site.
+  const force = searchParams.get('force') === '1'
   if (!raw) return new Response('missing url', { status: 400 })
 
   let src
@@ -93,12 +97,10 @@ export async function GET(request) {
     )
     const spread = Math.max(...cs.map((c) => dist(c, bg)))
 
-    // How much of the MIDDLE of the frame is already background-coloured. This is
-    // the tell for a pale garment on a pale sweep: the product sits in the centre,
-    // so if the centre reads as background there is nothing separating the two and
-    // the flood will eat the garment. Measured: a clean case runs 0.15 to 0.35
-    // (Sunspel chino 0.15, BOSS white linen shorts 0.33) while the failures run
-    // 0.72 and up (Orlebar Brown sand shorts 0.77, an Orbal necklace 0.93).
+    // How much of the MIDDLE of the frame is already background-coloured. Kept only
+    // as a backstop for an empty or near-empty frame: it does NOT separate a pale
+    // garment from a thin one. Measured 2026-09-06, a flat sandal that cuts
+    // perfectly scores 0.71 and a pale short that cuts badly scores 0.77.
     let centre = 0
     let centreTot = 0
     for (let y = Math.round(H * 0.25); y < H * 0.75; y++) {
@@ -144,6 +146,21 @@ export async function GET(request) {
     }
     const ratio = cleared / (W * H)
 
+    // Of everything the flood KEPT, how much is clearly a different colour from the
+    // background. This is the tell for a pale garment on a pale sweep. When the
+    // garment has real colour the kept pixels are the garment and this runs high;
+    // when the garment matches the sweep the flood walks through it and all that
+    // survives is a faint outline and a shadow, so this collapses.
+    let kept = 0
+    let solid = 0
+    for (let i = 0; i < W * H; i++) {
+      if (data[i * C + 3] < 250) continue
+      kept++
+      const p = i * C
+      if (dist([data[p], data[p + 1], data[p + 2]], bg) > SOLID_D) solid++
+    }
+    const solidRatio = kept ? solid / kept : 0
+
     // Any leftover opaque pixel in the outer frame means the flood stopped early,
     // which happens on gradient or two-tone backgrounds.
     const m = Math.max(2, Math.round(Math.min(W, H) * 0.03))
@@ -162,7 +179,8 @@ export async function GET(request) {
     let verdict = 'cut'
     if (spread > CORNER_SPREAD) verdict = 'not-a-studio-sweep'
     else if (bg[0] + bg[1] + bg[2] < MIN_LIGHT) verdict = 'background-too-dark'
-    else if (centreBg > MAX_CENTRE_BG) verdict = 'garment-same-colour-as-background'
+    else if (centreBg > MAX_CENTRE_BG) verdict = 'nothing-but-background'
+    else if (solidRatio < MIN_SOLID) verdict = 'garment-same-colour-as-background'
     else if (ratio < MIN_CLEARED) verdict = 'cleared-too-little'
     else if (ratio > MAX_CLEARED) verdict = 'cleared-too-much'
     else if (frameRatio > 0.01) verdict = 'flood-stopped-early'
@@ -173,12 +191,14 @@ export async function GET(request) {
         bg: bg.join(','),
         spread: +spread.toFixed(1),
         centreBg: +centreBg.toFixed(3),
+        solid: +solidRatio.toFixed(3),
+        keptPct: +(kept / (W * H)).toFixed(3),
         cleared: +ratio.toFixed(3),
         frameLeft: +frameRatio.toFixed(4),
         size: W + 'x' + H,
       })
     }
-    if (verdict !== 'cut') return send(input, ctype)
+    if (verdict !== 'cut' && !force) return send(input, ctype)
 
     const out = await sharp(data, { raw: { width: W, height: H, channels: C } })
       .png({ compressionLevel: 9 })
