@@ -63,7 +63,7 @@ export async function generateMetadata({ params }) {
 async function getOutfit(slug) {
   const { data: outfit, error } = await supabase
     .from('outfits')
-    .select('id, slug, title, description, mood, occasion, season, gender, budget_tier, tags, hero_image_url, model_image_url, total_price, outfit_items (position, role, products (id, external_id, category, name, brand, merchant, price, image_url, packshot_url, cutout_url, affiliate_url))')
+    .select('id, slug, title, description, mood, occasion, season, gender, budget_tier, tags, hero_image_url, model_image_url, model_box, total_price, outfit_items (position, role, products (id, external_id, category, name, brand, merchant, price, image_url, packshot_url, cutout_url, affiliate_url))')
     .eq('slug', slug)
     .eq('status', 'active')
     .single()
@@ -90,6 +90,29 @@ async function getOutfit(slug) {
   }
 }
 
+
+// Same maths as the homepage card: the cut-out keeps its original canvas, so without
+// the measured box every figure lands at a different size. "ar,top,bottom,left,right".
+function cutFit(box, fill) {
+  if (!box) return undefined
+  const p = String(box).split(',').map(Number)
+  if (p.length !== 5 || p.some((n) => !Number.isFinite(n))) return undefined
+  const [ar, top, bottom, left, right] = p
+  const cw = right - left
+  const ch = bottom - top
+  if (!(ar > 0 && cw > 0 && ch > 0)) return undefined
+  const w = Math.min(fill / cw, (fill * ar) / ch)
+  const h = w / ar
+  return {
+    position: 'absolute',
+    width: `${(w * 100).toFixed(3)}%`,
+    height: 'auto',
+    transform: 'none',
+    left: `${((0.5 - ((left + right) / 2) * w) * 100).toFixed(3)}%`,
+    top: `${((0.5 - ((top + bottom) / 2) * h) * 100).toFixed(3)}%`,
+  }
+}
+
 export default async function LookPage({ params }) {
   const { slug } = await params
   const look = await getOutfit(slug)
@@ -105,7 +128,7 @@ export default async function LookPage({ params }) {
       {hasModel ? (
         <div className="look-hero-split">
           <div className="look-hero-photo">
-            <img src={look.model_image_url} alt={look.title} />
+            <img src={look.model_image_url} style={cutFit(look.model_box, 0.94)} alt={look.title} />
           </div>
           <div className="look-hero-text">
             <Link href="/" className="back-link-inline">← All outfits</Link>
