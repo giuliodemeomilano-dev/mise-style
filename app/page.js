@@ -73,6 +73,9 @@ async function getLooks() {
         // already makes one for the pieces it pins, so preferring it costs nothing and
         // lets the garment sit on the MISE cream instead of its own grey box.
         packshot: item.products?.cutout_url || item.products?.packshot_url || item.products?.image_url,
+        // Tells the card whether this image is a cut-out on transparency (so it can
+        // sit on the MISE cream) or a raw packshot that carries its own white box.
+        cut: Boolean(item.products?.cutout_url),
         url: item.products?.affiliate_url,
       })),
     }
