@@ -12,7 +12,10 @@ const BRANDS = ['COS', 'ARKET', 'Sandro', 'Massimo Dutti', 'The Frankie Shop', '
 // "ar,top,bottom,left,right" as fractions. This centres the garment in the cell and
 // scales it to a constant share of the box, which is what makes a row of pieces
 // look aligned instead of drifting. Falls back to plain contain when absent.
-function cutFit(box, fill = 0.78) {
+// bottomAt, when given, parks the BOTTOM of the content at that fraction of the cell
+// instead of centring it. The figure needs that: the carousel dots live over the last
+// 8% of the card and were sitting on top of the shoes.
+function cutFit(box, fill = 0.78, bottomAt) {
   if (!box) return undefined
   const p = String(box).split(',').map(Number)
   if (p.length !== 5 || p.some((n) => !Number.isFinite(n))) return undefined
@@ -29,7 +32,7 @@ function cutFit(box, fill = 0.78) {
     padding: 0,
     objectFit: 'fill',
     left: `${((0.5 - ((left + right) / 2) * w) * 100).toFixed(3)}%`,
-    top: `${((0.5 - ((top + bottom) / 2) * h) * 100).toFixed(3)}%`,
+    top: `${((typeof bottomAt === 'number' ? bottomAt - bottom * h : 0.5 - ((top + bottom) / 2) * h) * 100).toFixed(3)}%`,
   }
 }
 
@@ -176,7 +179,7 @@ export default function HomeContent({ looks }) {
                     <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                   </button>
               <div className="model-hero model-hero-clean car-wrap" onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX }} onTouchEnd={(e) => onSwipeEnd(e, look.id, slides.length)}>
-                <img src={slides[slideIdx].src} className={slides[slideIdx].kind === 'raw' ? undefined : 'is-' + slides[slideIdx].kind} style={cutFit(slides[slideIdx].box, slides[slideIdx].kind === 'model' ? 0.94 : 0.78)} alt={look.title} loading="lazy" />
+                <img src={slides[slideIdx].src} className={slides[slideIdx].kind === 'raw' ? undefined : 'is-' + slides[slideIdx].kind} style={slides[slideIdx].kind === 'model' ? cutFit(slides[slideIdx].box, 0.92, 0.88) : cutFit(slides[slideIdx].box, 0.78)} alt={look.title} loading="lazy" />
                 {slides.length > 1 && (
                   <>
                     <button className="car-arrow car-prev" aria-label="prev" onClick={(e) => moveCar(e, look.id, slides.length, -1)}>‹</button>
