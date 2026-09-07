@@ -43,6 +43,8 @@ const MIN_FILL = 0.13  // the product must fill this much of its OWN bounding bo
 const VIVID_D = 60
 const MIN_VIVID = 0.70 // ...or nearly all of it must be unmistakably not background
 const MAX_FRAME_LEFT = 0.02
+const LOCAL_STEP = 8    // how far the background may drift from ONE pixel to the next
+const GLOBAL_CAP = 70   // ...and how far it may drift in total before it is product
 
 function dist(a, b) {
   const dr = a[0] - b[0]
@@ -137,8 +139,29 @@ export async function GET(request) {
 
     // ONE FLOOD AT A GIVEN TOLERANCE. Returns the mask and its measurements; it does
     // not touch the pixels, so the ladder can try several and keep the best.
+    // THE FLOOD FOLLOWS THE GRADIENT, IT DOES NOT JUST THRESHOLD.
+    // A studio sweep is rarely one flat colour: COS lights a soft glow behind the
+    // product, so the corners read 221 while the middle drifts to 240. Comparing
+    // every pixel to the corner colour forced the tolerance up to 34 to cross that
+    // drift, and 34 is exactly the distance from COS grey to a WHITE ballet flat, so
+    // the shoe was eaten by the gradient rather than by its own colour. Giulio spotted
+    // it and was right that the background is grey, not white.
+    //
+    // So a pixel joins the background if it is close to the corner colour OR if it is
+    // within one small step of the neighbour that reached it and has not drifted too
+    // far in total. A smooth gradient is a thousand small steps; the edge of a shoe is
+    // one big one.
+    const stepDist = (a, b) => {
+      const pa = a * C
+      const pb = b * C
+      return dist(
+        [data[pa], data[pa + 1], data[pa + 2]],
+        [data[pb], data[pb + 1], data[pb + 2]]
+      )
+    }
     const flood = (tol) => {
       const seen = new Uint8Array(N)
+      const from = new Int32Array(N).fill(-1)
       const stack = []
       for (let x = 0; x < W; x++) {
         stack.push(x, 0)
@@ -155,14 +178,29 @@ export async function GET(request) {
         if (x < 0 || y < 0 || x >= W || y >= H) continue
         const idx = y * W + x
         if (seen[idx]) continue
-        seen[idx] = 1
         const d = dd[idx]
-        if (d > tol + SOFT) continue
-        if (d <= tol) cleared++
-        stack.push(x + 1, y)
-        stack.push(x - 1, y)
-        stack.push(x, y + 1)
-        stack.push(x, y - 1)
+        const f = from[idx]
+        const near = d <= tol
+        const smooth =
+          f >= 0 && d <= GLOBAL_CAP && stepDist(idx, f) <= LOCAL_STEP
+        if (!near && !smooth) {
+          // Just outside: mark it as the feathered rim but do not expand through it.
+          if (d <= tol + SOFT) seen[idx] = 2
+          continue
+        }
+        seen[idx] = 1
+        cleared++
+        const push = (nx, ny) => {
+          if (nx < 0 || ny < 0 || nx >= W || ny >= H) return
+          const n = ny * W + nx
+          if (seen[n]) return
+          if (from[n] < 0) from[n] = idx
+          stack.push(nx, ny)
+        }
+        push(x + 1, y)
+        push(x - 1, y)
+        push(x, y + 1)
+        push(x, y - 1)
       }
       let frameLeft = 0
       let kept = 0
@@ -174,10 +212,9 @@ export async function GET(request) {
       for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
           const idx = y * W + x
-          const gone = seen[idx] && dd[idx] <= tol
-          if (gone) continue
+          if (seen[idx] === 1) continue // background
           if (inFrame(x, y)) frameLeft++
-          if (seen[idx]) continue // feathered band: not solid product
+          if (seen[idx] === 2) continue // feathered rim, not solid product
           kept++
           if (dd[idx] > VIVID_D) vivid++
           if (y < top) top = y
@@ -279,10 +316,12 @@ export async function GET(request) {
 
     // Apply the chosen mask: clear the background, feather the rim.
     for (let i = 0; i < N; i++) {
-      if (!r.seen[i]) continue
-      const d = dd[i]
-      if (d <= r.tol) data[i * C + 3] = 0
-      else data[i * C + 3] = Math.round((255 * (d - r.tol)) / SOFT)
+      const s = r.seen[i]
+      if (s === 1) data[i * C + 3] = 0
+      else if (s === 2) {
+        const a = Math.round((255 * (dd[i] - r.tol)) / SOFT)
+        data[i * C + 3] = Math.max(0, Math.min(255, a))
+      }
     }
 
     let pipe = sharp(data, { raw: { width: W, height: H, channels: C } })
