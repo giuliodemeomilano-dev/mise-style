@@ -15,7 +15,7 @@ const BRANDS = ['COS', 'ARKET', 'Sandro', 'Massimo Dutti', 'The Frankie Shop', '
 // bottomAt, when given, parks the BOTTOM of the content at that fraction of the cell
 // instead of centring it. The figure needs that: the carousel dots live over the last
 // 8% of the card and were sitting on top of the shoes.
-function cutFit(box, fill = 0.78, bottomAt) {
+function cutFit(box, fill = 0.78, bottomAt, even) {
   if (!box) return undefined
   const p = String(box).split(',').map(Number)
   if (p.length !== 5 || p.some((n) => !Number.isFinite(n))) return undefined
@@ -23,7 +23,17 @@ function cutFit(box, fill = 0.78, bottomAt) {
   const cw = right - left
   const ch = bottom - top
   if (!(ar > 0 && cw > 0 && ch > 0)) return undefined
-  const w = Math.min(fill / cw, (fill * ar) / ch)
+  // Inside the card carousel every garment should read the SAME SIZE, because you see
+  // one piece per slide and nothing to compare it against. Giulio asked for this on
+  // 2026-09-07: a short polo sized to fit a square looked tiny next to a long shirt.
+  // So when `even` is set, apparel is sized by HEIGHT and only capped on width.
+  // Shoes, bags and jewelry are much wider than they are tall, and blowing those up to
+  // a shirt's height looks absurd, so they keep the old fit-inside-a-square rule.
+  const shape = (cw * ar) / ch
+  const w =
+    even && shape < 1.4
+      ? Math.min((0.74 * ar) / ch, 0.9 / cw)
+      : Math.min(fill / cw, (fill * ar) / ch)
   const h = w / ar
   return {
     position: 'absolute',
@@ -179,7 +189,7 @@ export default function HomeContent({ looks }) {
                     <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                   </button>
               <div className="model-hero model-hero-clean car-wrap" onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX }} onTouchEnd={(e) => onSwipeEnd(e, look.id, slides.length)}>
-                <img src={slides[slideIdx].src} className={slides[slideIdx].kind === 'raw' ? undefined : 'is-' + slides[slideIdx].kind} style={slides[slideIdx].kind === 'model' ? cutFit(slides[slideIdx].box, 0.82, 0.88) : cutFit(slides[slideIdx].box, 0.78)} alt={look.title} loading="lazy" />
+                <img src={slides[slideIdx].src} className={slides[slideIdx].kind === 'raw' ? undefined : 'is-' + slides[slideIdx].kind} style={slides[slideIdx].kind === 'model' ? cutFit(slides[slideIdx].box, 0.82, 0.88) : cutFit(slides[slideIdx].box, 0.78, undefined, true)} alt={look.title} loading="lazy" />
                 {slides.length > 1 && (
                   <>
                     <button className="car-arrow car-prev" aria-label="prev" onClick={(e) => moveCar(e, look.id, slides.length, -1)}>‹</button>
