@@ -43,6 +43,7 @@ const MIN_FILL = 0.13  // the product must fill this much of its OWN bounding bo
 const VIVID_D = 60
 const MIN_VIVID = 0.70 // ...or nearly all of it must be unmistakably not background
 const MAX_FRAME_LEFT = 0.02
+const MIN_COVERAGE = 0.90 // share of the background-coloured pixels the fill must clear
 const LOCAL_STEP = 3    // how far the background may drift from ONE pixel to the next.
 // 3, calibrated 2026-09-07 against the Massimo Dutti ivory dress Giulio kept
 // pointing at. A studio gradient moves about 1 per pixel, so 3 crosses it easily,
@@ -210,6 +211,7 @@ export async function GET(request) {
         push(x, y - 1)
       }
       let frameLeft = 0
+      let bgLike = 0
       let kept = 0
       let vivid = 0
       let top = H
@@ -219,6 +221,7 @@ export async function GET(request) {
       for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
           const idx = y * W + x
+          if (dd[idx] <= tol) bgLike++
           if (seen[idx] === 1) continue // background
           // Only BACKGROUND the flood failed to reach counts as stopping early. A pair
           // of trousers that runs to the bottom of its frame is product, not failure,
@@ -237,6 +240,12 @@ export async function GET(request) {
       }
       const boxArea = kept ? (bottom - top + 1) * (right - left + 1) : 0
       const survival = ink ? kept / ink : 0
+      // COVERAGE is the mirror of survival: of everything that LOOKS like background,
+      // how much did the fill actually reach. It catches the opposite failure, where
+      // the fill is too timid and leaves grey islands in the middle of the frame,
+      // which the border check cannot see. Both numbers have to be high for a cut to
+      // be worth serving: the product intact AND the background gone.
+      const coverage = bgLike ? cleared / bgLike : 0
       return {
         tol,
         seen,
@@ -244,6 +253,7 @@ export async function GET(request) {
         kept: kept / N,
         fill: boxArea ? kept / boxArea : 0,
         survival,
+        coverage,
         vivid: kept ? vivid / kept : 0,
         frameLeft: frameLeft / frameTot,
         box: kept
@@ -271,6 +281,7 @@ export async function GET(request) {
     const good = (x) =>
       x.kept >= MIN_KEPT &&
       x.survival >= MIN_SURVIVAL &&
+      x.coverage >= MIN_COVERAGE &&
       (x.fill >= MIN_FILL || x.vivid >= MIN_VIVID)
     let r = null
     for (const tol of ladder) {
@@ -293,6 +304,7 @@ export async function GET(request) {
     else if (bg[0] + bg[1] + bg[2] < MIN_LIGHT) verdict = 'background-too-dark'
     else if (r.cleared < MIN_CLEARED) verdict = 'cleared-too-little'
     else if (r.frameLeft > MAX_FRAME_LEFT) verdict = 'flood-stopped-early'
+    else if (r.coverage < MIN_COVERAGE) verdict = 'background-left-behind'
     else if (
       r.kept < MIN_KEPT ||
       r.survival < MIN_SURVIVAL ||
@@ -309,6 +321,7 @@ export async function GET(request) {
         kept: +r.kept.toFixed(3),
         fill: +r.fill.toFixed(3),
         survival: +r.survival.toFixed(3),
+        coverage: +r.coverage.toFixed(3),
         ink: +(ink / N).toFixed(4),
         vivid: +r.vivid.toFixed(3),
         cleared: +r.cleared.toFixed(3),
