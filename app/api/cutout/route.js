@@ -34,7 +34,11 @@ const MIN_LIGHT = 480  // sum of the background RGB: light sweeps only
 const MIN_CLEARED = 0.15
 const MIN_KEPT = 0.002  // a floor against an empty result
 const INK_D = 12        // anything this far from the background is arguably product
-const MIN_SURVIVAL = 0.5 // ...and at least half of it must survive the fill
+const MIN_SURVIVAL = 0.25 // ...and a quarter of it has to survive the fill.
+// 0.25 not 0.5: the ink threshold is low enough to count the soft drop shadow a
+// studio leaves around a garment, and a wide tolerance legitimately clears that
+// shadow. Measured 2026-09-07: a green COS polo that cuts perfectly survives 0.46
+// while a gutted ivory dress survives 0.008. The gap is three orders of magnitude.
 const MIN_FILL = 0.13  // the product must fill this much of its OWN bounding box
 const VIVID_D = 60
 const MIN_VIVID = 0.70 // ...or nearly all of it must be unmistakably not background
