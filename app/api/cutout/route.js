@@ -32,7 +32,9 @@ const MAX = 1000
 const SOFT = 10        // feathered band above the tolerance
 const MIN_LIGHT = 480  // sum of the background RGB: light sweeps only
 const MIN_CLEARED = 0.15
-const MIN_KEPT = 0.01
+const MIN_KEPT = 0.002  // a floor against an empty result
+const INK_D = 12        // anything this far from the background is arguably product
+const MIN_SURVIVAL = 0.5 // ...and at least half of it must survive the fill
 const MIN_FILL = 0.13  // the product must fill this much of its OWN bounding box
 const VIVID_D = 60
 const MIN_VIVID = 0.70 // ...or nearly all of it must be unmistakably not background
@@ -114,6 +116,15 @@ export async function GET(request) {
       dd[i] = dist([data[p], data[p + 1], data[p + 2]], bg)
     }
 
+    // INK = every pixel even slightly different from the background, measured ONCE at
+    // a fixed low threshold and independent of any tolerance. It is the honest
+    // estimate of how much product is in the photo. Comparing what survives the fill
+    // against it answers the only question that matters, "did the fill eat the
+    // garment", and it answers it for a fine chain and a pale dress with one number:
+    // the chain keeps essentially all of its ink, the dress keeps 2% of its own.
+    let ink = 0
+    for (let i = 0; i < N; i++) if (dd[i] > INK_D) ink++
+
     const m = Math.max(2, Math.round(Math.min(W, H) * 0.03))
     const inFrame = (x, y) => x < m || y < m || x >= W - m || y >= H - m
     let frameTot = 0
@@ -172,12 +183,14 @@ export async function GET(request) {
         }
       }
       const boxArea = kept ? (bottom - top + 1) * (right - left + 1) : 0
+      const survival = ink ? kept / ink : 0
       return {
         tol,
         seen,
         cleared: cleared / N,
         kept: kept / N,
         fill: boxArea ? kept / boxArea : 0,
+        survival,
         vivid: kept ? vivid / kept : 0,
         frameLeft: frameLeft / frameTot,
         box: kept
@@ -202,7 +215,10 @@ export async function GET(request) {
     // rung is 8 or 12, which stops dead at the garment.
     const ladder = [8, 12, 18, 26, Math.max(34, Math.round(spread * 1.7))]
     const clean = (x) => x.frameLeft <= MAX_FRAME_LEFT && x.cleared >= MIN_CLEARED
-    const good = (x) => x.kept >= MIN_KEPT && (x.fill >= MIN_FILL || x.vivid >= MIN_VIVID)
+    const good = (x) =>
+      x.kept >= MIN_KEPT &&
+      x.survival >= MIN_SURVIVAL &&
+      (x.fill >= MIN_FILL || x.vivid >= MIN_VIVID)
     let r = null
     for (const tol of ladder) {
       const x = flood(tol)
@@ -225,7 +241,11 @@ export async function GET(request) {
     else if (bg[0] + bg[1] + bg[2] < MIN_LIGHT) verdict = 'background-too-dark'
     else if (r.cleared < MIN_CLEARED) verdict = 'cleared-too-little'
     else if (r.frameLeft > MAX_FRAME_LEFT) verdict = 'flood-stopped-early'
-    else if (r.kept < MIN_KEPT || (r.fill < MIN_FILL && r.vivid < MIN_VIVID))
+    else if (
+      r.kept < MIN_KEPT ||
+      r.survival < MIN_SURVIVAL ||
+      (r.fill < MIN_FILL && r.vivid < MIN_VIVID)
+    )
       verdict = 'garment-same-colour-as-background'
 
     if (debug) {
@@ -236,6 +256,8 @@ export async function GET(request) {
         tol: r.tol,
         kept: +r.kept.toFixed(3),
         fill: +r.fill.toFixed(3),
+        survival: +r.survival.toFixed(3),
+        ink: +(ink / N).toFixed(4),
         vivid: +r.vivid.toFixed(3),
         cleared: +r.cleared.toFixed(3),
         frameLeft: +r.frameLeft.toFixed(4),
