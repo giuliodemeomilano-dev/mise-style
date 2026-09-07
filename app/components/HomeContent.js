@@ -209,7 +209,7 @@ export default function HomeContent({ looks }) {
                   <div className="pieces-strip">
                     {look.pieces.map((p, i) => (
                       <div key={i} className="strip-item">
-                        <img src={p.packshot} className={p.cut ? 'is-cut' : undefined} style={cutFit(p.box)} alt={p.name} loading="lazy" />
+                        <img src={p.packshot} className={p.cut ? 'is-cut' : undefined} style={cutFit(p.box, 0.78, undefined, true)} alt={p.name} loading="lazy" />
                         <div className="strip-label">
                           <div className="strip-brand">{p.brand}</div>
                           <div className="strip-price">€{p.price}</div>
