@@ -221,8 +221,10 @@ export async function GET(request) {
       for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
           const idx = y * W + x
+          if (seen[idx] === 1) continue // background, already cleared
+          // Background-looking pixels the fill never reached. These are the grey islands
+          // a timid fill leaves in the MIDDLE of the frame, which no border check sees.
           if (dd[idx] <= tol) bgLike++
-          if (seen[idx] === 1) continue // background
           // Only BACKGROUND the flood failed to reach counts as stopping early. A pair
           // of trousers that runs to the bottom of its frame is product, not failure,
           // and counting it was refusing perfect cut-outs: measured 2026-09-07, six
@@ -245,7 +247,7 @@ export async function GET(request) {
       // the fill is too timid and leaves grey islands in the middle of the frame,
       // which the border check cannot see. Both numbers have to be high for a cut to
       // be worth serving: the product intact AND the background gone.
-      const coverage = bgLike ? cleared / bgLike : 0
+      const coverage = cleared + bgLike ? cleared / (cleared + bgLike) : 0
       return {
         tol,
         seen,
