@@ -214,10 +214,8 @@ export async function GET(request) {
       let bgLike = 0
       let kept = 0
       let vivid = 0
-      let top = H
-      let bottom = 0
-      let left = W
-      let right = 0
+      const colMass = new Int32Array(W)
+      const rowMass = new Int32Array(H)
       for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
           const idx = y * W + x
@@ -234,12 +232,28 @@ export async function GET(request) {
           if (seen[idx] === 2) continue // feathered rim, not solid product
           kept++
           if (dd[idx] > VIVID_D) vivid++
-          if (y < top) top = y
-          if (y > bottom) bottom = y
-          if (x < left) left = x
-          if (x > right) right = x
+          colMass[x]++
+          rowMass[y]++
         }
       }
+      // THE BOX IGNORES THE OUTERMOST HALF PERCENT OF THE MASS ON EACH SIDE.
+      // A plain min/max bounding box is hostage to a single stray pixel: a black slip
+      // dress kept one speck at the far left edge, so its box read 0.004 to 0.703, the
+      // site centred it on 0.35 and the dress sat visibly left in its card. Giulio saw
+      // it straight away. Trimming half a percent of the ink from each edge throws the
+      // speck away and keeps the garment.
+      const edge = (mass, total) => {
+        const cut = total * 0.005
+        let lo = 0
+        let acc = 0
+        while (lo < mass.length - 1 && acc + mass[lo] < cut) acc += mass[lo++]
+        let hi = mass.length - 1
+        acc = 0
+        while (hi > 0 && acc + mass[hi] < cut) acc += mass[hi--]
+        return [lo, hi]
+      }
+      const [left, right] = kept ? edge(colMass, kept) : [0, W - 1]
+      const [top, bottom] = kept ? edge(rowMass, kept) : [0, H - 1]
       const boxArea = kept ? (bottom - top + 1) * (right - left + 1) : 0
       const survival = ink ? kept / ink : 0
       // COVERAGE is the mirror of survival: of everything that LOOKS like background,
