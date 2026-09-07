@@ -43,7 +43,12 @@ const MIN_FILL = 0.13  // the product must fill this much of its OWN bounding bo
 const VIVID_D = 60
 const MIN_VIVID = 0.70 // ...or nearly all of it must be unmistakably not background
 const MAX_FRAME_LEFT = 0.02
-const LOCAL_STEP = 4    // how far the background may drift from ONE pixel to the next
+const LOCAL_STEP = 3    // how far the background may drift from ONE pixel to the next.
+// 3, calibrated 2026-09-07 against the Massimo Dutti ivory dress Giulio kept
+// pointing at. A studio gradient moves about 1 per pixel, so 3 crosses it easily,
+// while the anti-aliased edge of a pale garment moves 6 or more and stops the fill
+// dead. At 8 the fill crept through that edge and ate the dress; at 3 the dress
+// keeps 96.5% of itself and lands on the cream.
 const GLOBAL_CAP = 70   // ...and how far it may drift in total before it is product
 
 function dist(a, b) {
