@@ -43,7 +43,7 @@ const MIN_FILL = 0.13  // the product must fill this much of its OWN bounding bo
 const VIVID_D = 60
 const MIN_VIVID = 0.70 // ...or nearly all of it must be unmistakably not background
 const MAX_FRAME_LEFT = 0.02
-const LOCAL_STEP = 8    // how far the background may drift from ONE pixel to the next
+const LOCAL_STEP = 4    // how far the background may drift from ONE pixel to the next
 const GLOBAL_CAP = 70   // ...and how far it may drift in total before it is product
 
 function dist(a, b) {
@@ -69,6 +69,8 @@ export async function GET(request) {
   const force = searchParams.get('force') === '1'
   const flatParam = searchParams.get('flat')
   const flat = Boolean(flatParam)
+  const lsParam = Number(searchParams.get('ls'))
+  const localStep = Number.isFinite(lsParam) && lsParam > 0 ? lsParam : LOCAL_STEP
   const flatColor =
     flatParam && /^[0-9a-fA-F]{6}$/.test(flatParam) ? '#' + flatParam : '#FFFFFF'
   if (!raw) return new Response('missing url', { status: 400 })
@@ -182,7 +184,7 @@ export async function GET(request) {
         const f = from[idx]
         const near = d <= tol
         const smooth =
-          f >= 0 && d <= GLOBAL_CAP && stepDist(idx, f) <= LOCAL_STEP
+          f >= 0 && d <= GLOBAL_CAP && stepDist(idx, f) <= localStep
         if (!near && !smooth) {
           // Just outside: mark it as the feathered rim but do not expand through it.
           if (d <= tol + SOFT) seen[idx] = 2
