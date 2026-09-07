@@ -276,7 +276,12 @@ export async function GET(request) {
     // narrow, and widen only while the border is still not clean. The first rung
     // that clears the frame is the right one, and on a white-on-grey packshot that
     // rung is 8 or 12, which stops dead at the garment.
-    const ladder = [8, 12, 18, 26, Math.max(34, Math.round(spread * 1.7))]
+    // Rungs from very narrow upward. The bottom used to be 8 for no good reason, and
+    // Giulio asked why not lower: a Massimo Dutti white linen dress sits only 11 from
+    // its own background, so 8 was still wide enough to reach it while 4 is not. The
+    // coverage check makes narrow rungs safe to try, because a fill too timid to clear
+    // the sweep is now rejected rather than served.
+    const ladder = [3, 4, 6, 8, 12, 18, 26, Math.max(34, Math.round(spread * 1.7))]
     const clean = (x) => x.frameLeft <= MAX_FRAME_LEFT && x.cleared >= MIN_CLEARED
     const good = (x) =>
       x.kept >= MIN_KEPT &&
