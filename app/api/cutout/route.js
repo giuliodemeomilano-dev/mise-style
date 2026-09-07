@@ -220,7 +220,12 @@ export async function GET(request) {
         for (let x = 0; x < W; x++) {
           const idx = y * W + x
           if (seen[idx] === 1) continue // background
-          if (inFrame(x, y)) frameLeft++
+          // Only BACKGROUND the flood failed to reach counts as stopping early. A pair
+          // of trousers that runs to the bottom of its frame is product, not failure,
+          // and counting it was refusing perfect cut-outs: measured 2026-09-07, six
+          // navy and olive trousers scored survival 0.99 and fill 0.85 and were thrown
+          // out for having their own hems inside the border band.
+          if (inFrame(x, y) && dd[idx] <= tol) frameLeft++
           if (seen[idx] === 2) continue // feathered rim, not solid product
           kept++
           if (dd[idx] > VIVID_D) vivid++
