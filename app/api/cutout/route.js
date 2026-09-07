@@ -239,8 +239,7 @@ export async function GET(request) {
     }
 
     let verdict = 'cut'
-    if (flat) verdict = 'flattened'
-    else if (alreadyCut) verdict = r.kept > 0.005 ? 'already-transparent' : 'empty'
+    if (alreadyCut) verdict = r.kept > 0.005 ? 'already-transparent' : 'empty'
     else if (spread > 60) verdict = 'not-a-studio-sweep'
     else if (bg[0] + bg[1] + bg[2] < MIN_LIGHT) verdict = 'background-too-dark'
     else if (r.cleared < MIN_CLEARED) verdict = 'cleared-too-little'
@@ -270,7 +269,13 @@ export async function GET(request) {
       })
     }
     if (verdict === 'already-transparent') return send(input, ctype)
-    if (verdict !== 'cut' && verdict !== 'flattened' && !force) return send(input, ctype)
+    // A REFUSAL RETURNS THE ORIGINAL, INCLUDING IN FLAT MODE. flat=1 was briefly
+    // allowed to skip the judgement on the theory that painting white over a white
+    // background could not hurt. It could: an IVORY dress on grey 244 is not white,
+    // and flattening the eaten result onto pure white erased the dress almost
+    // completely. Giulio caught it on the live homepage. Flatten only what the
+    // checks trust; hand back the untouched photo for everything else.
+    if (verdict !== 'cut' && !force) return send(input, ctype)
 
     // Apply the chosen mask: clear the background, feather the rim.
     for (let i = 0; i < N; i++) {
