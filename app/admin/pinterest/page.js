@@ -36,6 +36,10 @@ const BTN = {
 
 export default function PinterestConsole() {
   const [pw, setPw] = useState('')
+  // Trial access cannot create a Pin on the live account, so the console can be pointed at
+  // Pinterest's sandbox, which is a separate make believe Pinterest with its own login,
+  // its own boards and its own pins. Nothing done there touches the real profile.
+  const [sandbox, setSandbox] = useState(false)
   const [state, setState] = useState(null)
   const [slug, setSlug] = useState('')
   const [board, setBoard] = useState('')
@@ -47,7 +51,9 @@ export default function PinterestConsole() {
     setBusy('check')
     setMsg('')
     try {
-      const r = await fetch('/api/pinterest/publish', { headers: { 'x-admin-pw': pw } })
+      const r = await fetch('/api/pinterest/publish' + (sandbox ? '?sandbox=1' : ''), {
+        headers: { 'x-admin-pw': pw },
+      })
       if (r.status === 401) {
         setMsg('Wrong password.')
         setState(null)
@@ -70,10 +76,14 @@ export default function PinterestConsole() {
       const r = await fetch('/api/pinterest/publish', {
         method: 'POST',
         headers: { 'x-admin-pw': pw, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug: slug.trim(), boardId: board, format }),
+        body: JSON.stringify({ slug: slug.trim(), boardId: board, format, sandbox }),
       })
       const d = await r.json()
-      setMsg(d.ok ? 'Published. Pin id ' + d.pinId : 'Failed: ' + (d.error || r.status))
+      setMsg(
+        d.ok
+          ? 'Published' + (d.sandbox ? ' to the SANDBOX, not the real account' : '') + '. Pin id ' + d.pinId
+          : 'Failed: ' + (d.error || r.status)
+      )
     } catch (e) {
       setMsg('Could not reach the server.')
     }
@@ -96,6 +106,25 @@ export default function PinterestConsole() {
           style={FIELD}
         />
       </label>
+      <label style={{ display: 'block', marginTop: 16, fontSize: 14 }}>
+        <input
+          type="checkbox"
+          checked={sandbox}
+          onChange={(e) => {
+            setSandbox(e.target.checked)
+            setState(null)
+            setBoard('')
+            setMsg('')
+          }}
+          style={{ marginRight: 8 }}
+        />
+        Use the API sandbox
+      </label>
+      <p style={{ fontSize: 12, color: '#6B635A', marginTop: 4, marginBottom: 0 }}>
+        Trial access cannot create Pins on the live account. The sandbox is a separate,
+        make believe Pinterest: its boards and its pins are not the real ones.
+      </p>
+
       <button onClick={check} disabled={!pw || busy === 'check'} style={{ ...BTN, marginTop: 14 }}>
         {busy === 'check' ? 'Checking...' : 'Check connection'}
       </button>
@@ -103,11 +132,12 @@ export default function PinterestConsole() {
       {state ? (
         <div style={{ marginTop: 30, paddingTop: 24, borderTop: '1px solid #E8E2DA' }}>
           <p style={{ fontSize: 15 }}>
-            Pinterest: <strong>{state.connected ? 'connected' : 'not connected'}</strong>
+            {sandbox ? 'Pinterest sandbox' : 'Pinterest'}:{' '}
+            <strong>{state.connected ? 'connected' : 'not connected'}</strong>
           </p>
 
           {!state.connected ? (
-            <a href="/api/pinterest/auth" style={{ ...BTN, display: 'inline-block', textDecoration: 'none' }}>
+            <a href={'/api/pinterest/auth' + (sandbox ? '?sandbox=1' : '')} style={{ ...BTN, display: 'inline-block', textDecoration: 'none' }}>
               Connect Pinterest
             </a>
           ) : (
