@@ -8,7 +8,11 @@ export const runtime = 'nodejs'
 // Why the full OAuth dance instead of the one-click token in the developer portal: that
 // quick token only carries pins:read, boards:read and user_accounts:read. It cannot
 // publish. pins:write is the whole point of this app, and it only comes through here.
-const SCOPES = ['boards:read', 'pins:read', 'pins:write']
+// boards:write is NOT optional. Measured 2026-09-08: with only pins:write, POST /v5/pins
+// returns "Missing: ['boards:write']" and refuses, because creating a pin counts as writing
+// into the board it lands in. Adding a scope means the OLD token stays invalid, the user has
+// to walk through /api/pinterest/auth again to mint a new one.
+const SCOPES = ['boards:read', 'boards:write', 'pins:read', 'pins:write']
 
 export async function GET(request) {
   const appId = process.env.PINTEREST_APP_ID
