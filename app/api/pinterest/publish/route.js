@@ -3,7 +3,13 @@ import { createClient } from '@supabase/supabase-js'
 
 export const runtime = 'nodejs'
 
-const API = 'https://api.pinterest.com/v5'
+// Two worlds, kept deliberately apart. A Trial app cannot create a Pin in production at
+// all, so the sandbox is the only place the publish step actually completes and the only
+// way to record the Standard upgrade video. Sandbox boards and sandbox pins are fake and
+// never show up on the real profile, and a sandbox token is rejected in production, which
+// is why the two tokens live in separate rows of app_settings.
+const api = (sandbox) =>
+  (sandbox ? 'https://api-sandbox.pinterest.com' : 'https://api.pinterest.com') + '/v5'
 
 function admin() {
   return createClient(
@@ -19,11 +25,11 @@ function allowed(request) {
   return Boolean(process.env.ADMIN_PASSWORD) && pw === process.env.ADMIN_PASSWORD
 }
 
-async function token() {
+async function token(sandbox) {
   const { data } = await admin()
     .from('app_settings')
     .select('value')
-    .eq('key', 'pinterest_access_token')
+    .eq('key', 'pinterest_access_token' + (sandbox ? '_sandbox' : ''))
     .maybeSingle()
   return data && data.value ? data.value : null
 }
@@ -32,22 +38,23 @@ async function token() {
 // with a boolean, never with the token itself.
 export async function GET(request) {
   if (!allowed(request)) return NextResponse.json({ error: 'not allowed' }, { status: 401 })
-  const t = await token()
-  if (!t) return NextResponse.json({ connected: false, boards: [] })
+  const sandbox = new URL(request.url).searchParams.get('sandbox') === '1'
+  const t = await token(sandbox)
+  if (!t) return NextResponse.json({ connected: false, boards: [], sandbox })
 
-  const res = await fetch(API + '/boards?page_size=50', {
+  const res = await fetch(api(sandbox) + '/boards?page_size=50', {
     headers: { Authorization: 'Bearer ' + t },
     cache: 'no-store',
   })
   const body = await res.json()
   if (!res.ok) {
     return NextResponse.json(
-      { connected: true, boards: [], error: body.message || 'Pinterest refused the board list' },
+      { connected: true, sandbox, boards: [], error: body.message || 'Pinterest refused the board list' },
       { status: 200 }
     )
   }
   const boards = (body.items || []).map((b) => ({ id: b.id, name: b.name }))
-  return NextResponse.json({ connected: true, boards })
+  return NextResponse.json({ connected: true, sandbox, boards })
 }
 
 // POST publishes one look as a standard Pin. The image is the one this site already
@@ -56,16 +63,20 @@ export async function GET(request) {
 export async function POST(request) {
   if (!allowed(request)) return NextResponse.json({ error: 'not allowed' }, { status: 401 })
 
-  const t = await token()
-  if (!t) return NextResponse.json({ error: 'Pinterest is not connected yet' }, { status: 400 })
-
   let payload
   try {
     payload = await request.json()
   } catch (e) {
     return NextResponse.json({ error: 'bad request body' }, { status: 400 })
   }
-  const { slug, boardId, format } = payload || {}
+  const { slug, boardId, format, sandbox } = payload || {}
+  const t = await token(sandbox)
+  if (!t) {
+    return NextResponse.json(
+      { error: sandbox ? 'the sandbox is not connected yet' : 'Pinterest is not connected yet' },
+      { status: 400 }
+    )
+  }
   if (!slug || !boardId) {
     return NextResponse.json({ error: 'slug and boardId are both required' }, { status: 400 })
   }
@@ -89,7 +100,7 @@ export async function POST(request) {
     [outfit.title, outfit.description].filter(Boolean).join('. ') +
     ' Shop the entire look on MISE.'
 
-  const res = await fetch(API + '/pins', {
+  const res = await fetch(api(sandbox) + '/pins', {
     method: 'POST',
     headers: {
       Authorization: 'Bearer ' + t,
@@ -110,5 +121,5 @@ export async function POST(request) {
       { status: 502 }
     )
   }
-  return NextResponse.json({ ok: true, pinId: body.id, image })
+  return NextResponse.json({ ok: true, pinId: body.id, image, sandbox: Boolean(sandbox) })
 }
