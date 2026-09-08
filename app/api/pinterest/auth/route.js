@@ -19,7 +19,12 @@ export async function GET(request) {
   if (!appId) {
     return new NextResponse('PINTEREST_APP_ID is not set in the environment', { status: 500 })
   }
-  const origin = new URL(request.url).origin
+  const { origin, searchParams } = new URL(request.url)
+  // Trial apps cannot create Pins against api.pinterest.com at all. Measured 2026-09-08:
+  // "Apps with Trial access may not create Pins in production ... use API Sandbox instead".
+  // So the console offers a sandbox switch, and the choice rides through the whole OAuth
+  // flow inside `state`, which Pinterest hands back to the callback untouched.
+  const sandbox = searchParams.get('sandbox') === '1'
   const url =
     'https://www.pinterest.com/oauth/?' +
     new URLSearchParams({
@@ -29,7 +34,7 @@ export async function GET(request) {
       redirect_uri: origin + '/api/pinterest/callback',
       response_type: 'code',
       scope: SCOPES.join(','),
-      state: 'mise',
+      state: sandbox ? 'mise-sandbox' : 'mise',
     }).toString()
   return NextResponse.redirect(url)
 }
