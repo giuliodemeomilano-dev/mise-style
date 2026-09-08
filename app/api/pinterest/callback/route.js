@@ -24,6 +24,15 @@ export async function GET(request) {
   const denied = searchParams.get('error')
   if (denied) return back('error=' + encodeURIComponent(denied))
 
+  // The console can aim at the sandbox instead of the real API. A Trial app cannot create
+  // a Pin in production AT ALL (measured 2026-09-08), so the sandbox is the only place the
+  // publish step can be shown working, which is what the Standard upgrade video needs.
+  // The choice travelled here inside `state`. It has to be remembered, because a sandbox
+  // token is NOT valid against api.pinterest.com: the two are stored under separate keys.
+  const sandbox = searchParams.get('state') === 'mise-sandbox'
+  const API = sandbox ? 'https://api-sandbox.pinterest.com' : 'https://api.pinterest.com'
+  const suffix = sandbox ? '_sandbox' : ''
+
   const code = searchParams.get('code')
   if (!code) return back('error=' + encodeURIComponent('Pinterest did not send a code'))
 
@@ -35,7 +44,7 @@ export async function GET(request) {
 
   let data
   try {
-    const res = await fetch('https://api.pinterest.com/v5/oauth/token', {
+    const res = await fetch(API + '/v5/oauth/token', {
       method: 'POST',
       headers: {
         // Pinterest wants the app id and secret as HTTP Basic, not in the body.
@@ -58,13 +67,13 @@ export async function GET(request) {
   }
 
   const rows = [
-    { key: 'pinterest_access_token', value: data.access_token, updated_at: new Date().toISOString() },
+    { key: 'pinterest_access_token' + suffix, value: data.access_token, updated_at: new Date().toISOString() },
   ]
   if (data.refresh_token) {
-    rows.push({ key: 'pinterest_refresh_token', value: data.refresh_token, updated_at: new Date().toISOString() })
+    rows.push({ key: 'pinterest_refresh_token' + suffix, value: data.refresh_token, updated_at: new Date().toISOString() })
   }
   const { error } = await admin().from('app_settings').upsert(rows, { onConflict: 'key' })
   if (error) return back('error=' + encodeURIComponent('could not save the token'))
 
-  return back('ok=1')
+  return back(sandbox ? 'ok=1&sandbox=1' : 'ok=1')
 }
