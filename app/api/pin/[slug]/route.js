@@ -559,6 +559,19 @@ export async function GET(request, { params }) {
         </div>
       </div>
     ),
-    { width: fmt.W, height: fmt.H }
+    {
+      width: fmt.W,
+      height: fmt.H,
+      // Next gives a dynamic route `max-age=0, must-revalidate`, which tells the CDN
+      // never to keep the image. Measured 2026-09-08: EVERY request rebuilt this pin
+      // from scratch, 3.6 to 4 seconds and 1.6 MB, `x-vercel-cache: MISS` every single
+      // time. Pinterest fetches the media more than once per pin, so from the second
+      // pin onward its own request just hung and the board picker never appeared. That
+      // is the real reason pins were going missing every morning, and it was on our
+      // side, not theirs. One day at the edge, a week of stale-while-revalidate.
+      headers: {
+        'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
+      },
+    }
   )
 }
