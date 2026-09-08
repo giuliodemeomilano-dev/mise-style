@@ -114,6 +114,15 @@ body { background: var(--bg); font-family: var(--font-body); color: var(--text);
    dissolves into it and stops being a product photo. */
 .strip-item:has(img.is-cut) { background: var(--bg-warm); }
 .strip-item:last-child { border-right: none; }
+/* A cut-out with no shadow FLOATS: it reads as pasted on, and a white garment on the
+   cream simply disappears. Measured 2026-09-07: 35 of the 305 live pieces have an
+   average luminance above 225 while the cream sits at 238, so they were lighter than
+   their own background. Giulio asked whether to change the background; the background
+   is the brand, so instead the garment gets a soft shadow and lifts off it. This only
+   works because every piece is now a transparent cut-out, so the shadow follows the
+   garment's outline and not a rectangle. Applies to the strip, the card carousel and
+   the look page. */
+img.is-cut, .piece-image img { filter: drop-shadow(0 5px 9px rgba(58, 44, 30, 0.24)); }
 /* contain, not cover: packshots are 2:3 and a square cell cropped a third off
    every garment, so trousers lost their hems in the strip. */
 .strip-item img { width: 100%; height: 100%; object-fit: contain; padding: 6px; box-sizing: border-box; display: block; transition: transform 0.5s var(--transition); }
