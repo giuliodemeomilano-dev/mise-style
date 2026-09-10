@@ -80,7 +80,11 @@ body { background: var(--bg); font-family: var(--font-body); color: var(--text);
 .budget-input:hover { background: rgba(193,58,42,0.13); border-bottom-color: rgba(193,58,42,0.85); }
 .budget-input:focus { background: rgba(193,58,42,0.13); border-bottom: 1px solid var(--accent); }
 .budget-input::-webkit-outer-spin-button, .budget-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-@media (max-width: 768px) { .filter-inner { flex-direction: column; align-items: stretch; } .budget-wrap { justify-content: center; } .filter-section { top: 56px; padding: 12px 16px 10px; background: var(--bg); backdrop-filter: none; } .nav { background: var(--bg); backdrop-filter: none; } .gender-toggle { margin-bottom: 10px; } }
+/* On a phone the filter block was sticky and 187px tall, so between it, the top
+   bar and the bottom bar about a third of the screen was permanently chrome.
+   It scrolls away now: you meet the outfits sooner and the filters are one
+   flick back up. */
+@media (max-width: 768px) { .filter-inner { flex-direction: column; align-items: stretch; } .budget-wrap { justify-content: center; } .filter-section { position: static; top: auto; padding: 12px 16px 10px; background: var(--bg); backdrop-filter: none; } .nav { background: var(--bg); backdrop-filter: none; } .gender-toggle { margin-bottom: 10px; } }
 
 .looks-section { max-width: 1400px; margin: 0 auto; padding: 32px 28px 100px; }
 .looks-grid { display: grid; grid-template-columns: 1fr; gap: 32px; }
