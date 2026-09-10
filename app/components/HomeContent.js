@@ -54,6 +54,8 @@ export default function HomeContent({ looks }) {
   const [budget, setBudget] = useState(null)
   const [modalLook, setModalLook] = useState(null)
   const [liked, setLiked] = useState({})
+  const [shown, setShown] = useState(12)
+  useEffect(() => { setShown(12) }, [filter, gender, budget, view])
 
   useEffect(() => {
     const onView = (e) => setView(e.detail)
@@ -86,11 +88,17 @@ export default function HomeContent({ looks }) {
   const byCat = filter === 'all' ? byGender : byGender.filter((l) => l.cat === filter)
   const filtered = budget == null ? byCat : byCat.filter((l) => (Number(l.total) || l.pieces.reduce((s, p) => s + (p.price || 0), 0)) <= budget)
 
-  let displayed = filtered
+  // Newest first, always: the homepage promises new outfits every day, so the ones
+  // published this morning have to be the first thing you meet. Everything older
+  // stays one tap away behind Load more, instead of 132 cards in a single scroll.
+  const dayOf = (l) => String(l.created || '').slice(0, 10)
+  const byDate = [...filtered].sort((a, b) => new Date(b.created || 0) - new Date(a.created || 0))
+  const latestDay = byDate.length ? dayOf(byDate[0]) : null
+  let ordered = byDate
   if (view === 'trending') {
-    displayed = [...filtered].sort((a, b) => (b.featured || 0) - (a.featured || 0)).slice(0, 12)
-  } else if (view === 'new') {
-    displayed = [...filtered].sort((a, b) => new Date(b.created || 0) - new Date(a.created || 0))
+    ordered = [...filtered].sort((a, b) => (b.featured || 0) - (a.featured || 0)).slice(0, 12)
+  }
+  const displayed = ordered.slice(0, shown)
   }
 
   const openModal = (look) => {
@@ -182,6 +190,7 @@ export default function HomeContent({ looks }) {
               <div key={look.id} className="look-card visible">
                 <Link href={`/look/${look.slug}`} className="look-visual" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
                   <span className="badge-ai">{t.filters[look.cat] || t.badge}</span>
+                  {latestDay && dayOf(look) === latestDay && <span className="badge-new">New today</span>}
                   <button
                     className={`btn-save${liked[look.id] ? ' liked' : ''}`}
                     onClick={(e) => { e.preventDefault(); toggleLike(e, look.id) }}
@@ -239,6 +248,13 @@ export default function HomeContent({ looks }) {
             )
           })}
         </div>
+        {ordered.length > shown && (
+          <div className="load-more-wrap">
+            <button className="load-more" onClick={() => setShown((n) => n + 12)}>
+              Load more outfits <span>{ordered.length - shown} left</span>
+            </button>
+          </div>
+        )}
       </section>
 
       <div className="bottom-spacer"></div>
