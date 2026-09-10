@@ -99,7 +99,6 @@ export default function HomeContent({ looks }) {
     ordered = [...filtered].sort((a, b) => (b.featured || 0) - (a.featured || 0)).slice(0, 12)
   }
   const displayed = ordered.slice(0, shown)
-  }
 
   const openModal = (look) => {
     setModalLook(look)
