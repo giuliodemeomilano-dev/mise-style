@@ -80,7 +80,7 @@ body { background: var(--bg); font-family: var(--font-body); color: var(--text);
 .budget-input:hover { background: rgba(193,58,42,0.13); border-bottom-color: rgba(193,58,42,0.85); }
 .budget-input:focus { background: rgba(193,58,42,0.13); border-bottom: 1px solid var(--accent); }
 .budget-input::-webkit-outer-spin-button, .budget-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-@media (max-width: 768px) { .filter-inner { flex-direction: column; align-items: stretch; } .budget-wrap { justify-content: center; } .filter-section { top: 56px; padding: 20px 16px 16px; } }
+@media (max-width: 768px) { .filter-inner { flex-direction: column; align-items: stretch; } .budget-wrap { justify-content: center; } .filter-section { top: 56px; padding: 12px 16px 10px; background: var(--bg); backdrop-filter: none; } .nav { background: var(--bg); backdrop-filter: none; } .gender-toggle { margin-bottom: 10px; } }
 
 .looks-section { max-width: 1400px; margin: 0 auto; padding: 32px 28px 100px; }
 .looks-grid { display: grid; grid-template-columns: 1fr; gap: 32px; }
@@ -325,6 +325,28 @@ img.is-cut, .piece-image img { filter: drop-shadow(0 5px 9px rgba(58, 44, 30, 0.
 .look-hero-strip { flex: 1; display: flex; align-items: center; gap: 16px; padding-right: 48px; }
 .look-hero-cell { flex: 1; background: var(--bg-card); border-radius: 10px; aspect-ratio: 2 / 3; max-height: 330px; overflow: hidden; }
 .look-hero-cell img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+
+/* ---- Load more + the new-today badge (2026-09-10) --------------------------
+   The homepage used to render every outfit at once: 132 cards, 34.917 px of
+   scroll on desktop and 92.417 px on a phone, with this morning's six looks
+   indistinguishable from the 126 older ones. Now it opens on the newest twelve
+   and the rest arrives on request. */
+.load-more-wrap { display: flex; justify-content: center; padding: 8px 0 60px; }
+.load-more { display: inline-flex; align-items: center; gap: 14px; cursor: pointer;
+  background: none; border: 1px solid var(--text); color: var(--text);
+  padding: 15px 30px; border-radius: 100px; font-size: 11px; letter-spacing: 0.18em;
+  text-transform: uppercase; transition: background .2s ease, color .2s ease; }
+.load-more span { letter-spacing: 0.04em; text-transform: none; color: var(--text-secondary); }
+.load-more:hover { background: var(--text); color: #fff; }
+.load-more:hover span { color: rgba(255,255,255,0.7); }
+.badge-new { position: absolute; top: 16px; right: 62px; padding: 6px 12px;
+  background: var(--accent); color: #fff; font-size: 9px; letter-spacing: 0.16em;
+  text-transform: uppercase; border-radius: 100px; z-index: 3; }
+
+/* Touch devices get no carousel arrows: you swipe, and the arrows only sit on
+   top of the garment. The dots stay, so the slide count is still legible. */
+@media (hover: none) { .car-arrow { display: none; } }
 
 /* ---- Shop CTA on the look page (2026-09-10) --------------------------------
    Measured on a phone before this existed: the first link that leads to a shop
