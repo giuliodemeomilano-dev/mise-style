@@ -98,7 +98,10 @@ export default function HomeContent({ looks }) {
   // looks at once, so it marked everything and told you nothing. The count is
   // read from the data, so a day the daily task does not run it tells the truth.
   const newestDay = looks.map(dayOf).filter(Boolean).sort().pop() || null
-  const newTodayCount = newestDay ? looks.filter((l) => dayOf(l) === newestDay).length : 0
+  // Counted on what is actually in the grid below, not on the whole day: the day
+  // has six looks but a gender tab only ever shows three of them, so counting all
+  // six over a grid of three would be a number the page cannot back up.
+  const newTodayCount = newestDay ? filtered.filter((l) => dayOf(l) === newestDay).length : 0
   let ordered = byDate
   if (view === 'trending') {
     ordered = [...filtered].sort((a, b) => (b.featured || 0) - (a.featured || 0)).slice(0, 12)
