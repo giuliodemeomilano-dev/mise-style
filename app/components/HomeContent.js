@@ -94,6 +94,11 @@ export default function HomeContent({ looks }) {
   const dayOf = (l) => String(l.created || '').slice(0, 10)
   const byDate = [...filtered].sort((a, b) => new Date(b.created || 0) - new Date(a.created || 0))
   const latestDay = byDate.length ? dayOf(byDate[0]) : null
+  // One line instead of a badge on every card: the badge sat on all of today's
+  // looks at once, so it marked everything and told you nothing. The count is
+  // read from the data, so a day the daily task does not run it tells the truth.
+  const newestDay = looks.map(dayOf).filter(Boolean).sort().pop() || null
+  const newTodayCount = newestDay ? looks.filter((l) => dayOf(l) === newestDay).length : 0
   let ordered = byDate
   if (view === 'trending') {
     ordered = [...filtered].sort((a, b) => (b.featured || 0) - (a.featured || 0)).slice(0, 12)
@@ -169,6 +174,9 @@ export default function HomeContent({ looks }) {
       </section>
 
       <section className="looks-section">
+        {newTodayCount > 0 && view !== 'trending' && (
+          <p className="new-today-line">{t.new_today_line.replace('{n}', newTodayCount)}</p>
+        )}
         <div className="looks-grid">
           {filtered.length === 0 && (
             <p style={{ color: 'var(--text-muted)', padding: 40 }}>
@@ -189,7 +197,6 @@ export default function HomeContent({ looks }) {
               <div key={look.id} className="look-card visible">
                 <Link href={`/look/${look.slug}`} className="look-visual" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
                   <span className="badge-ai">{t.filters[look.cat] || t.badge}</span>
-                  {latestDay && dayOf(look) === latestDay && <span className="badge-new">New today</span>}
                   <button
                     className={`btn-save${liked[look.id] ? ' liked' : ''}`}
                     onClick={(e) => { e.preventDefault(); toggleLike(e, look.id) }}
