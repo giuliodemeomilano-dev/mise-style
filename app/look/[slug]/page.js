@@ -144,6 +144,7 @@ export default async function LookPage({ params }) {
             <p className="look-meta">{look.pieces.length} pieces · {storeCount} stores</p>
             {look.description && <p className="look-hero-desc">{look.description}</p>}
             <p className="look-hero-total">Outfit total · <strong>€{total}</strong></p>
+            <a href="#pieces" className="shop-cta">Shop the outfit <span>€{total}</span></a>
             {look.tags && look.tags.length > 0 && (
               <div className="look-tags">
                 {look.tags.map((tag, i) => (
@@ -161,6 +162,7 @@ export default async function LookPage({ params }) {
               <p className="look-kicker">{seoLabel(look)}</p>
               <h1>{look.title}</h1>
               <p className="look-meta">{look.pieces.length} pieces · {storeCount} stores · €{total}</p>
+              <a href="#pieces" className="shop-cta">Shop the outfit <span>€{total}</span></a>
             </div>
             <div className="look-hero-strip">
               {look.pieces.slice(0, 3).map((p) => (
@@ -179,6 +181,7 @@ export default async function LookPage({ params }) {
         </>
       )}
 
+      <div id="pieces"></div>
       <PiecesGrid pieces={look.pieces} outfitId={look.id} />
 
 
