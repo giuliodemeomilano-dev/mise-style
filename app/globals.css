@@ -325,9 +325,24 @@ img.is-cut, .piece-image img { filter: drop-shadow(0 5px 9px rgba(58, 44, 30, 0.
 .look-hero-strip { flex: 1; display: flex; align-items: center; gap: 16px; padding-right: 48px; }
 .look-hero-cell { flex: 1; background: var(--bg-card); border-radius: 10px; aspect-ratio: 2 / 3; max-height: 330px; overflow: hidden; }
 .look-hero-cell img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+/* ---- Shop CTA on the look page (2026-09-10) --------------------------------
+   Measured on a phone before this existed: the first link that leads to a shop
+   sat 1133px down the page, so a visitor arriving from Instagram had to scroll
+   a screen and a half before anything was clickable. This puts the action in
+   the first screen and sends it to the pieces. */
+.shop-cta { display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  margin-top: 22px; padding: 17px 22px; background: var(--text); color: #FFFFFF;
+  text-decoration: none; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+  border-radius: var(--radius-sm, 8px); transition: opacity .2s ease; }
+.shop-cta span { font-size: 15px; letter-spacing: 0.03em; text-transform: none; }
+.shop-cta:hover { opacity: 0.86; }
+@media (min-width: 900px) { .shop-cta { max-width: 380px; } }
+
 @media (max-width: 900px) {
   .look-hero-split, .look-hero-flat { flex-direction: column; align-items: stretch; }
-  .look-hero-photo { width: 100%; max-width: none; }
+  .look-hero-photo { width: 100%; max-width: none; aspect-ratio: auto; height: 46vh; min-height: 290px; }
+  .look-hero-text { padding-top: 22px; }
   .look-hero-flat .look-hero-text { width: 100%; }
   .look-hero-text { padding: 30px 22px 34px; }
   .look-hero-strip { padding: 0 22px 30px; }
