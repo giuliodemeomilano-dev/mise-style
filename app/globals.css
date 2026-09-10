@@ -23,7 +23,7 @@
 html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
 body { background: var(--bg); font-family: var(--font-body); color: var(--text); min-height: 100vh; overflow-x: hidden; }
 
-.nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(250,248,245,0.88); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-bottom: 1px solid rgba(232,226,218,0.6); height: 68px; transition: all 0.4s var(--transition); }
+.nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: var(--bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-bottom: 1px solid rgba(232,226,218,0.6); height: 68px; transition: all 0.4s var(--transition); }
 .nav.scrolled { height: 56px; box-shadow: var(--shadow-sm); }
 .nav-inner { max-width: 1400px; margin: 0 auto; padding: 0 28px; height: 100%; display: flex; align-items: center; justify-content: space-between; }
 .nav-logo { font-family: var(--font-display); font-size: 28px; font-weight: 400; letter-spacing: 8px; text-transform: uppercase; color: var(--text); transition: font-size 0.4s var(--transition); }
@@ -64,7 +64,7 @@ body { background: var(--bg); font-family: var(--font-body); color: var(--text);
 .marquee-dot { color: var(--accent); font-size: 8px; display: inline-flex; align-items: center; }
 @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-.filter-section { padding: 28px 28px 20px; position: sticky; top: 68px; z-index: 80; background: rgba(250,248,245,0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+.filter-section { padding: 28px 28px 20px; position: sticky; top: 68px; z-index: 80; background: var(--bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
 .filter-inner { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
 .filter-scroll { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; flex: 1; }
 .filter-scroll::-webkit-scrollbar { display: none; }
