@@ -142,9 +142,9 @@ export default async function LookPage({ params }) {
             <p className="look-kicker">{seoLabel(look)}</p>
             <h1>{look.title}</h1>
             <p className="look-meta">{look.pieces.length} pieces · {storeCount} stores</p>
+            <a href="#pieces" className="shop-cta">Shop the outfit <span>€{total}</span></a>
             {look.description && <p className="look-hero-desc">{look.description}</p>}
             <p className="look-hero-total">Outfit total · <strong>€{total}</strong></p>
-            <a href="#pieces" className="shop-cta">Shop the outfit <span>€{total}</span></a>
             {look.tags && look.tags.length > 0 && (
               <div className="look-tags">
                 {look.tags.map((tag, i) => (
