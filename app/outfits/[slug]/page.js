@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { CATEGORIES, findCategory } from '@/lib/categories'
+import { getCategoryCopy } from '@/lib/category-copy'
 
 export const revalidate = 3600
 
@@ -58,6 +59,7 @@ export default async function CategoryPage({ params }) {
 
   const looks = await getLooks(cat)
   const siblings = CATEGORIES.filter((c) => c.slug !== cat.slug)
+  const copy = getCategoryCopy(slug)
 
   return (
     <main style={{ maxWidth: 1240, margin: '0 auto', padding: '110px 20px 40px' }}>
@@ -104,6 +106,54 @@ export default async function CategoryPage({ params }) {
         </div>
       </section>
 
+      {copy && (
+        <section
+          style={{
+            marginTop: 56,
+            paddingTop: 28,
+            borderTop: '1px solid rgba(0,0,0,0.08)',
+            maxWidth: 720,
+          }}
+        >
+          <h2 style={{ fontSize: 20, margin: '0 0 14px' }}>{copy.heading}</h2>
+          {copy.body.map((p, i) => (
+            <p
+              key={i}
+              style={{ color: 'var(--text-muted)', lineHeight: 1.7, margin: '0 0 14px' }}
+            >
+              {p}
+            </p>
+          ))}
+        </section>
+      )}
+
+      {copy && (
+        <section style={{ marginTop: 40, maxWidth: 720 }}>
+          <h2 style={{ fontSize: 20, margin: '0 0 16px' }}>Questions people ask</h2>
+          {copy.faq.map((f, i) => (
+            <div key={i} style={{ marginBottom: 18 }}>
+              <h3 style={{ fontSize: 16, margin: '0 0 6px' }}>{f.q}</h3>
+              <p style={{ color: 'var(--text-muted)', lineHeight: 1.7, margin: 0 }}>
+                {f.a}
+              </p>
+            </div>
+          ))}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'FAQPage',
+                mainEntity: copy.faq.map((f) => ({
+                  '@type': 'Question',
+                  name: f.q,
+                  acceptedAnswer: { '@type': 'Answer', text: f.a },
+                })),
+              }),
+            }}
+          />
+        </section>
+      )}
       <section style={{ marginTop: 56, paddingTop: 28, borderTop: '1px solid rgba(0,0,0,0.08)' }}>
         <h2 style={{ fontSize: 18, margin: '0 0 14px' }}>More outfit ideas</h2>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
