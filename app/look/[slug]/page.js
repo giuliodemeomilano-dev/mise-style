@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase'
 import PiecesGrid from './PiecesGrid'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { CATEGORIES } from '@/lib/categories'
 
 export const revalidate = 3600
 
@@ -130,6 +131,15 @@ export default async function LookPage({ params }) {
   const storeCount = new Set(look.pieces.map((p) => p.store)).size
   const hasModel = Boolean(look.model_image_url)
 
+  // Cada ficha enlaza a su categoria. Sin esto las 273 fichas no le pasan
+  // ninguna senal a las 16 paginas de categoria, que son las que rankean.
+  const related = CATEGORIES.filter(
+    (c) =>
+      c.gender === look.gender &&
+      ((c.occasion && c.occasion === look.occasion) ||
+        (c.season && c.season === look.season))
+  )
+
   return (
     <main className="look-detail">
       {hasModel ? (
@@ -185,6 +195,42 @@ export default async function LookPage({ params }) {
       <PiecesGrid pieces={look.pieces} outfitId={look.id} />
 
 
+      {related.length > 0 && (
+        <section
+          style={{
+            padding: '36px 20px 0',
+          }}
+        >
+          <h2
+            style={{
+              fontSize: 18,
+              margin: '0 0 14px',
+              paddingTop: 28,
+              borderTop: '1px solid rgba(0,0,0,0.08)',
+            }}
+          >
+            More like this
+          </h2>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+            {related.map((c) => (
+              <Link
+                key={c.slug}
+                href={'/outfits/' + c.slug}
+                style={{
+                  fontSize: 14,
+                  padding: '7px 14px',
+                  borderRadius: 999,
+                  border: '1px solid rgba(0,0,0,0.12)',
+                  color: 'var(--text-muted)',
+                  textDecoration: 'none',
+                }}
+              >
+                {c.title}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
       <div className="bottom-spacer"></div>
     </main>
   )
