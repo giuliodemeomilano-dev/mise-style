@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { localizeStoreUrl } from '@/lib/store-locale'
 
 export const dynamic = 'force-dynamic'
 
@@ -105,7 +106,10 @@ export async function GET(request, { params }) {
   // Redirect al link affiliato: avvolto in Skimlinks se SKIMLINKS_ID è attivo,
   // altrimenti diretto al negozio. xcust = outfit+prodotto per attribuzione.
   const subId = `${outfitId ? outfitId.slice(0, 8) + '_' : ''}${product.id}`
-  const target = wrapAffiliate(product.affiliate_url, subId)
+  // El pais del visitante antes que el pais desde el que se copio la foto. Si la
+  // marca no esta en el mapa la URL sale intacta, asi que esto no puede romper nada.
+  const localized = localizeStoreUrl(product.affiliate_url, country)
+  const target = wrapAffiliate(localized, subId)
 
   return NextResponse.redirect(target, { status: 302 })
 }
