@@ -161,7 +161,7 @@ export default function PiecesGrid({ pieces: initialPieces, outfitId }) {
                     alignItems: 'center',
                     justifyContent: 'center',
                     minHeight: 46,
-                    marginTop: 10,
+                    marginTop: 20,
                     padding: '8px 12px',
                     lineHeight: 1.25,
                     borderRadius: 8,
