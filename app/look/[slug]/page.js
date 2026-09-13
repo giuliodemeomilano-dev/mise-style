@@ -200,7 +200,7 @@ export default async function LookPage({ params }) {
         // 2026-09-13: tutto il resto stava a 28px e questo blocco a 20, si vedeva sporgere.
         // E l'h2 eredita Playfair come gli altri titoli: prima usciva in Outfit, cioe' un
         // carattere diverso da tutta la pagina.
-        <section className="look-pieces" style={{ paddingTop: 0, paddingBottom: 0 }}>
+        <section className="look-pieces" style={{ paddingTop: 0, paddingBottom: 72 }}>
           <h2
             style={{
               fontSize: 22,
