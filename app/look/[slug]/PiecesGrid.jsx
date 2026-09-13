@@ -149,31 +149,10 @@ export default function PiecesGrid({ pieces: initialPieces, outfitId }) {
                 <div className="piece-brand">{piece.brand}</div>
                 <div className="piece-name">{piece.name}</div>
                 <div className="piece-price">€{piece.price}</div>
-                {/* Era una riga di testo e nessuno capiva che si comprava di li'. Ora e'
-                    un bottone vero, uno per negozio, e cambia aspetto quando l'hai aperto. */}
-                <div
-                  className="piece-cta"
-                  style={{
-                    // I nomi delle marche non sono lunghi uguali: Ancient Greek Sandals
-                    // andava su due righe e il suo bottone veniva piu' alto degli altri due.
-                    // Altezza fissa e testo centrato, cosi' i tre restano pari.
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    minHeight: 46,
-                    marginTop: 20,
-                    padding: '8px 12px',
-                    lineHeight: 1.25,
-                    borderRadius: 8,
-                    fontSize: 12,
-                    letterSpacing: '0.06em',
-                    textTransform: 'uppercase',
-                    textAlign: 'center',
-                    background: isOpen ? 'transparent' : '#1A1A1A',
-                    color: isOpen ? '#6B635A' : '#F3EDE7',
-                    border: isOpen ? '1px solid rgba(0,0,0,0.18)' : '1px solid #1A1A1A',
-                  }}
-                >
+                {/* Stile originale, a richiesta di Giulio: il bottone nero pieno non gli
+                    piaceva. Resta solo il cambio di testo quando il negozio e' gia' stato
+                    aperto, che e' la parte utile. */}
+                <div className="piece-cta">
                   {isOpen ? '\u2713 Opened, shop again' : 'Shop at ' + piece.store}
                 </div>
               </div>
