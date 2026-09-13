@@ -154,9 +154,16 @@ export default function PiecesGrid({ pieces: initialPieces, outfitId }) {
                 <div
                   className="piece-cta"
                   style={{
-                    display: 'block',
+                    // I nomi delle marche non sono lunghi uguali: Ancient Greek Sandals
+                    // andava su due righe e il suo bottone veniva piu' alto degli altri due.
+                    // Altezza fissa e testo centrato, cosi' i tre restano pari.
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: 46,
                     marginTop: 10,
-                    padding: '11px 14px',
+                    padding: '8px 12px',
+                    lineHeight: 1.25,
                     borderRadius: 8,
                     fontSize: 12,
                     letterSpacing: '0.06em',
