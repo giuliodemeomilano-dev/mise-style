@@ -33,7 +33,7 @@ function pieceFit(box) {
 }
 
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 
 export default function PiecesGrid({ pieces: initialPieces, outfitId }) {
   const [pieces, setPieces] = useState(initialPieces)
@@ -41,6 +41,33 @@ export default function PiecesGrid({ pieces: initialPieces, outfitId }) {
   // Everything already shown in each slot. Without this the swap kept landing
   // on the same two or three items and bouncing back to the original.
   const seen = useRef({})
+
+  // Chi ha gia' aperto un negozio resta segnato quando torna indietro. L'outfit sta in
+  // tre negozi diversi, quindi per comprarlo tutto servono tre viaggi e senza questo non
+  // si sa a che punto si era. NON si aprono i tre link in automatico: sarebbero clic che
+  // il visitatore non ha fatto, il browser ne blocca due su tre, falserebbero la tabella
+  // dei clic e con Awin e' il genere di cosa per cui chiudono l'account.
+  // Vive solo nel browser del visitatore, non e' un dato che raccogliamo noi.
+  const [opened, setOpened] = useState([])
+  const storeKey = 'mise-opened-' + outfitId
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(storeKey)
+      if (raw) setOpened(JSON.parse(raw) || [])
+    } catch (e) {}
+  }, [storeKey])
+
+  function markOpened(id) {
+    setOpened((prev) => {
+      if (prev.includes(id)) return prev
+      const next = [...prev, id]
+      try {
+        window.localStorage.setItem(storeKey, JSON.stringify(next))
+      } catch (e) {}
+      return next
+    })
+  }
 
   async function changePiece(idx) {
     const piece = pieces[idx]
@@ -99,13 +126,21 @@ export default function PiecesGrid({ pieces: initialPieces, outfitId }) {
     <section className="look-pieces">
       <h2>The Pieces</h2>
       <div className="pieces-grid">
-        {pieces.map((piece, idx) => (
-          <div key={idx} className="piece-card-wrap">
+        {pieces.map((piece, idx) => {
+          const isOpen = opened.includes(piece.id)
+          return (
+          <div
+            key={idx}
+            className="piece-card-wrap"
+            id={idx === 0 ? 'pieces' : undefined}
+            style={idx === 0 ? { scrollMarginTop: 18 } : undefined}
+          >
             <a
-              href={`/go/${piece.id}?outfit=${outfitId}`}
+              href={'/go/' + piece.id + '?outfit=' + outfitId}
               target="_blank"
               rel="noopener noreferrer sponsored"
               className="piece-card"
+              onClick={() => markOpened(piece.id)}
             >
               <div className="piece-image" style={{ position: 'relative' }}>
                 <img src={piece.packshot} style={pieceFit(piece.box)} alt={piece.name} loading="lazy" />
@@ -114,7 +149,26 @@ export default function PiecesGrid({ pieces: initialPieces, outfitId }) {
                 <div className="piece-brand">{piece.brand}</div>
                 <div className="piece-name">{piece.name}</div>
                 <div className="piece-price">€{piece.price}</div>
-                <div className="piece-cta">Shop at {piece.store}</div>
+                {/* Era una riga di testo e nessuno capiva che si comprava di li'. Ora e'
+                    un bottone vero, uno per negozio, e cambia aspetto quando l'hai aperto. */}
+                <div
+                  className="piece-cta"
+                  style={{
+                    display: 'block',
+                    marginTop: 10,
+                    padding: '11px 14px',
+                    borderRadius: 8,
+                    fontSize: 12,
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                    textAlign: 'center',
+                    background: isOpen ? 'transparent' : '#1A1A1A',
+                    color: isOpen ? '#6B635A' : '#F3EDE7',
+                    border: isOpen ? '1px solid rgba(0,0,0,0.18)' : '1px solid #1A1A1A',
+                  }}
+                >
+                  {isOpen ? '\u2713 Opened, shop again' : 'Shop at ' + piece.store}
+                </div>
               </div>
             </a>
             <button
@@ -126,7 +180,7 @@ export default function PiecesGrid({ pieces: initialPieces, outfitId }) {
               {busy === idx ? '…' : '↻ Change'}
             </button>
           </div>
-        ))}
+        )})}
       </div>
       <div className="pieces-total">Outfit total · €{total.toFixed(2)}</div>
     </section>
