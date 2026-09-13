@@ -195,15 +195,16 @@ export default async function LookPage({ params }) {
 
 
       {related.length > 0 && (
-        <section
-          style={{
-            padding: '36px 20px 0',
-          }}
-        >
+        // Stessa classe della sezione dei pezzi, non un padding inventato: cosi' il bordo
+        // sinistro resta allineato al resto della pagina su qualunque schermo. Misurato il
+        // 2026-09-13: tutto il resto stava a 28px e questo blocco a 20, si vedeva sporgere.
+        // E l'h2 eredita Playfair come gli altri titoli: prima usciva in Outfit, cioe' un
+        // carattere diverso da tutta la pagina.
+        <section className="look-pieces" style={{ paddingTop: 0, paddingBottom: 0 }}>
           <h2
             style={{
-              fontSize: 18,
-              margin: '0 0 14px',
+              fontSize: 22,
+              margin: '0 0 16px',
               paddingTop: 28,
               borderTop: '1px solid rgba(0,0,0,0.08)',
             }}
