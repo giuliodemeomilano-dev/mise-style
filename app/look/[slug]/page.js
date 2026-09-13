@@ -211,7 +211,17 @@ export default async function LookPage({ params }) {
           >
             More like this
           </h2>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+          {/* Su questa pagina i titoli di sezione sono centrati, The Pieces e Outfit
+              total lo sono. Le pastiglie restavano a sinistra sotto un titolo centrato
+              e sembrava un errore di impaginazione. */}
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              gap: 10,
+            }}
+          >
             {related.map((c) => (
               <Link
                 key={c.slug}
