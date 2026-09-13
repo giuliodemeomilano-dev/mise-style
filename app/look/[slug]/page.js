@@ -191,7 +191,6 @@ export default async function LookPage({ params }) {
         </>
       )}
 
-      <div id="pieces"></div>
       <PiecesGrid pieces={look.pieces} outfitId={look.id} />
 
 
