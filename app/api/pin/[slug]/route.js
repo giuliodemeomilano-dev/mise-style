@@ -89,7 +89,7 @@ export async function GET(request, { params }) {
 
   const { data: outfit } = await supabase
     .from('outfits')
-    .select('title, occasion, season, gender, total_price, outfit_items (position, role, products (name, brand, price, image_url, packshot_url, cutout_url, cutout_box))')
+    .select('title, occasion, season, gender, total_price, model_box, outfit_items (position, role, products (name, brand, price, image_url, packshot_url, cutout_url, cutout_box))')
     .eq('slug', slug)
     .eq('status', 'active')
     .single()
@@ -252,10 +252,19 @@ export async function GET(request, { params }) {
     // those two numbers the crop is arithmetic, so the model is never beheaded or cut
     // off at the ankles whatever shape the photo pane is. Guessed percentages did that
     // repeatedly. Defaults keep older URLs rendering.
+    // THE DATABASE IS THE TRUTH, NOT THE QUERY STRING. `outfits.model_box` is the
+    // alpha bounding box of the same generated frame, measured at write time as
+    // `<w/h>,<top>,<bottom>,<left>,<right>`. Read it FIRST: a caller that passes a
+    // deliberately SHORTENED `focus` to make the figure fit is the reason pins went
+    // out with the shoes and the trousers cut off (Giulio, 2026-09-14). The renderer
+    // no longer needs that help, so the stored box wins and `focus` is only a
+    // fallback for outfits written before model_box existed.
+    const mb = String(outfit.model_box || '').split(',').map(Number)
+    const mbOK = mb.length >= 3 && mb.slice(0, 3).every(Number.isFinite) && mb[0] > 0 && mb[2] > mb[1]
     const fp = (searchParams.get('focus') || '').split(',').map(Number)
-    const fTop = Number.isFinite(fp[0]) ? Math.max(0, Math.min(1, fp[0])) : 0.04
-    const fBot = Number.isFinite(fp[1]) ? Math.max(0, Math.min(1, fp[1])) : 0.96
-    const srcAR = Number(searchParams.get('ar')) || 768 / 1376
+    const fTop = mbOK ? Math.max(0, Math.min(1, mb[1])) : (Number.isFinite(fp[0]) ? Math.max(0, Math.min(1, fp[0])) : 0.04)
+    const fBot = mbOK ? Math.max(0, Math.min(1, mb[2])) : (Number.isFinite(fp[1]) ? Math.max(0, Math.min(1, fp[1])) : 0.96)
+    const srcAR = (mbOK ? mb[0] : 0) || Number(searchParams.get('ar')) || 768 / 1376
     const photoPane = (W, H, reserve = 0, anchor = 'center') => {
       // THE WHOLE OUTFIT MUST BE VISIBLE. If the figure is taller than the space
       // the pane gives it, the photo is SCALED DOWN until it fits instead of being
