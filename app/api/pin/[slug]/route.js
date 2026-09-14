@@ -256,7 +256,7 @@ export async function GET(request, { params }) {
     const fTop = Number.isFinite(fp[0]) ? Math.max(0, Math.min(1, fp[0])) : 0.04
     const fBot = Number.isFinite(fp[1]) ? Math.max(0, Math.min(1, fp[1])) : 0.96
     const srcAR = Number(searchParams.get('ar')) || 768 / 1376
-    const photoPane = (W, H, reserve = 0) => {
+    const photoPane = (W, H, reserve = 0, anchor = 'center') => {
       // THE WHOLE OUTFIT MUST BE VISIBLE. If the figure is taller than the space
       // the pane gives it, the photo is SCALED DOWN until it fits instead of being
       // cropped: the source is a cut-out on flat cream, so cream just fills the
@@ -286,7 +286,12 @@ export async function GET(request, { params }) {
         bounds = figure()
       }
       const figH = bounds[1] - bounds[0]
-      const y = Math.max(0, Math.round(bounds[0] - (HH - figH) / 2))
+      // Bottom anchoring lets the figure be as LARGE as the pane allows: the slack
+      // goes above it as breathing room instead of being split in two thin bands,
+      // and the feet land exactly on the reserved line. Giulio, 2026-09-14:
+      // the model must not come out small either.
+      const slack = HH - figH
+      const y = Math.max(0, Math.round(bounds[0] - (anchor === 'bottom' ? slack : slack / 2)))
       const x = Math.round((dW - W) / 2)
       return (
         <div style={{ width: W, height: H, display: 'flex', overflow: 'hidden', backgroundColor: '#E3D8C8' }}>
@@ -377,14 +382,14 @@ export async function GET(request, { params }) {
       return new ImageResponse(
         (
           <div style={{ width: CW, height: CH, display: 'flex', flexDirection: 'column', backgroundColor: CREAM }}>
-            <div style={{ width: CW, height: Math.round(CH * 0.373), display: 'flex', flexDirection: 'column', paddingTop: 42, backgroundColor: CREAM }}>
+            <div style={{ width: CW, height: Math.round(CH * 0.34), display: 'flex', flexDirection: 'column', paddingTop: 42, backgroundColor: CREAM }}>
               <div style={{ width: CW, display: 'flex', justifyContent: 'center', fontSize: 24, letterSpacing: 14, color: '#1A1A1A', fontWeight: 700 }}>MISE</div>
               <div style={{ marginTop: 26, display: 'flex' }}>{strip(270, false)}</div>
             </div>
-            <div style={{ width: CW, height: CH - Math.round(CH * 0.373), display: 'flex', position: 'relative' }}>
-              {photoPane(CW, CH - Math.round(CH * 0.373), 0.34)}
-              <div style={{ position: 'absolute', left: 0, top: Math.round((CH - Math.round(CH * 0.373)) * 0.53), width: CW, height: Math.round((CH - Math.round(CH * 0.373)) * 0.47), display: 'flex', backgroundImage: 'linear-gradient(to bottom, rgba(20,16,12,0), rgba(20,16,12,0.84))' }} />
-              <div style={{ position: 'absolute', left: 46, top: Math.round((CH - Math.round(CH * 0.373)) * 0.734), width: STRIP_W, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ width: CW, height: CH - Math.round(CH * 0.34), display: 'flex', position: 'relative' }}>
+              {photoPane(CW, CH - Math.round(CH * 0.34), 0.30, 'bottom')}
+              <div style={{ position: 'absolute', left: 0, top: Math.round((CH - Math.round(CH * 0.34)) * 0.53), width: CW, height: Math.round((CH - Math.round(CH * 0.34)) * 0.47), display: 'flex', backgroundImage: 'linear-gradient(to bottom, rgba(20,16,12,0), rgba(20,16,12,0.84))' }} />
+              <div style={{ position: 'absolute', left: 46, top: Math.round((CH - Math.round(CH * 0.34)) * 0.734), width: STRIP_W, display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', fontSize: 18, letterSpacing: 5, color: 'rgba(255,255,255,0.72)' }}>{eyebrowTxt}</div>
                 <div style={{ display: 'flex', marginTop: 8, fontSize: 46, color: '#FFFFFF' }}>{outfit.title}</div>
                 <div style={{ width: STRIP_W, marginTop: 18, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
