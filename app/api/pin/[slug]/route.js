@@ -256,26 +256,40 @@ export async function GET(request, { params }) {
     const fTop = Number.isFinite(fp[0]) ? Math.max(0, Math.min(1, fp[0])) : 0.04
     const fBot = Number.isFinite(fp[1]) ? Math.max(0, Math.min(1, fp[1])) : 0.96
     const srcAR = Number(searchParams.get('ar')) || 768 / 1376
-    const photoPane = (W, H) => {
+    const photoPane = (W, H, reserve = 0) => {
+      // THE WHOLE OUTFIT MUST BE VISIBLE. If the figure is taller than the space
+      // the pane gives it, the photo is SCALED DOWN until it fits instead of being
+      // cropped: the source is a cut-out on flat cream, so cream just fills the
+      // sides and nothing is lost. Cropping hid the shoes and the trousers, which
+      // are two of the three products (Giulio, 2026-09-14). `reserve` is the
+      // fraction at the bottom of the pane taken by a text band, which the figure
+      // must stay clear of.
+      const HH = Math.max(1, Math.round(H * (1 - reserve)))
       let dW = W
       let dH = Math.round(W / srcAR)
-      if (dH < H) {
-        dH = H
-        dW = Math.round(H * srcAR)
+      if (dH < HH) {
+        dH = HH
+        dW = Math.round(HH * srcAR)
       }
-      const pad = Math.round(0.02 * dH)
-      const start = Math.max(0, Math.round(fTop * dH) - pad)
-      const end = Math.min(dH, Math.round(fBot * dH) + pad)
-      // If the whole figure fits, centre it. If the pane is too short for a full body,
-      // which happens in `row` where the photo is wide, anchor to the TOP of the figure:
-      // head down to mid-calf is a normal editorial crop, a beheaded model is not.
-      let y = end - start <= H
-        ? Math.round(start - (H - (end - start)) / 2)
-        : Math.round(start - H * 0.06)
-      y = Math.max(0, Math.min(y, Math.max(0, dH - H)))
-      const x = Math.max(0, Math.round((dW - W) / 2))
+      const figure = () => {
+        const pad = Math.round(0.02 * dH)
+        return [
+          Math.max(0, Math.round(fTop * dH) - pad),
+          Math.min(dH, Math.round(fBot * dH) + pad),
+        ]
+      }
+      let bounds = figure()
+      if (bounds[1] - bounds[0] > HH) {
+        const k = HH / (bounds[1] - bounds[0])
+        dW = Math.max(1, Math.round(dW * k))
+        dH = Math.max(1, Math.round(dH * k))
+        bounds = figure()
+      }
+      const figH = bounds[1] - bounds[0]
+      const y = Math.max(0, Math.round(bounds[0] - (HH - figH) / 2))
+      const x = Math.round((dW - W) / 2)
       return (
-        <div style={{ width: W, height: H, display: 'flex', overflow: 'hidden' }}>
+        <div style={{ width: W, height: H, display: 'flex', overflow: 'hidden', backgroundColor: '#E3D8C8' }}>
           <img src={photoData} width={dW} height={dH} style={{ marginTop: -y, marginLeft: -x }} />
         </div>
       )
@@ -368,7 +382,7 @@ export async function GET(request, { params }) {
               <div style={{ marginTop: 26, display: 'flex' }}>{strip(270, false)}</div>
             </div>
             <div style={{ width: CW, height: CH - Math.round(CH * 0.373), display: 'flex', position: 'relative' }}>
-              {photoPane(CW, CH - Math.round(CH * 0.373))}
+              {photoPane(CW, CH - Math.round(CH * 0.373), 0.34)}
               <div style={{ position: 'absolute', left: 0, top: Math.round((CH - Math.round(CH * 0.373)) * 0.53), width: CW, height: Math.round((CH - Math.round(CH * 0.373)) * 0.47), display: 'flex', backgroundImage: 'linear-gradient(to bottom, rgba(20,16,12,0), rgba(20,16,12,0.84))' }} />
               <div style={{ position: 'absolute', left: 46, top: Math.round((CH - Math.round(CH * 0.373)) * 0.734), width: STRIP_W, display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', fontSize: 18, letterSpacing: 5, color: 'rgba(255,255,255,0.72)' }}>{eyebrowTxt}</div>
