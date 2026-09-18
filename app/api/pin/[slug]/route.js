@@ -300,17 +300,30 @@ export async function GET(request, { params }) {
       // and the feet land exactly on the reserved line. Giulio, 2026-09-14:
       // the model must not come out small either.
       const slack = HH - figH
-      // The pane must NEVER show its cream backing at the bottom. After the
-      // shrink above, dH can be smaller than the room left under the figure, and
-      // a positive top offset then lifts the photo off the pane's bottom edge:
-      // that is the 30 to 90 px cream strip that sat under the floor on every pin
-      // from 15 to 18 September and reads as the photo being sliced off (Giulio,
-      // 2026-09-18). Clamping the offset to dH - H pins the photo to the bottom
-      // edge. It can never hide the feet, because bounds[1] is capped at dH, so
-      // bounds[1] - y stays inside the pane by construction.
-      const yWanted = Math.round(bounds[0] - (anchor === 'bottom' ? slack : slack / 2))
-      const y = Math.min(Math.max(0, yWanted), Math.max(0, dH - H))
-      const x = Math.round((dW - W) / 2)
+      let y = Math.max(0, Math.round(bounds[0] - (anchor === 'bottom' ? slack : slack / 2)))
+      let x = Math.round((dW - W) / 2)
+      // A pane the photo does not FULLY cover shows its cream backing, and a cream
+      // strip under the floor reads as the photo being sliced off. Measured on the
+      // live pins: 33 px on 18 September, 49 on the 17th, 30 on the 16th, 91 on the
+      // 15th, 0 on the 14th (Giulio, 2026-09-18). The cause is the shrink above: it
+      // is what makes the whole outfit fit, but it can leave dH shorter than the
+      // pane, and the image then hangs from the top with cream under it. On the
+      // centred panes the whole rectangle is photo, so grow the image back until it
+      // covers. Nothing is lost by growing: at dH === H the figure spans fTop * H to
+      // fBot * H, inside the pane by definition, so y goes to 0 and head and feet are
+      // both in. When the image is already tall enough, lowering y to dH - H only
+      // slides it DOWN, which cannot cut the head, and the feet land at
+      // H - dH * (1 - fBot), still inside. Bottom-anchored panes keep their own rule:
+      // there the feet must sit on the reserved line and a text band covers the rest.
+      if (anchor !== 'bottom' && dH < H) {
+        const s = H / dH
+        dW = Math.max(1, Math.round(dW * s))
+        dH = H
+        y = 0
+        x = Math.round((dW - W) / 2)
+      } else if (anchor !== 'bottom') {
+        y = Math.min(y, dH - H)
+      }
       return (
         <div style={{ width: W, height: H, display: 'flex', overflow: 'hidden', backgroundColor: '#E3D8C8' }}>
           <img src={photoData} width={dW} height={dH} style={{ marginTop: -y, marginLeft: -x }} />
