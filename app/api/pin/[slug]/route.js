@@ -300,7 +300,16 @@ export async function GET(request, { params }) {
       // and the feet land exactly on the reserved line. Giulio, 2026-09-14:
       // the model must not come out small either.
       const slack = HH - figH
-      const y = Math.max(0, Math.round(bounds[0] - (anchor === 'bottom' ? slack : slack / 2)))
+      // The pane must NEVER show its cream backing at the bottom. After the
+      // shrink above, dH can be smaller than the room left under the figure, and
+      // a positive top offset then lifts the photo off the pane's bottom edge:
+      // that is the 30 to 90 px cream strip that sat under the floor on every pin
+      // from 15 to 18 September and reads as the photo being sliced off (Giulio,
+      // 2026-09-18). Clamping the offset to dH - H pins the photo to the bottom
+      // edge. It can never hide the feet, because bounds[1] is capped at dH, so
+      // bounds[1] - y stays inside the pane by construction.
+      const yWanted = Math.round(bounds[0] - (anchor === 'bottom' ? slack : slack / 2))
+      const y = Math.min(Math.max(0, yWanted), Math.max(0, dH - H))
       const x = Math.round((dW - W) / 2)
       return (
         <div style={{ width: W, height: H, display: 'flex', overflow: 'hidden', backgroundColor: '#E3D8C8' }}>
