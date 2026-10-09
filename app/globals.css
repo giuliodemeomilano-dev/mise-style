@@ -434,7 +434,7 @@ a.nav-logo { color: var(--text); }
 .look-reel { display: flex; justify-content: center; padding: 8px 20px 0; }
 .look-reel video { width: 100%; max-width: 340px; aspect-ratio: 9/16; border-radius: var(--radius); background: #000; box-shadow: var(--shadow-md); }
 .for-less-sub { text-align: center; color: var(--text-secondary); margin: -6px 0 22px; }
-.ptile-kept { opacity: 0.6; }
+.ptile-kept .ptile-img { outline: 1px dashed var(--border); }
 .ptile-note { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-top: 4px; }
 
 .piece-soldout { position: absolute; top: 10px; left: 10px; padding: 4px 10px; border-radius: 99px; background: var(--text); color: #fff; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
