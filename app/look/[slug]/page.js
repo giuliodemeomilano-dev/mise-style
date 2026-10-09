@@ -14,6 +14,7 @@ import {
   lookForLess,
   buildStylePages,
   buildBrandPages,
+  inSeasonProductIds,
   GROUPS,
   COLOUR_LABEL,
 } from '@/lib/catalog'
@@ -164,6 +165,7 @@ export default async function LookPage({ params }) {
     const [products, allLooks] = await Promise.all([getProducts(), getLooks()])
     const stylePages = new Map(buildStylePages(allLooks).map((s) => [s.slug, s]))
     const brandPages = new Set(buildBrandPages(allLooks).map((b) => b.slug))
+    const allowed = inSeasonProductIds(allLooks)
     const shaped = look.pieces.map((p) => ({
       ...p,
       brand: canonBrand(p.brand),
@@ -183,12 +185,12 @@ export default async function LookPage({ params }) {
         : null
       extras[p.id] = {
         inStock: p.inStock,
-        alt: p.inStock ? null : findAlternative(p, products, { exclude: used, gender: look.gender }),
+        alt: p.inStock ? null : findAlternative(p, products, { exclude: used, gender: look.gender, allowed }),
         style: st ? { slug: st.slug, label } : null,
         brand: brandPages.has(brandSlug(p.brand)) ? brandSlug(p.brand) : null,
       }
     }
-    forLess = lookForLess({ ...look, pieces: shaped }, products)
+    forLess = lookForLess({ ...look, pieces: shaped }, products, allowed)
   } catch (e) {
     extras = {}
   }
