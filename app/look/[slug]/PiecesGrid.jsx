@@ -34,8 +34,16 @@ function pieceFit(box) {
 
 
 import { useRef, useState, useEffect } from 'react'
+import NotifyForm from '@/app/components/NotifyForm'
+import { useLang } from '@/app/components/LangProvider'
+import { UI } from '@/lib/ui-strings'
 
-export default function PiecesGrid({ pieces: initialPieces, outfitId }) {
+// extras: per piece id, worked out on the server: { inStock, alt, style, brand }.
+// alt is a similar piece in stock, shown only when the original is sold out, so
+// the visitor never lands on a dead end.
+export default function PiecesGrid({ pieces: initialPieces, outfitId, extras = {} }) {
+  const { lang } = useLang()
+  const u = UI[lang] || UI.en
   const [pieces, setPieces] = useState(initialPieces)
   const [busy, setBusy] = useState(null)
   // Everything already shown in each slot. Without this the swap kept landing
@@ -128,6 +136,8 @@ export default function PiecesGrid({ pieces: initialPieces, outfitId }) {
       <div className="pieces-grid">
         {pieces.map((piece, idx) => {
           const isOpen = opened.includes(piece.id)
+          const ex = extras[piece.id] || {}
+          const soldOut = ex.inStock === false
           return (
           <div
             key={idx}
@@ -144,6 +154,7 @@ export default function PiecesGrid({ pieces: initialPieces, outfitId }) {
             >
               <div className="piece-image" style={{ position: 'relative' }}>
                 <img src={piece.packshot} style={pieceFit(piece.box)} alt={piece.name} loading="lazy" />
+                {soldOut && <span className="piece-soldout">{u.sold_out}</span>}
               </div>
               <div className="piece-info">
                 <div className="piece-brand">{piece.brand}</div>
@@ -165,6 +176,33 @@ export default function PiecesGrid({ pieces: initialPieces, outfitId }) {
             >
               {busy === idx ? '…' : '↻ Change'}
             </button>
+            {soldOut && ex.alt && (
+              <a
+                href={'/go/' + ex.alt.id + '?outfit=' + outfitId}
+                target="_blank"
+                rel="noopener noreferrer sponsored"
+                className="piece-alt"
+              >
+                <img src={ex.alt.packshot} alt={ex.alt.name} loading="lazy" />
+                <span className="piece-alt-text">
+                  <span className="piece-alt-kicker">{u.similar_in_stock}</span>
+                  <span className="piece-alt-name">{ex.alt.brand}, {ex.alt.name}</span>
+                  <span className="piece-alt-price">€{ex.alt.price}</span>
+                </span>
+              </a>
+            )}
+            <div className="piece-extras">
+              {soldOut ? (
+                <NotifyForm productId={piece.id} outfitId={outfitId} kind="restock" compact />
+              ) : (
+                ex.inStock !== undefined && <NotifyForm productId={piece.id} outfitId={outfitId} kind="price" price={piece.price} compact />
+              )}
+              {ex.style && (
+                <a className="piece-style-link" href={'/style/' + ex.style.slug}>
+                  {ex.style.label} →
+                </a>
+              )}
+            </div>
           </div>
         )})}
       </div>

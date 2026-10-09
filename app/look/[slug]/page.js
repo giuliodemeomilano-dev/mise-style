@@ -3,6 +3,23 @@ import PiecesGrid from './PiecesGrid'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { CATEGORIES } from '@/lib/categories'
+import {
+  getLooks,
+  getProducts,
+  itemGroup,
+  colourOf,
+  canonBrand,
+  brandSlug,
+  findAlternative,
+  lookForLess,
+  buildStylePages,
+  buildBrandPages,
+  GROUPS,
+  COLOUR_LABEL,
+} from '@/lib/catalog'
+import SaveButton from '@/app/components/SaveButton'
+import EmailSignup from '@/app/components/EmailSignup'
+import PieceTile from '@/app/components/PieceTile'
 
 export const revalidate = 3600
 
@@ -64,18 +81,29 @@ export async function generateMetadata({ params }) {
 async function getOutfit(slug) {
   const { data: outfit, error } = await supabase
     .from('outfits')
-    .select('id, slug, title, description, mood, occasion, season, gender, budget_tier, tags, hero_image_url, model_image_url, model_box, total_price, outfit_items (position, role, products (id, external_id, category, name, brand, merchant, price, image_url, packshot_url, cutout_url, cutout_box, affiliate_url))')
+    .select('id, slug, title, description, mood, occasion, season, gender, budget_tier, tags, hero_image_url, model_image_url, model_box, total_price, outfit_items (position, role, products (id, external_id, category, name, brand, merchant, price, color, in_stock, image_url, packshot_url, cutout_url, cutout_box, affiliate_url))')
     .eq('slug', slug)
     .eq('status', 'active')
     .single()
 
   if (error || !outfit) return null
 
+  // The reel lives in its own column, added on 2026-10-09. Read apart so a look
+  // still opens if the column is ever missing.
+  let reel = null
+  try {
+    const { data: r } = await supabase.from('outfits').select('reel_url').eq('id', outfit.id).single()
+    reel = r?.reel_url || null
+  } catch (e) {}
+
   const sortedItems = [...(outfit.outfit_items || [])].sort((a, b) => a.position - b.position)
 
   return {
     ...outfit,
+    reel,
     pieces: sortedItems.map((item) => ({
+      in_stock: item.products?.in_stock,
+      color: item.products?.color,
       id: item.products?.id,
       external_id: item.products?.external_id,
       category: item.products?.category,
@@ -127,6 +155,47 @@ export default async function LookPage({ params }) {
 
   if (!look) notFound()
 
+  // Sold-out pieces get a similar one in stock; every piece gets its style guide
+  // link when that page exists; and the whole look gets a cheaper version when
+  // we can find one. All from the cached catalogue, nothing extra per visit.
+  let extras = {}
+  let forLess = null
+  try {
+    const [products, allLooks] = await Promise.all([getProducts(), getLooks()])
+    const stylePages = new Map(buildStylePages(allLooks).map((s) => [s.slug, s]))
+    const brandPages = new Set(buildBrandPages(allLooks).map((b) => b.slug))
+    const shaped = look.pieces.map((p) => ({
+      ...p,
+      brand: canonBrand(p.brand),
+      price: Number(p.price) || 0,
+      group: itemGroup(p.category, p.name),
+      colour: colourOf(p.color, p.name),
+      inStock: p.in_stock !== false,
+    }))
+    const used = shaped.map((p) => p.id)
+    for (const p of shaped) {
+      const g = look.gender === 'men' ? 'men' : 'women'
+      const withColour = p.colour ? `${p.colour}-${p.group}-${g}` : null
+      const base = `${p.group}-${g}`
+      const st = (withColour && stylePages.get(withColour)) || stylePages.get(base)
+      const label = st
+        ? 'Style ideas: ' + (((st.colour ? COLOUR_LABEL[st.colour] + ' ' : '') + (GROUPS[st.group]?.many || st.group)).toLowerCase())
+        : null
+      extras[p.id] = {
+        inStock: p.inStock,
+        alt: p.inStock ? null : findAlternative(p, products, { exclude: used, gender: look.gender }),
+        style: st ? { slug: st.slug, label } : null,
+        brand: brandPages.has(brandSlug(p.brand)) ? brandSlug(p.brand) : null,
+      }
+    }
+    forLess = lookForLess({ ...look, pieces: shaped }, products)
+  } catch (e) {
+    extras = {}
+  }
+  const brandLinks = [...new Map(look.pieces.map((p) => [brandSlug(p.brand), canonBrand(p.brand)])).entries()].filter(
+    ([slug]) => Object.values(extras).some((x) => x.brand === slug)
+  )
+
   const total = Number(look.total_price)
   const storeCount = new Set(look.pieces.map((p) => p.store)).size
   const hasModel = Boolean(look.model_image_url)
@@ -152,7 +221,13 @@ export default async function LookPage({ params }) {
             <p className="look-kicker">{seoLabel(look)}</p>
             <h1>{look.title}</h1>
             <p className="look-meta">{look.pieces.length} pieces · {storeCount} stores</p>
-            <a href="#pieces" className="shop-cta">Shop the outfit <span>€{total}</span></a>
+            <div className="look-actions">
+              <a href="#pieces" className="shop-cta">Shop the outfit <span>€{total}</span></a>
+              <SaveButton slug={look.slug} className="save-inline" label={['Save', 'Saved']} />
+            </div>
+            {forLess && (
+              <a href="#for-less" className="for-less-link">Get the look for less: €{forLess.total}, save €{forLess.saving}</a>
+            )}
             {look.description && <p className="look-hero-desc">{look.description}</p>}
             <p className="look-hero-total">Outfit total · <strong>€{total}</strong></p>
             {look.tags && look.tags.length > 0 && (
@@ -172,7 +247,10 @@ export default async function LookPage({ params }) {
               <p className="look-kicker">{seoLabel(look)}</p>
               <h1>{look.title}</h1>
               <p className="look-meta">{look.pieces.length} pieces · {storeCount} stores · €{total}</p>
-              <a href="#pieces" className="shop-cta">Shop the outfit <span>€{total}</span></a>
+              <div className="look-actions">
+                <a href="#pieces" className="shop-cta">Shop the outfit <span>€{total}</span></a>
+                <SaveButton slug={look.slug} className="save-inline" label={['Save', 'Saved']} />
+              </div>
             </div>
             <div className="look-hero-strip">
               {look.pieces.slice(0, 3).map((p) => (
@@ -191,7 +269,40 @@ export default async function LookPage({ params }) {
         </>
       )}
 
-      <PiecesGrid pieces={look.pieces} outfitId={look.id} />
+      {look.reel && (
+        <section className="look-reel">
+          <video src={look.reel} autoPlay muted loop playsInline controls preload="metadata" aria-label={'Video of the outfit ' + look.title} />
+        </section>
+      )}
+
+      <PiecesGrid pieces={look.pieces} outfitId={look.id} extras={extras} />
+
+      {forLess && (
+        <section className="look-pieces for-less" id="for-less">
+          <h2>The same look for less</h2>
+          <p className="for-less-sub">
+            €{forLess.total} instead of €{Math.round(total)}: similar pieces, same colours, you save €{forLess.saving}.
+          </p>
+          <div className="ptile-grid">
+            {forLess.pieces.map((p) => (
+              <div key={p.id} className={p.kept ? 'ptile-kept' : undefined}>
+                <PieceTile piece={p} outfitId={look.id} />
+                {p.kept && <div className="ptile-note">Same piece</div>}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {brandLinks.length > 0 && (
+        <section className="look-pieces" style={{ paddingTop: 0, paddingBottom: 0 }}>
+          <div className="pill-links" style={{ justifyContent: 'center' }}>
+            {brandLinks.map(([slug, name]) => (
+              <Link key={slug} href={'/brand/' + slug}>More from {name}</Link>
+            ))}
+          </div>
+        </section>
+      )}
 
 
       {related.length > 0 && (
@@ -241,6 +352,9 @@ export default async function LookPage({ params }) {
           </div>
         </section>
       )}
+      <div style={{ padding: '0 20px' }}>
+        <EmailSignup source="look" />
+      </div>
       <div className="bottom-spacer"></div>
     </main>
   )
