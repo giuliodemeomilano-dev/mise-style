@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabase-admin'
-import { CATEGORIES } from '@/lib/categories'
+import { liveCategories } from '@/lib/categories'
+import { getLooks, buildBrandPages, buildStylePages } from '@/lib/catalog'
 
 export const revalidate = 3600
 
@@ -7,7 +8,7 @@ const BASE = 'https://www.mise.style'
 
 export default async function sitemap() {
   const now = new Date()
-  const staticPaths = ['', '/outfits', '/journal', '/about', '/how-it-works', '/contact', '/disclosure', '/privacy']
+  const staticPaths = ['', '/outfits', '/style', '/brands', '/journal', '/about', '/how-it-works', '/contact', '/disclosure', '/privacy']
   const staticPages = staticPaths.map((p) => ({
     url: `${BASE}${p}`,
     lastModified: now,
@@ -15,7 +16,7 @@ export default async function sitemap() {
     priority: p === '' ? 1 : 0.5,
   }))
 
-  const categoryPages = CATEGORIES.map((c) => ({
+  const categoryPages = liveCategories().map((c) => ({
     url: BASE + '/outfits/' + c.slug,
     lastModified: now,
     changeFrequency: 'daily',
@@ -58,5 +59,15 @@ export default async function sitemap() {
     // fallback: nessuna guida
   }
 
-  return [...staticPages, ...categoryPages, ...looks, ...guides]
+  // Brand pages and "how to style" pages, built from the catalogue.
+  let generated = []
+  try {
+    const all = await getLooks()
+    generated = [
+      ...buildBrandPages(all).map((b) => ({ url: BASE + '/brand/' + b.slug, lastModified: now, changeFrequency: 'daily', priority: 0.8 })),
+      ...buildStylePages(all).map((p) => ({ url: BASE + '/style/' + p.slug, lastModified: now, changeFrequency: 'daily', priority: p.colour ? 0.7 : 0.8 })),
+    ]
+  } catch (e) {}
+
+  return [...staticPages, ...categoryPages, ...generated, ...looks, ...guides]
 }
