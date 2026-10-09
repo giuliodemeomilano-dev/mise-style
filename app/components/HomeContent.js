@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useLang } from './LangProvider'
+import { useSaved } from '@/lib/useSaved'
+import EmailSignup from './EmailSignup'
 
 const BRANDS = ['COS', 'ARKET', 'Sandro', 'Massimo Dutti', 'The Frankie Shop', 'BOSS', 'Polène', 'Jacquemus', 'Mejuri', 'Castañer', 'Veja', 'Ancient Greek Sandals']
 
@@ -53,7 +55,7 @@ export default function HomeContent({ looks }) {
   const [view, setView] = useState('discover')
   const [budget, setBudget] = useState(null)
   const [modalLook, setModalLook] = useState(null)
-  const [liked, setLiked] = useState({})
+  const { isSaved, toggle: toggleSaved } = useSaved()
   const [shown, setShown] = useState(12)
   useEffect(() => { setShown(12) }, [filter, gender, budget, view])
 
@@ -117,9 +119,10 @@ export default function HomeContent({ looks }) {
     document.body.style.overflow = ''
   }
 
-  const toggleLike = (e, id) => {
+  // Hearts are kept in the visitor's browser and listed on /saved.
+  const toggleLike = (e, slug) => {
     e.stopPropagation()
-    setLiked((prev) => ({ ...prev, [id]: !prev[id] }))
+    toggleSaved(slug)
   }
 
   return (
@@ -161,6 +164,10 @@ export default function HomeContent({ looks }) {
               </button>
             ))}
           </div>
+          <Link href="/search" className="filter-pill search-pill">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            {t.search_filters || 'Search & filters'}
+          </Link>
           <div className="budget-wrap">
             <span className="budget-label">{t.budget}</span>
             <input
@@ -201,8 +208,9 @@ export default function HomeContent({ looks }) {
                 <Link href={`/look/${look.slug}`} className="look-visual" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
                   <span className="badge-ai">{t.filters[look.cat] || t.badge}</span>
                   <button
-                    className={`btn-save${liked[look.id] ? ' liked' : ''}`}
-                    onClick={(e) => { e.preventDefault(); toggleLike(e, look.id) }}
+                    className={`btn-save${isSaved(look.slug) ? ' liked' : ''}`}
+                    aria-label="Save this outfit"
+                    onClick={(e) => { e.preventDefault(); toggleLike(e, look.slug) }}
                   >
                     <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                   </button>
@@ -265,6 +273,10 @@ export default function HomeContent({ looks }) {
           </div>
         )}
       </section>
+
+      <div style={{ padding: '0 20px' }}>
+        <EmailSignup source="home" />
+      </div>
 
       <div className="bottom-spacer"></div>
 
