@@ -51,6 +51,12 @@ export default function RootLayout({ children }) {
           src="https://s.skimresources.com/js/303796X1791855.skimlinks.js"
           strategy="lazyOnload"
         />
+        {/* Vercel Web Analytics: visite e pagine viste, senza cookie. Conta solo
+            quando Web Analytics e' attivo nel progetto su Vercel. */}
+        <Script id="vercel-analytics-queue" strategy="afterInteractive">
+          {`window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };`}
+        </Script>
+        <Script src="/_vercel/insights/script.js" strategy="afterInteractive" />
       </body>
     </html>
   )
