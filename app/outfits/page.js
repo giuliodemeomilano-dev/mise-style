@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { CATEGORIES } from '@/lib/categories'
+import { liveCategories } from '@/lib/categories'
 
 export const revalidate = 3600
 
@@ -11,8 +11,8 @@ export const metadata = {
 }
 
 export default function OutfitsIndex() {
-  const women = CATEGORIES.filter((c) => c.gender === 'women')
-  const men = CATEGORIES.filter((c) => c.gender === 'men')
+  const women = liveCategories().filter((c) => c.gender === 'women')
+  const men = liveCategories().filter((c) => c.gender === 'men')
 
   const group = (heading, list) => (
     <section style={{ marginBottom: 44 }}>

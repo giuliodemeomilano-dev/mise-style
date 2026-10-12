@@ -3,8 +3,15 @@
 import { usePathname } from 'next/navigation'
 import { useLang } from './LangProvider'
 
-const WOMEN = '/outfits/womens-summer-outfits'
-const MEN = '/outfits/mens-summer-outfits'
+// The Women and Men tabs open the season page of today, so they never point
+// at summer outfits in October.
+function seasonSlug() {
+  const m = new Date().getUTCMonth() + 1
+  return m >= 3 && m <= 5 ? 'spring' : m >= 6 && m <= 8 ? 'summer' : m >= 9 && m <= 11 ? 'autumn' : 'winter'
+}
+const SEASON = seasonSlug() === 'spring' ? 'summer' : seasonSlug()
+const WOMEN = '/outfits/womens-' + SEASON + '-outfits'
+const MEN = '/outfits/mens-' + SEASON + '-outfits'
 
 export default function BottomNav() {
   const { t } = useLang()

@@ -1,10 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { useLang } from './LangProvider'
+import { useSaved } from '@/lib/useSaved'
 
 export default function Nav() {
   const { lang, changeLang, t } = useLang()
+  const { saved } = useSaved()
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -16,7 +19,7 @@ export default function Nav() {
   return (
     <nav className={`nav${scrolled ? ' scrolled' : ''}`}>
       <div className="nav-inner">
-        <div className="nav-logo"><span>M</span>ise</div>
+        <Link href="/" className="nav-logo" style={{ textDecoration: 'none' }}><span>M</span>ise</Link>
         <div className="nav-right">
           <div className="lang-selector">
             <button
@@ -33,8 +36,13 @@ export default function Nav() {
             >ES</button>
           </div>
           <div className="nav-icons">
-            <svg className="nav-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <svg className="nav-icon" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <Link href="/search" aria-label="Search outfits" className="nav-icon-link">
+              <svg className="nav-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            </Link>
+            <Link href="/saved" aria-label="Saved outfits" className="nav-icon-link">
+              <svg className="nav-icon" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              {saved.length > 0 && <span className="nav-badge">{saved.length}</span>}
+            </Link>
           </div>
         </div>
       </div>

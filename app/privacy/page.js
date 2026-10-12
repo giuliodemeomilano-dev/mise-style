@@ -6,20 +6,20 @@ export const metadata = {
 };
 
 const wrap = { maxWidth: 720, margin: "0 auto", padding: "140px 24px 120px" };
-const kicker = { fontSize: 12, letterSpacing: "0.2em", textTransform: "uppercase", color: "#b0553f", marginBottom: 16 };
+const kicker = { fontSize: 12, letterSpacing: "0.2em", textTransform: "uppercase", color: "#B5452F", marginBottom: 16 };
 const h1 = { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 44, lineHeight: 1.1, color: "#1a1a1a", margin: "0 0 10px" };
 const updated = { fontSize: 13, color: "#8a8378", margin: "0 0 32px" };
 const h2 = { fontFamily: "Georgia, serif", fontSize: 22, color: "#1a1a1a", margin: "40px 0 12px" };
 const p = { fontSize: 16, lineHeight: 1.75, color: "#4a4a4a", margin: "0 0 16px" };
 const li = { fontSize: 16, lineHeight: 1.7, color: "#4a4a4a", margin: "0 0 10px" };
-const a = { color: "#b0553f" };
+const a = { color: "#B5452F" };
 
 export default function PrivacyPage() {
   return (
     <main style={wrap}>
       <div style={kicker}>Legal</div>
       <h1>Privacy policy</h1>
-      <p style={updated}>Last updated: July 2026</p>
+      <p style={updated}>Last updated: October 2026</p>
 
       <p style={p}>
         This policy explains what personal data MISE (“MISE”, “we”, “us”) collects
@@ -41,6 +41,7 @@ export default function PrivacyPage() {
       <ul>
         <li style={li}><strong>Usage &amp; device data</strong>: anonymised or aggregated analytics such as pages viewed, approximate region, browser type and referring site, used to understand how the site is used and improve it.</li>
         <li style={li}><strong>Outbound-click data</strong>: when you click a piece to go to a retailer, we and our affiliate partners may record that a click happened (for example which product, time, and a non-identifying reference) so purchases can be attributed.</li>
+        <li style={li}><strong>Your email address, only if you give it to us</strong>: when you subscribe to the newsletter, ask us to email your saved outfits, or ask for an alert when a piece is back in stock or drops in price. We keep the address, your language, the date of your consent and, for alerts, the piece concerned.</li>
         <li style={li}><strong>Locally stored preferences</strong>: items you save (“wishlist”) and your language choice are stored in your own browser (local storage) and are not sent to us as personal data.</li>
       </ul>
 
@@ -57,6 +58,7 @@ export default function PrivacyPage() {
       <ul>
         <li style={li}><strong>To operate and secure the site</strong>: our legitimate interest in running a functional, safe service.</li>
         <li style={li}><strong>To measure and improve the site</strong>: our legitimate interest, using aggregated analytics; where required, on the basis of your consent.</li>
+        <li style={li}><strong>To send the newsletter and the alerts you asked for</strong>: your consent, given when you leave your email. Every email has a one-click unsubscribe link, and you can withdraw consent at any time.</li>
         <li style={li}><strong>To earn affiliate commissions</strong>: our legitimate interest in funding the site; affiliate cookies are set on the basis of your consent where required.</li>
       </ul>
 
@@ -64,6 +66,7 @@ export default function PrivacyPage() {
       <p style={p}>We use trusted providers who process data on our behalf or as independent controllers:</p>
       <ul>
         <li style={li}><strong>Hosting &amp; infrastructure</strong>: our hosting and database providers, which process technical data needed to serve the site.</li>
+        <li style={li}><strong>Email</strong>: an email-sending provider that delivers the newsletter and alerts on our behalf.</li>
         <li style={li}><strong>Analytics</strong>: a web-analytics provider, using aggregated/anonymised data.</li>
         <li style={li}><strong>Affiliate partners</strong>: Awin and the retailers’ own affiliate programmes, which may set cookies and record outbound clicks to attribute purchases. When you leave MISE for a retailer, that retailer’s own privacy policy applies.</li>
       </ul>
@@ -72,7 +75,7 @@ export default function PrivacyPage() {
       <p style={p}>Some providers may process data outside the European Economic Area. Where that happens, we rely on appropriate safeguards such as the European Commission’s Standard Contractual Clauses.</p>
 
       <h2 style={h2}>7. How long we keep data</h2>
-      <p style={p}>We keep analytics and click data only as long as needed for the purposes above, then delete or further aggregate it. Preferences stored in your browser remain until you clear them.</p>
+      <p style={p}>We keep analytics and click data only as long as needed for the purposes above, then delete or further aggregate it. Preferences stored in your browser remain until you clear them. Email addresses are kept until you unsubscribe; an alert is closed once it has been sent, and unsubscribed addresses are deleted within 30 days.</p>
 
       <h2 style={h2}>8. Your rights</h2>
       <p style={p}>Under the GDPR you have the right to access, correct, delete or restrict your personal data, to object to processing based on legitimate interest, to data portability, and to withdraw consent at any time. To exercise any of these, email{" "}

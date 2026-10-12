@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { CATEGORIES, findCategory } from '@/lib/categories'
+import { CATEGORIES, findCategory, liveCategories } from '@/lib/categories'
 import { getCategoryCopy } from '@/lib/category-copy'
 
 export const revalidate = 3600
@@ -58,7 +58,7 @@ export default async function CategoryPage({ params }) {
   if (!cat) notFound()
 
   const looks = await getLooks(cat)
-  const siblings = CATEGORIES.filter((c) => c.slug !== cat.slug)
+  const siblings = liveCategories().filter((c) => c.slug !== cat.slug)
   const copy = getCategoryCopy(slug)
 
   return (
