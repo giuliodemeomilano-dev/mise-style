@@ -72,11 +72,29 @@ export async function GET(request, { params }) {
     attr = {}
   }
 
-  // Tag obvious bots at write time so the clicks table stays honest
-  const isBot = userAgent
+  // Tag bots at write time so the clicks table stays honest. Until October 2026
+  // over 95% of the logged clicks were link checkers and pin validators posing as
+  // desktop Chrome, so beyond the user agent we also look at what a real browser
+  // always sends on a click: a language, and a navigation fetch mode.
+  const uaBot = userAgent
     ? /(bot|crawler|spider|slurp|scrapy|headless|phantom|selenium|puppeteer|playwright|python|curl|wget|axios|okhttp|go-http|java\/|libwww|httpclient|meta-externalagent|facebookexternalhit|pinterest|semrush|ahrefs|mj12|dotbot|petal|yandex|dataprovider|bingpreview|applebot|amazonbot|bytespider|gptbot|ccbot|claude|anthropic|perplexity)/i.test(userAgent) ||
       /(iPhone OS (9|10|11|12|13)_|Nexus 5X Build\/MMB29P|Android [4-6]\.)/i.test(userAgent)
     : true
+  const lang = request.headers.get('accept-language')
+  const fetchMode = request.headers.get('sec-fetch-mode')
+  const purpose = (request.headers.get('sec-purpose') || request.headers.get('purpose') || '').toLowerCase()
+  const isPrefetch = purpose.includes('prefetch') || purpose.includes('prerender')
+  // Pinterest app clicks come from its in-app browser (mobile UA); a desktop UA
+  // arriving from a pin with no MISE cookie is the pin validator.
+  const isMobile = /(iPhone|iPad|Android|Mobile)/i.test(userAgent || '')
+  const pinChecker = !isMobile && /pinterest\./i.test(referer || '') && !attr.s && !attr.r
+  let botReason = null
+  if (uaBot) botReason = 'ua_token'
+  else if (isPrefetch) botReason = 'prefetch'
+  else if (!lang) botReason = 'no_language'
+  else if (fetchMode && fetchMode !== 'navigate') botReason = 'not_navigation'
+  else if (pinChecker) botReason = 'pin_validator'
+  const isBot = botReason !== null
 
   // Genera un session ID lato server (semplice, basato su IP+UA hash)
   const sessionRaw = (request.headers.get('x-forwarded-for') || 'anon') + (userAgent || '')
@@ -97,7 +115,7 @@ export async function GET(request, { params }) {
       utm_campaign: attr.c || null,
       landing_ref: attr.r || null,
       is_bot: isBot,
-      bot_reason: isBot ? 'ua_token' : null,
+      bot_reason: botReason,
     })
     .then(({ error }) => {
       if (error) console.error('[click-tracking] DB insert failed:', error.message)
