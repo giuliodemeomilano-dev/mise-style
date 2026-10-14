@@ -48,6 +48,11 @@ function cutFit(box, fill = 0.78, bottomAt, even) {
   }
 }
 
+if (typeof window !== 'undefined' && !window.__misePopHooked) {
+  window.__misePopHooked = true
+  window.addEventListener('popstate', () => { window.__misePop = Date.now() })
+}
+
 export default function HomeContent({ looks }) {
   const { t } = useLang()
   const [filter, setFilter] = useState('all')
@@ -60,7 +65,21 @@ export default function HomeContent({ looks }) {
       const s = window.sessionStorage.getItem('mise-gender')
       const g = q === 'men' || q === 'women' ? q : s === 'men' ? 'men' : null
       if (g === 'men') setGenderState('men')
+      // coming back from a look: put the page back where it was
+      const y = Number(window.sessionStorage.getItem('mise-home-y') || 0)
+      const back = window.__misePop && Date.now() - window.__misePop < 3000
+      window.sessionStorage.removeItem('mise-home-y')
+      if (back && y > 0) {
+        requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, y)))
+        setTimeout(() => window.scrollTo(0, y), 350)
+      }
     } catch (e) {}
+    const onClick = (e) => {
+      const a = e.target.closest && e.target.closest('a[href^="/look/"]')
+      if (a) { try { window.sessionStorage.setItem('mise-home-y', String(Math.round(window.scrollY))) } catch (err) {} }
+    }
+    document.addEventListener('click', onClick, true)
+    return () => document.removeEventListener('click', onClick, true)
   }, [])
   const setGender = (g) => {
     setGenderState(g)
