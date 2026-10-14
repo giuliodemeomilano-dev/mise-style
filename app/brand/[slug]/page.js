@@ -4,6 +4,7 @@ import { getLooks, buildBrandPages, buildStylePages, GROUPS } from '@/lib/catalo
 import LookCard from '@/app/components/LookCard'
 import PieceTile from '@/app/components/PieceTile'
 import EmailSignup from '@/app/components/EmailSignup'
+import Tr from '@/app/components/Tr'
 
 export const revalidate = 3600
 export const dynamicParams = true
@@ -49,6 +50,10 @@ export default async function BrandPage({ params }) {
   const max = Math.max(...prices)
   const groupCount = {}
   page.pieces.forEach((p) => (groupCount[p.group] = (groupCount[p.group] || 0) + 1))
+  const topGroupKeys = Object.entries(groupCount)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([g]) => g)
   const topGroups = Object.entries(groupCount)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3)
@@ -62,6 +67,7 @@ export default async function BrandPage({ params }) {
   const topPartners = Object.entries(partners).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([b]) => b)
   const women = page.looks.filter((l) => l.gender === 'women').length
   const men = page.looks.length - women
+  const bv = { brand: page.brand, n: page.looks.length, w: women, m: men, groups: topGroupKeys, min: Math.round(min), max: Math.round(max), partners: topPartners }
 
   const pieceLook = {}
   page.looks.forEach((l) => l.pieces.forEach((p) => { if (!pieceLook[p.id]) pieceLook[p.id] = l.id }))
@@ -74,14 +80,16 @@ export default async function BrandPage({ params }) {
 
   return (
     <main className="seo-page">
-      <Link href="/brands" className="back-link" style={{ textDecoration: 'none' }}>← All brands</Link>
-      <p className="seo-kicker">Brand edit</p>
-      <h1>{page.brand} Outfits</h1>
+      <Link href="/brands" className="back-link" style={{ textDecoration: 'none' }}><Tr id="all_brands">← All brands</Tr></Link>
+      <p className="seo-kicker"><Tr id="brand_kicker">Brand edit</Tr></p>
+      <h1><Tr id="brand_title" v={bv}>{page.brand} Outfits</Tr></h1>
       <p className="seo-intro">
+        <Tr id="brand_intro" v={bv}>
         {page.looks.length} complete outfits built around {page.brand}
         {women && men ? `, ${women} for women and ${men} for men` : ''}. The {page.brand} pieces we style most are{' '}
         {list(topGroups)}, from €{Math.round(min)} to €{Math.round(max)}
         {topPartners.length ? `, usually worn with ${list(topPartners)}` : ''}. Every piece links straight to the shop.
+        </Tr>
       </p>
 
       <section className="looks-section" style={{ padding: 0 }}>
@@ -92,7 +100,7 @@ export default async function BrandPage({ params }) {
         </div>
       </section>
 
-      <h2 className="seo-h2">Shop {page.brand}</h2>
+      <h2 className="seo-h2"><Tr id="brand_shop" v={bv}>Shop {page.brand}</Tr></h2>
       <div className="ptile-grid">
         {shown.map((p) => (
           <PieceTile key={p.id} piece={p} outfitId={pieceLook[p.id]} />
@@ -101,16 +109,16 @@ export default async function BrandPage({ params }) {
 
       {styles.length > 0 && (
         <>
-          <h2 className="seo-h2">How to style it</h2>
+          <h2 className="seo-h2"><Tr id="how_to_style">How to style it</Tr></h2>
           <div className="pill-links">
             {styles.slice(0, 16).map((s) => (
-              <Link key={s.slug} href={'/style/' + s.slug}>{s.title.replace('How to Style ', '')}</Link>
+              <Link key={s.slug} href={'/style/' + s.slug}><Tr id="colour_item" v={{ group: s.group, colour: s.colour }}>{s.title.replace('How to Style ', '')}</Tr></Link>
             ))}
           </div>
         </>
       )}
 
-      <h2 className="seo-h2">More brands</h2>
+      <h2 className="seo-h2"><Tr id="more_brands">More brands</Tr></h2>
       <div className="pill-links">
         {others.map((b) => (
           <Link key={b.slug} href={'/brand/' + b.slug}>{b.brand}</Link>
