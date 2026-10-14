@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { liveCategories } from '@/lib/categories'
+import Tr from '@/app/components/Tr'
 
 export const revalidate = 3600
 
@@ -30,9 +31,9 @@ export default function OutfitsIndex() {
               textDecoration: 'none',
             }}
           >
-            <div style={{ fontSize: 16, marginBottom: 6 }}>{c.title}</div>
+            <div style={{ fontSize: 16, marginBottom: 6 }}><Tr id="cat_title" v={{ gender: c.gender, occasion: c.occasion, season: c.season, title: c.title }}>{c.title}</Tr></div>
             <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-              {c.intro.split(':')[0].trim()}
+              <Tr id="cat_intro" v={{ occasion: c.occasion, season: c.season }}>{c.intro.split(':')[0].trim()}</Tr>
             </div>
           </Link>
         ))}
@@ -43,18 +44,18 @@ export default function OutfitsIndex() {
   return (
     <main style={{ maxWidth: 1240, margin: '0 auto', padding: '110px 20px 40px' }}>
       <Link href="/" className="back-link" style={{ textDecoration: 'none' }}>
-        ← All outfits
+        <Tr id="all_outfits">← All outfits</Tr>
       </Link>
 
-      <h1 style={{ margin: '18px 0 12px', lineHeight: 1.1 }}>Outfit Ideas</h1>
+      <h1 style={{ margin: '18px 0 12px', lineHeight: 1.1 }}><Tr id="outfit_ideas">Outfit Ideas</Tr></h1>
 
       <p style={{ maxWidth: 640, color: 'var(--text-muted)', lineHeight: 1.6, margin: '0 0 36px' }}>
-        Complete outfits put together across brands, sorted by where you are actually going.
-        Every piece is linked, so buy the whole look or just the part you are missing.
+        <Tr id="outfit_ideas_intro">Complete outfits put together across brands, sorted by where you are actually going.
+        Every piece is linked, so buy the whole look or just the part you are missing.</Tr>
       </p>
 
-      {group('For women', women)}
-      {group('For men', men)}
+      {group(<Tr id="for_women">For women</Tr>, women)}
+      {group(<Tr id="for_men">For men</Tr>, men)}
 
       <div className="bottom-spacer"></div>
     </main>
