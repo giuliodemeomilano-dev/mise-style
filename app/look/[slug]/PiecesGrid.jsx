@@ -37,6 +37,7 @@ import { useRef, useState, useEffect } from 'react'
 import NotifyForm from '@/app/components/NotifyForm'
 import { useLang } from '@/app/components/LangProvider'
 import { UI } from '@/lib/ui-strings'
+import { tr } from '@/lib/tr'
 
 // extras: per piece id, worked out on the server: { inStock, alt, style, brand }.
 // alt is a similar piece in stock, shown only when the original is sold out, so
@@ -44,6 +45,7 @@ import { UI } from '@/lib/ui-strings'
 export default function PiecesGrid({ pieces: initialPieces, outfitId, extras = {} }) {
   const { lang } = useLang()
   const u = UI[lang] || UI.en
+  const x = (id, en, v) => tr(lang, id, v) || en
   const [pieces, setPieces] = useState(initialPieces)
   const [busy, setBusy] = useState(null)
   // Everything already shown in each slot. Without this the swap kept landing
@@ -108,7 +110,7 @@ export default function PiecesGrid({ pieces: initialPieces, outfitId, extras = {
               return next
             })
           } else {
-            alert('No similar piece available for this item.')
+            alert(x('no_similar', 'No similar piece available for this item.'))
           }
         }
         return
@@ -132,7 +134,7 @@ export default function PiecesGrid({ pieces: initialPieces, outfitId, extras = {
 
   return (
     <section className="look-pieces">
-      <h2>The Pieces</h2>
+      <h2>{x('the_pieces', 'The Pieces')}</h2>
       <div className="pieces-grid">
         {pieces.map((piece, idx) => {
           const isOpen = opened.includes(piece.id)
@@ -164,7 +166,7 @@ export default function PiecesGrid({ pieces: initialPieces, outfitId, extras = {
                     piaceva. Resta solo il cambio di testo quando il negozio e' gia' stato
                     aperto, che e' la parte utile. */}
                 <div className="piece-cta">
-                  {isOpen ? '\u2713 Opened, shop again' : 'Shop at ' + piece.store}
+                  {isOpen ? x('opened', '\u2713 Opened, shop again') : x('shop_at', 'Shop at ' + piece.store, { store: piece.store })}
                 </div>
               </div>
             </a>
@@ -172,9 +174,9 @@ export default function PiecesGrid({ pieces: initialPieces, outfitId, extras = {
               className="piece-swap"
               onClick={() => changePiece(idx)}
               disabled={busy === idx}
-              title="Try a similar piece"
+              title={x('try_similar', 'Try a similar piece')}
             >
-              {busy === idx ? '…' : '↻ Change'}
+              {busy === idx ? '…' : x('change', '↻ Change')}
             </button>
             {soldOut && ex.alt && (
               <a
@@ -199,14 +201,14 @@ export default function PiecesGrid({ pieces: initialPieces, outfitId, extras = {
               )}
               {ex.style && (
                 <a className="piece-style-link" href={'/style/' + ex.style.slug}>
-                  {ex.style.label} →
+                  {ex.style.group ? x('style_ideas', ex.style.label, ex.style) : ex.style.label} →
                 </a>
               )}
             </div>
           </div>
         )})}
       </div>
-      <div className="pieces-total">Outfit total · €{total.toFixed(2)}</div>
+      <div className="pieces-total">{x('outfit_total', 'Outfit total')} · €{total.toFixed(2)}</div>
     </section>
   )
 }
