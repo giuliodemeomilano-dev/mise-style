@@ -1,9 +1,13 @@
 'use client'
 
 import { useSaved } from '@/lib/useSaved'
+import { useLang } from './LangProvider'
+import { tr as trs } from '@/lib/tr'
 
-export default function SaveButton({ slug, className = 'btn-save', label }) {
+export default function SaveButton({ slug, className = 'btn-save', label, tr }) {
   const { isSaved, toggle } = useSaved()
+  const { lang } = useLang()
+  if (tr && label && lang !== 'en') label = [trs(lang, 'save') || label[0], trs(lang, 'saved') || label[1]]
   const on = isSaved(slug)
   return (
     <button
