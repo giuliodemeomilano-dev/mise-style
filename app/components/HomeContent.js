@@ -51,7 +51,27 @@ function cutFit(box, fill = 0.78, bottomAt, even) {
 export default function HomeContent({ looks }) {
   const { t } = useLang()
   const [filter, setFilter] = useState('all')
-  const [gender, setGender] = useState('women')
+  const [gender, setGenderState] = useState('women')
+  // Women/Men choice lives in the URL (?g=men) and in sessionStorage, so going back from a look
+  // returns to the same tab instead of resetting to Women.
+  useEffect(() => {
+    try {
+      const q = new URLSearchParams(window.location.search).get('g')
+      const s = window.sessionStorage.getItem('mise-gender')
+      const g = q === 'men' || q === 'women' ? q : s === 'men' ? 'men' : null
+      if (g === 'men') setGenderState('men')
+    } catch (e) {}
+  }, [])
+  const setGender = (g) => {
+    setGenderState(g)
+    try {
+      window.sessionStorage.setItem('mise-gender', g)
+      const u = new URL(window.location.href)
+      if (g === 'men') u.searchParams.set('g', 'men')
+      else u.searchParams.delete('g')
+      window.history.replaceState(window.history.state, '', u.pathname + u.search + u.hash)
+    } catch (e) {}
+  }
   const [view, setView] = useState('discover')
   const [budget, setBudget] = useState(null)
   const [modalLook, setModalLook] = useState(null)
