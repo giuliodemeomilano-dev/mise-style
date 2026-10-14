@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import SaveButton from './SaveButton'
 import { cutFit } from '@/lib/fit'
+import Tr from './Tr'
 
 // The compact outfit card used on the brand, style, search and saved pages:
 // the model photo, the title and the pieces in a strip, plus the heart.
@@ -22,7 +23,7 @@ export default function LookCard({ look, highlight }) {
         <div className="model-info-below">
           <div className="model-title-dark">{look.title}</div>
           <div className="model-meta-dark">
-            {look.pieces.length} pieces, {stores} stores, €{Math.round(look.total)}
+            <Tr id="card_meta" v={{ n: look.pieces.length, s: stores, t: Math.round(look.total) }}>{look.pieces.length} pieces, {stores} stores, €{Math.round(look.total)}</Tr>
           </div>
         </div>
         <div className="pieces-strip">
