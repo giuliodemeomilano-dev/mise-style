@@ -21,6 +21,7 @@ import {
 import SaveButton from '@/app/components/SaveButton'
 import EmailSignup from '@/app/components/EmailSignup'
 import PieceTile from '@/app/components/PieceTile'
+import Tr from '@/app/components/Tr'
 
 export const revalidate = 3600
 
@@ -186,7 +187,7 @@ export default async function LookPage({ params }) {
       extras[p.id] = {
         inStock: p.inStock,
         alt: p.inStock ? null : findAlternative(p, products, { exclude: used, gender: look.gender, allowed }),
-        style: st ? { slug: st.slug, label } : null,
+        style: st ? { slug: st.slug, label, group: st.group, colour: st.colour || null } : null,
         brand: brandPages.has(brandSlug(p.brand)) ? brandSlug(p.brand) : null,
       }
     }
@@ -201,6 +202,7 @@ export default async function LookPage({ params }) {
   const total = Number(look.total_price)
   const storeCount = new Set(look.pieces.map((p) => p.store)).size
   const hasModel = Boolean(look.model_image_url)
+  const kv = { gender: look.gender, occasion: look.occasion, season: look.season }
 
   // Cada ficha enlaza a su categoria. Sin esto las 273 fichas no le pasan
   // ninguna senal a las 16 paginas de categoria, que son las que rankean.
@@ -219,19 +221,19 @@ export default async function LookPage({ params }) {
             <img src={look.model_image_url} style={cutFit(look.model_box, 0.94, 2 / 3)} alt={look.title} />
           </div>
           <div className="look-hero-text">
-            <Link href="/" className="back-link-inline">← All outfits</Link>
-            <p className="look-kicker">{seoLabel(look)}</p>
+            <Link href="/" className="back-link-inline"><Tr id="all_outfits">← All outfits</Tr></Link>
+            <p className="look-kicker"><Tr id="kicker" v={kv}>{seoLabel(look)}</Tr></p>
             <h1>{look.title}</h1>
-            <p className="look-meta">{look.pieces.length} pieces · {storeCount} stores</p>
+            <p className="look-meta"><Tr id="pieces_stores" v={{ n: look.pieces.length, s: storeCount }}>{look.pieces.length} pieces · {storeCount} stores</Tr></p>
             <div className="look-actions">
-              <a href="#pieces" className="shop-cta">Shop the outfit <span>€{total}</span></a>
-              <SaveButton slug={look.slug} className="save-inline" label={['Save', 'Saved']} />
+              <a href="#pieces" className="shop-cta"><Tr id="shop_outfit">Shop the outfit</Tr> <span>€{total}</span></a>
+              <SaveButton slug={look.slug} className="save-inline" label={['Save', 'Saved']} tr />
             </div>
             {forLess && (
-              <a href="#for-less" className="for-less-link">Get the look for less: €{forLess.total}, save €{forLess.saving}</a>
+              <a href="#for-less" className="for-less-link"><Tr id="for_less_link" v={{ t: forLess.total, s: forLess.saving }}>Get the look for less: €{forLess.total}, save €{forLess.saving}</Tr></a>
             )}
             {look.description && <p className="look-hero-desc">{look.description}</p>}
-            <p className="look-hero-total">Outfit total · <strong>€{total}</strong></p>
+            <p className="look-hero-total"><Tr id="outfit_total">Outfit total</Tr> · <strong>€{total}</strong></p>
             {look.tags && look.tags.length > 0 && (
               <div className="look-tags">
                 {look.tags.map((tag, i) => (
@@ -245,13 +247,13 @@ export default async function LookPage({ params }) {
         <>
           <div className="look-hero-flat">
             <div className="look-hero-text">
-              <Link href="/" className="back-link-inline">← All outfits</Link>
-              <p className="look-kicker">{seoLabel(look)}</p>
+              <Link href="/" className="back-link-inline"><Tr id="all_outfits">← All outfits</Tr></Link>
+              <p className="look-kicker"><Tr id="kicker" v={kv}>{seoLabel(look)}</Tr></p>
               <h1>{look.title}</h1>
-              <p className="look-meta">{look.pieces.length} pieces · {storeCount} stores · €{total}</p>
+              <p className="look-meta"><Tr id="pieces_stores_total" v={{ n: look.pieces.length, s: storeCount, t: total }}>{look.pieces.length} pieces · {storeCount} stores · €{total}</Tr></p>
               <div className="look-actions">
-                <a href="#pieces" className="shop-cta">Shop the outfit <span>€{total}</span></a>
-                <SaveButton slug={look.slug} className="save-inline" label={['Save', 'Saved']} />
+                <a href="#pieces" className="shop-cta"><Tr id="shop_outfit">Shop the outfit</Tr> <span>€{total}</span></a>
+                <SaveButton slug={look.slug} className="save-inline" label={['Save', 'Saved']} tr />
               </div>
             </div>
             <div className="look-hero-strip">
@@ -281,15 +283,15 @@ export default async function LookPage({ params }) {
 
       {forLess && (
         <section className="look-pieces for-less" id="for-less">
-          <h2>The same look for less</h2>
+          <h2><Tr id="for_less_h">The same look for less</Tr></h2>
           <p className="for-less-sub">
-            €{forLess.total} instead of €{Math.round(total)}: similar pieces, same colours, you save €{forLess.saving}.
+            <Tr id="for_less_sub" v={{ t: forLess.total, o: Math.round(total), s: forLess.saving }}>€{forLess.total} instead of €{Math.round(total)}: similar pieces, same colours, you save €{forLess.saving}.</Tr>
           </p>
           <div className="ptile-grid">
             {forLess.pieces.map((p) => (
               <div key={p.id} className={p.kept ? 'ptile-kept' : undefined}>
                 <PieceTile piece={p} outfitId={look.id} />
-                {p.kept && <div className="ptile-note">Same piece</div>}
+                {p.kept && <div className="ptile-note"><Tr id="same_piece">Same piece</Tr></div>}
               </div>
             ))}
           </div>
@@ -300,7 +302,7 @@ export default async function LookPage({ params }) {
         <section className="look-pieces" style={{ paddingTop: 0, paddingBottom: 0 }}>
           <div className="pill-links" style={{ justifyContent: 'center' }}>
             {brandLinks.map(([slug, name]) => (
-              <Link key={slug} href={'/brand/' + slug}>More from {name}</Link>
+              <Link key={slug} href={'/brand/' + slug}><Tr id="more_from" v={{ brand: name }}>More from {name}</Tr></Link>
             ))}
           </div>
         </section>
@@ -322,7 +324,7 @@ export default async function LookPage({ params }) {
               borderTop: '1px solid rgba(0,0,0,0.08)',
             }}
           >
-            More like this
+            <Tr id="more_like">More like this</Tr>
           </h2>
           {/* Su questa pagina i titoli di sezione sono centrati, The Pieces e Outfit
               total lo sono. Le pastiglie restavano a sinistra sotto un titolo centrato
@@ -348,7 +350,7 @@ export default async function LookPage({ params }) {
                   textDecoration: 'none',
                 }}
               >
-                {c.title}
+                <Tr id="cat_title" v={{ gender: c.gender, occasion: c.occasion, season: c.season, title: c.title }}>{c.title}</Tr>
               </Link>
             ))}
           </div>
