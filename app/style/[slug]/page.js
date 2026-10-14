@@ -4,6 +4,7 @@ import { getLooks, buildStylePages, GROUPS, COLOUR_LABEL, brandSlug } from '@/li
 import LookCard from '@/app/components/LookCard'
 import PieceTile from '@/app/components/PieceTile'
 import EmailSignup from '@/app/components/EmailSignup'
+import Tr from '@/app/components/Tr'
 
 export const revalidate = 3600
 export const dynamicParams = true
@@ -53,6 +54,7 @@ export default async function StylePage({ params }) {
   const ids = new Set(page.pieces.map((p) => p.id))
   // What it is worn with: the other pieces' types across all the looks.
   const withCount = {}
+  const pairKey = {}
   const occCount = {}
   page.looks.forEach((l) => {
     occCount[l.occasion] = (occCount[l.occasion] || 0) + 1
@@ -60,14 +62,24 @@ export default async function StylePage({ params }) {
       if (ids.has(p.id) || p.group === page.group) return
       const label = ((p.colour ? COLOUR_LABEL[p.colour] + ' ' : '') + (GROUPS[p.group]?.many || p.group)).toLowerCase()
       withCount[label] = (withCount[label] || 0) + 1
+      if (!pairKey[label]) pairKey[label] = { group: p.group, colour: p.colour || null }
     })
   })
   const pairs = Object.entries(withCount).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([k]) => k)
+  const tv = {
+    group: page.group,
+    colour: page.colour || null,
+    gender: page.gender,
+    n: page.looks.length,
+    pairs: pairs.map((k) => pairKey[k]),
+    occs: Object.entries(occCount).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k]) => k),
+  }
   const occs = Object.entries(occCount).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k]) => OCC[k] || k)
   const prices = page.pieces.map((p) => p.price).filter((n) => n > 0)
   const brands = [...new Set(page.pieces.map((p) => p.brand))]
   const name = itemName(page)
   const Name = name.charAt(0).toUpperCase() + name.slice(1)
+  if (prices.length) Object.assign(tv, { min: Math.round(Math.min(...prices)), max: Math.round(Math.max(...prices)), brands: brands.slice(0, 4) })
 
   const pieceLook = {}
   page.looks.forEach((l) => l.pieces.forEach((p) => { if (!pieceLook[p.id]) pieceLook[p.id] = l.id }))
@@ -80,14 +92,16 @@ export default async function StylePage({ params }) {
 
   return (
     <main className="seo-page">
-      <Link href="/style" className="back-link" style={{ textDecoration: 'none' }}>← How to style</Link>
-      <p className="seo-kicker">{page.gender === 'men' ? 'Menswear' : 'Womenswear'} style guide</p>
-      <h1>{page.title}</h1>
+      <Link href="/style" className="back-link" style={{ textDecoration: 'none' }}><Tr id="how_to_style_back">← How to style</Tr></Link>
+      <p className="seo-kicker"><Tr id="style_kicker" v={tv}>{page.gender === 'men' ? 'Menswear' : 'Womenswear'} style guide</Tr></p>
+      <h1><Tr id="style_title" v={tv}>{page.title}</Tr></h1>
       <p className="seo-intro">
+        <Tr id="style_intro" v={tv}>
         {page.looks.length} complete outfits with {name}, put together by MISE.
         {pairs.length ? ` In our looks they are worn most often with ${list(pairs)}.` : ''}
         {occs.length ? ` They work best for ${list(occs)}.` : ''}
         {prices.length ? ` The pieces below go from €${Math.round(Math.min(...prices))} to €${Math.round(Math.max(...prices))}, from ${list(brands.slice(0, 4))}.` : ''}
+        </Tr>
       </p>
 
       <section className="looks-section" style={{ padding: 0 }}>
@@ -98,7 +112,7 @@ export default async function StylePage({ params }) {
         </div>
       </section>
 
-      <h2 className="seo-h2">Shop {name}</h2>
+      <h2 className="seo-h2"><Tr id="style_shop" v={tv}>Shop {name}</Tr></h2>
       <div className="ptile-grid">
         {shown.map((p) => (
           <PieceTile key={p.id} piece={p} outfitId={pieceLook[p.id]} />
@@ -106,16 +120,18 @@ export default async function StylePage({ params }) {
       </div>
 
       <section className="seo-notes">
-        <h2 className="seo-h2">How we style {name}</h2>
+        <h2 className="seo-h2"><Tr id="style_how" v={tv}>How we style {name}</Tr></h2>
         <p>
+          <Tr id="style_notes" v={tv}>
           {Name} carry the outfit when everything around them is quieter.
           {pairs[0] ? ` The pairing we come back to is ${pairs[0]}` : ''}
           {pairs[1] ? `, with ${pairs[1]} as the second option` : ''}
           {pairs.length ? '.' : ''} Each look above is complete: open it to see every piece, the total price and where each one is sold.
+          </Tr>
         </p>
         {brands.length > 0 && (
           <p>
-            Brands in this edit:{' '}
+            <Tr id="brands_in_edit">Brands in this edit: </Tr>
             {brands.map((b, i) => (
               <span key={b}>
                 {i ? ', ' : ''}
@@ -129,20 +145,20 @@ export default async function StylePage({ params }) {
 
       {sameItem.length > 0 && (
         <>
-          <h2 className="seo-h2">Other colours</h2>
+          <h2 className="seo-h2"><Tr id="other_colours">Other colours</Tr></h2>
           <div className="pill-links">
             {sameItem.slice(0, 14).map((s) => (
-              <Link key={s.slug} href={'/style/' + s.slug}>{s.title.replace('How to Style ', '')}</Link>
+              <Link key={s.slug} href={'/style/' + s.slug}><Tr id="colour_item" v={{ group: s.group, colour: s.colour }}>{s.title.replace('How to Style ', '')}</Tr></Link>
             ))}
           </div>
         </>
       )}
       {sameColour.length > 0 && (
         <>
-          <h2 className="seo-h2">{page.colour ? 'More in ' + COLOUR_LABEL[page.colour] : 'More style guides'}</h2>
+          <h2 className="seo-h2">{page.colour ? <Tr id="more_in" v={{ colour: page.colour }}>{'More in ' + COLOUR_LABEL[page.colour]}</Tr> : <Tr id="more_guides">More style guides</Tr>}</h2>
           <div className="pill-links">
             {sameColour.slice(0, 14).map((s) => (
-              <Link key={s.slug} href={'/style/' + s.slug}>{s.title.replace('How to Style ', '')}</Link>
+              <Link key={s.slug} href={'/style/' + s.slug}><Tr id="colour_item" v={{ group: s.group, colour: s.colour }}>{s.title.replace('How to Style ', '')}</Tr></Link>
             ))}
           </div>
         </>
