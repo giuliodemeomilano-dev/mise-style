@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { CATEGORIES, findCategory, liveCategories } from '@/lib/categories'
 import { getCategoryCopy } from '@/lib/category-copy'
+import { cutFit } from '@/lib/fit'
+import Tr, { EnOnly } from '@/app/components/Tr'
 
 export const revalidate = 3600
 
@@ -29,7 +31,7 @@ export async function generateMetadata({ params }) {
 async function getLooks(cat) {
   let q = supabase
     .from('outfits')
-    .select('id, slug, title, total_price, created_at, outfit_items (position, products (packshot_url, image_url))')
+    .select('id, slug, title, total_price, created_at, model_image_url, model_box, outfit_items (position, products (packshot_url, image_url, cutout_url, cutout_box))')
     .eq('status', 'active')
     .eq('gender', cat.gender)
 
@@ -47,7 +49,13 @@ async function getLooks(cat) {
       title: o.title,
       total: o.total_price,
       count: items.length,
-      img: first ? first.packshot_url || first.image_url : null,
+      img: first ? first.cutout_url || first.packshot_url || first.image_url : null,
+      box: first ? first.cutout_box : null,
+      cut: Boolean(first && first.cutout_url),
+      // The model figure, same as the home and the brand pages. Before this the
+      // category cards showed only the first packshot, a lone dress or jumper.
+      model: o.model_image_url || null,
+      modelBox: o.model_box || null,
     }
   })
 }
@@ -60,28 +68,29 @@ export default async function CategoryPage({ params }) {
   const looks = await getLooks(cat)
   const siblings = liveCategories().filter((c) => c.slug !== cat.slug)
   const copy = getCategoryCopy(slug)
+  const cv = { gender: cat.gender, occasion: cat.occasion, season: cat.season, title: cat.title }
 
   return (
     <main style={{ maxWidth: 1240, margin: '0 auto', padding: '110px 20px 40px' }}>
       <Link href="/" className="back-link" style={{ textDecoration: 'none' }}>
-        ← All outfits
+        <Tr id="all_outfits">← All outfits</Tr>
       </Link>
 
-      <h1 style={{ margin: '18px 0 12px', lineHeight: 1.1 }}>{cat.title}</h1>
+      <h1 style={{ margin: '18px 0 12px', lineHeight: 1.1 }}><Tr id="cat_title" v={cv}>{cat.title}</Tr></h1>
 
       <p style={{ maxWidth: 640, color: 'var(--text-muted)', lineHeight: 1.6, margin: '0 0 10px' }}>
-        {cat.intro}
+        <Tr id="cat_intro" v={cv}>{cat.intro}</Tr>
       </p>
 
       <p style={{ color: 'var(--text-muted)', fontSize: 14, margin: '0 0 28px' }}>
-        {looks.length} outfits · new looks added every day
+        <Tr id="cat_count" v={{ n: looks.length }}>{looks.length} outfits · new looks added every day</Tr>
       </p>
 
       <section className="looks-section">
         <div className="looks-grid">
           {looks.length === 0 && (
             <p style={{ color: 'var(--text-muted)', padding: 40 }}>
-              No outfits in this category yet. New looks are added every day.
+              <Tr id="cat_empty">No outfits in this category yet. New looks are added every day.</Tr>
             </p>
           )}
           {looks.map((look) => (
@@ -92,12 +101,16 @@ export default async function CategoryPage({ params }) {
                 style={{ display: 'block', textDecoration: 'none' }}
               >
                 <div className="model-hero model-hero-clean">
-                  {look.img && <img src={look.img} alt={look.title} loading="lazy" />}
+                  {look.model ? (
+                    <img src={look.model} className="is-model" style={cutFit(look.modelBox, 0.82, 0.92)} alt={look.title} loading="lazy" />
+                  ) : look.img ? (
+                    <img src={look.img} className={look.cut ? 'is-cut' : undefined} style={cutFit(look.box, 0.78)} alt={look.title} loading="lazy" />
+                  ) : null}
                 </div>
                 <div className="model-info-below">
                   <div className="model-title-dark">{look.title}</div>
                   <div className="model-meta-dark">
-                    {look.count} pieces · €{look.total}
+                    <Tr id="count_total" v={{ n: look.count, t: look.total }}>{look.count} pieces · €{look.total}</Tr>
                   </div>
                 </div>
               </Link>
@@ -107,6 +120,7 @@ export default async function CategoryPage({ params }) {
       </section>
 
       {copy && (
+        <EnOnly>
         <section
           style={{
             marginTop: 56,
@@ -125,10 +139,12 @@ export default async function CategoryPage({ params }) {
             </p>
           ))}
         </section>
+        </EnOnly>
       )}
 
       {copy && (
         <section style={{ marginTop: 40, maxWidth: 720 }}>
+          <EnOnly>
           <h2 style={{ fontSize: 20, margin: '0 0 16px' }}>Questions people ask</h2>
           {copy.faq.map((f, i) => (
             <div key={i} style={{ marginBottom: 18 }}>
@@ -138,6 +154,7 @@ export default async function CategoryPage({ params }) {
               </p>
             </div>
           ))}
+          </EnOnly>
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
@@ -155,7 +172,7 @@ export default async function CategoryPage({ params }) {
         </section>
       )}
       <section style={{ marginTop: 56, paddingTop: 28, borderTop: '1px solid rgba(0,0,0,0.08)' }}>
-        <h2 style={{ fontSize: 18, margin: '0 0 14px' }}>More outfit ideas</h2>
+        <h2 style={{ fontSize: 18, margin: '0 0 14px' }}><Tr id="more_ideas">More outfit ideas</Tr></h2>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
           {siblings.map((c) => (
             <Link
@@ -170,7 +187,7 @@ export default async function CategoryPage({ params }) {
                 textDecoration: 'none',
               }}
             >
-              {c.title}
+              <Tr id="cat_title" v={{ gender: c.gender, occasion: c.occasion, season: c.season, title: c.title }}>{c.title}</Tr>
             </Link>
           ))}
         </div>
