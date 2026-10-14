@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getLooks, buildBrandPages } from '@/lib/catalog'
 import { cutFit } from '@/lib/fit'
+import Tr from '@/app/components/Tr'
 
 export const revalidate = 3600
 
@@ -15,11 +16,11 @@ export default async function BrandsPage() {
   const brands = buildBrandPages(await getLooks()).sort((a, b) => b.looks.length - a.looks.length)
   return (
     <main className="seo-page">
-      <Link href="/" className="back-link" style={{ textDecoration: 'none' }}>← All outfits</Link>
-      <p className="seo-kicker">Shop by brand</p>
-      <h1>Brands</h1>
+      <Link href="/" className="back-link" style={{ textDecoration: 'none' }}><Tr id="all_outfits">← All outfits</Tr></Link>
+      <p className="seo-kicker"><Tr id="shop_by_brand">Shop by brand</Tr></p>
+      <h1><Tr id="brands">Brands</Tr></h1>
       <p className="seo-intro">
-        Every outfit on MISE mixes brands. Pick one you love and see every way we have styled it.
+        <Tr id="brands_intro">Every outfit on MISE mixes brands. Pick one you love and see every way we have styled it.</Tr>
       </p>
       <div className="brand-grid">
         {brands.map((b) => {
@@ -30,7 +31,7 @@ export default async function BrandsPage() {
                 {p && <img src={p.packshot} style={cutFit(p.box, 0.7)} alt={b.brand} loading="lazy" />}
               </div>
               <div className="brand-tile-name">{b.brand}</div>
-              <div className="brand-tile-count">{b.looks.length} outfits</div>
+              <div className="brand-tile-count"><Tr id="n_outfits" v={{ n: b.looks.length }}>{b.looks.length} outfits</Tr></div>
             </Link>
           )
         })}
