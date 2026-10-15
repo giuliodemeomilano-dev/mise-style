@@ -38,6 +38,7 @@ import NotifyForm from '@/app/components/NotifyForm'
 import { useLang } from '@/app/components/LangProvider'
 import { UI } from '@/lib/ui-strings'
 import { tr } from '@/lib/tr'
+import { storeName } from '@/lib/store-name'
 
 // extras: per piece id, worked out on the server: { inStock, alt, style, brand }.
 // alt is a similar piece in stock, shown only when the original is sold out, so
@@ -166,7 +167,7 @@ export default function PiecesGrid({ pieces: initialPieces, outfitId, extras = {
                     piaceva. Resta solo il cambio di testo quando il negozio e' gia' stato
                     aperto, che e' la parte utile. */}
                 <div className="piece-cta">
-                  {isOpen ? x('opened', '\u2713 Opened, shop again') : x('shop_at', 'Shop at ' + piece.store, { store: piece.store })}
+                  {isOpen ? x('opened', '\u2713 Opened, shop again') : x('shop_at', 'Shop at ' + storeName(piece.store), { store: storeName(piece.store) })}
                 </div>
               </div>
             </a>
