@@ -22,6 +22,7 @@ import SaveButton from '@/app/components/SaveButton'
 import EmailSignup from '@/app/components/EmailSignup'
 import PieceTile from '@/app/components/PieceTile'
 import Tr from '@/app/components/Tr'
+import { storeName } from '@/lib/store-name'
 
 export const revalidate = 3600
 
@@ -200,7 +201,7 @@ export default async function LookPage({ params }) {
   )
 
   const total = Number(look.total_price)
-  const storeCount = new Set(look.pieces.map((p) => p.store)).size
+  const storeCount = new Set(look.pieces.map((p) => storeName(p.store))).size
   const hasModel = Boolean(look.model_image_url)
   const kv = { gender: look.gender, occasion: look.occasion, season: look.season }
 
@@ -359,6 +360,12 @@ export default async function LookPage({ params }) {
       <div style={{ padding: '0 20px' }}>
         <EmailSignup source="look" />
       </div>
+      {/* Mobile only: the Shop button sat below the first screen, so a visitor from
+          Instagram saw the photo and no way to buy. Giulio, 2026-10-15. */}
+      <a href="#pieces" className="sticky-shop">
+        <span><Tr id="shop_outfit">Shop the outfit</Tr></span>
+        <span>€{total}</span>
+      </a>
       <div className="bottom-spacer"></div>
     </main>
   )
