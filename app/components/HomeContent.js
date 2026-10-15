@@ -5,8 +5,11 @@ import Link from 'next/link'
 import { useLang } from './LangProvider'
 import { useSaved } from '@/lib/useSaved'
 import EmailSignup from './EmailSignup'
+import { storeName } from '@/lib/store-name'
 
-const BRANDS = ['COS', 'ARKET', 'Sandro', 'Massimo Dutti', 'The Frankie Shop', 'BOSS', 'Polène', 'Jacquemus', 'Mejuri', 'Castañer', 'Veja', 'Ancient Greek Sandals']
+// Only brands that are really on the site today. Veja and Jacquemus were dropped
+// from the roster, ARKET has no usable images (Giulio, 2026-10-15).
+const BRANDS = ['COS', 'Sandro', 'Massimo Dutti', 'Sunspel', 'BOSS', 'Polène', 'Mejuri', 'Castañer', 'The Frankie Shop', 'Ancient Greek Sandals']
 
 
 // The cut-outs keep the brand's original canvas, so the garment sits wherever the
@@ -133,7 +136,16 @@ export default function HomeContent({ looks }) {
   // published this morning have to be the first thing you meet. Everything older
   // stays one tap away behind Load more, instead of 132 cards in a single scroll.
   const dayOf = (l) => String(l.created || '').slice(0, 10)
-  const byDate = [...filtered].sort((a, b) => new Date(b.created || 0) - new Date(a.created || 0))
+  // Inside the same day, the looks with a piece from a shop that pays us (Awin:
+  // Hugo Boss, Italist, Vilebrequin) come first. Days still go newest first.
+  const paid = (l) => (l.pieces.some((p) => /awin1\.com|italist\.com|vilebrequin\.com/i.test(p.url || '')) ? 1 : 0)
+  const byDate = [...filtered].sort((a, b) => {
+    const da = dayOf(a)
+    const db = dayOf(b)
+    if (da !== db) return db < da ? -1 : 1
+    if (paid(b) !== paid(a)) return paid(b) - paid(a)
+    return new Date(b.created || 0) - new Date(a.created || 0)
+  })
   const latestDay = byDate.length ? dayOf(byDate[0]) : null
   // One line instead of a badge on every card: the badge sat on all of today's
   // looks at once, so it marked everything and told you nothing. The count is
@@ -217,7 +229,7 @@ export default function HomeContent({ looks }) {
               value={budget ?? 1500}
               onChange={(e) => setBudget(Number(e.target.value))}
             />
-            <span className="budget-value">€<input type="text" inputMode="numeric" className="budget-input" title="Click to type your max budget" placeholder="–" value={budget ?? ''} onChange={(e) => { const raw = e.target.value.replace(/[^0-9]/g, ''); setBudget(raw === '' ? null : Number(raw)); }} onBlur={(e) => { const s = e.target.value.trim(); if (s === '') { setBudget(null); return; } const v = Number(s) || 100; setBudget(Math.min(1500, Math.max(100, v))); }} /></span>
+            <span className="budget-value">€<input type="text" inputMode="numeric" className="budget-input" title="Click to type your max budget" placeholder="max" value={budget ?? ''} onChange={(e) => { const raw = e.target.value.replace(/[^0-9]/g, ''); setBudget(raw === '' ? null : Number(raw)); }} onBlur={(e) => { const s = e.target.value.trim(); if (s === '') { setBudget(null); return; } const v = Number(s) || 100; setBudget(Math.min(1500, Math.max(100, v))); }} /></span>
           </div>
         </div>
       </section>
@@ -234,7 +246,7 @@ export default function HomeContent({ looks }) {
           )}
           {displayed.map((look) => {
             const total = Number(look.total) || look.pieces.reduce((s, p) => s + (p.price || 0), 0)
-            const storeCount = new Set(look.pieces.map((p) => p.store)).size
+            const storeCount = new Set(look.pieces.map((p) => storeName(p.store))).size
             // The card leads with the model photo when the outfit has one, then the
             // packshots follow as the next slides, so you see the look worn and then
             // each piece on its own.
@@ -296,6 +308,11 @@ export default function HomeContent({ looks }) {
                     </div>
                     <div className="card-total-price">€{total}</div>
                   </div>
+                  {look.less && (
+                    <Link href={`/look/${look.slug}#for-less`} className="card-for-less">
+                      {(t.for_less_card || 'Or the same look for €{n}').replace('{n}', look.less.total)}
+                    </Link>
+                  )}
                   <button className="btn-shop" onClick={() => openModal(look)}>
                     {t.shop_btn}
                   </button>
@@ -328,7 +345,7 @@ export default function HomeContent({ looks }) {
               <div className="modal-hero-overlay">
                 <div className="modal-hero-title">{modalLook.title}</div>
                 <div className="modal-hero-sub">
-                  {modalLook.pieces.length} {t.pieces} {t.from} {new Set(modalLook.pieces.map((p) => p.store)).size} {t.stores}
+                  {modalLook.pieces.length} {t.pieces} {t.from} {new Set(modalLook.pieces.map((p) => storeName(p.store))).size} {t.stores}
                 </div>
               </div>
             </div>
@@ -339,7 +356,7 @@ export default function HomeContent({ looks }) {
                   <div className="modal-item-info">
                     <div className="modal-item-name">{p.name}</div>
                     <div className="modal-item-brand">{p.brand}</div>
-                    <div className="modal-item-store">↗ {p.store}</div>
+                    <div className="modal-item-store">↗ {storeName(p.store)}</div>
                   </div>
                   <div className="modal-item-price">€{p.price}</div>
                 </a>
@@ -352,7 +369,7 @@ export default function HomeContent({ looks }) {
                 className="modal-buy"
               onClick={() => window.open(`/look/${modalLook.slug}`, "_blank", "noopener,noreferrer")}
               >
-                {t.buy_btn} — €{Number(modalLook.total) || modalLook.pieces.reduce((s, p) => s + (p.price || 0), 0)}
+                {t.buy_btn} <span style={{ marginLeft: 10 }}>€{Number(modalLook.total) || modalLook.pieces.reduce((s, p) => s + (p.price || 0), 0)}</span>
               </button>
             </div>
           </div>
