@@ -8,8 +8,35 @@ export const dynamic = 'force-dynamic'
 // viene monetizzato. Si attiva SOLO se la env var SKIMLINKS_ID è impostata
 // (es. "303796X1791855"): finché Skimlinks non è approvato, lascia la var vuota
 // e i link puntano direttamente al negozio, senza rompere nulla.
+// Stores where MISE is approved on Awin directly. A click on any of their product
+// pages goes out through the Awin deep link, so the sale is credited even when the
+// product was saved with the plain store URL. Giulio, 2026-10-15: Italist approved
+// (aid 127855), Vilebrequin approved 2026-10-13 (aid 70917).
+const AWIN_AFFID = '2884775'
+const AWIN_DIRECT = [
+  { hosts: ['italist.com', 'www.italist.com'], mid: '127855' },
+  { hosts: ['vilebrequin.com', 'www.vilebrequin.com'], mid: '70917' },
+]
+
+function awinDirect(destUrl, subId) {
+  let host = ''
+  try {
+    host = new URL(destUrl).hostname.toLowerCase()
+  } catch (e) {
+    return null
+  }
+  const m = AWIN_DIRECT.find((s) => s.hosts.includes(host))
+  if (!m) return null
+  const parts = [`awinmid=${m.mid}`, `awinaffid=${AWIN_AFFID}`]
+  if (subId) parts.push(`clickref=${encodeURIComponent(String(subId).slice(0, 50))}`)
+  parts.push(`ued=${encodeURIComponent(destUrl)}`)
+  return `https://www.awin1.com/cread.php?${parts.join('&')}`
+}
+
 function wrapAffiliate(destUrl, subId) {
   if (!destUrl) return destUrl
+  const direct = awinDirect(destUrl, subId)
+  if (direct) return direct
   // Non ri-avvolgere link gia affiliati Awin/Hugo Boss o gia wrappati
   if (/awin1\.com|sovrn\.co|skimresources\.com|redirect\.viglink/i.test(destUrl)) return destUrl
   if (!/^https?:\/\//i.test(destUrl)) return destUrl
