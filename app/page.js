@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import HomeContent from './components/HomeContent'
+import { getLooks as getCatalogLooks, getProducts, lookForLess, inSeasonProductIds } from '@/lib/catalog'
 
 export const revalidate = 60
 
@@ -88,7 +89,27 @@ async function getLooks() {
   })
 }
 
+// The cheaper version of each look, shown on the card ("Or the same look for
+// €420"). Visitors from Instagram buy a €100 piece far more easily than a €1,000
+// outfit. Same maths as the look page; if anything fails the cards simply go
+// without the line.
+async function lessById() {
+  try {
+    const [products, all] = await Promise.all([getProducts(), getCatalogLooks()])
+    const allowed = inSeasonProductIds(all)
+    const out = {}
+    for (const l of all) {
+      const r = lookForLess(l, products, allowed)
+      if (r) out[l.id] = { total: r.total, saving: r.saving }
+    }
+    return out
+  } catch (e) {
+    return {}
+  }
+}
+
 export default async function HomePage() {
-  const looks = await getLooks()
+  const [raw, less] = await Promise.all([getLooks(), lessById()])
+  const looks = raw.map((l) => (less[l.id] ? { ...l, less: less[l.id] } : l))
   return <HomeContent looks={looks} />
 }
