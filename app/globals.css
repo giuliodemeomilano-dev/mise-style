@@ -515,3 +515,48 @@ a.nav-logo { color: var(--text); }
 .search-clear { background: none; border: none; font-family: var(--font-body); font-size: 13px; color: var(--accent); cursor: pointer; text-decoration: underline; }
 .saved-empty { padding: 20px 0 10px; }
 @media (max-width: 640px) { .facet { flex-direction: column; gap: 6px; } .facet-row { width: 100%; } }
+
+/* ---- Mobile fixes, Giulio 2026-10-15 ("arregla todo") ------------------------
+   1. The home hero filled the whole first screen: the first look started at about
+      1.3 screens down, so a visitor from an Instagram ad saw no outfit at all.
+   2. On the look page the model photo was cropped to the waist or the knees,
+      because the cut-out is placed for a 2:3 cell and the mobile cell was wide.
+      The cell is now 2:3 again, centred, on a full-width warm band.
+   3. A Shop button fixed above the bottom bar, since the real one was below the fold.
+   4. The budget slider is hidden on phones (it read as an empty box); /search
+      has the same filter. */
+.card-for-less { display: block; margin: -4px 0 12px; font-size: 13px; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.sticky-shop { display: none; }
+@media (max-width: 768px) {
+  .hero { padding: 22px 20px 14px; }
+  .hero::before, .hero::after { display: none; }
+  .hero-eyebrow { margin-bottom: 8px; font-size: 10px; letter-spacing: 3px; }
+  .hero h1 { font-size: 30px; margin-bottom: 0; }
+  .hero-sub, .hero-cta { display: none; }
+  .marquee-wrapper { padding: 10px 0; }
+  .marquee-item { font-size: 11px; letter-spacing: 2px; }
+  .budget-wrap { display: none !important; }
+  .new-today-line { margin-top: 0; }
+}
+@media (max-width: 900px) {
+  .look-hero-split .look-hero-photo {
+    width: auto;
+    height: 58vh;
+    min-height: 360px;
+    max-height: 560px;
+    aspect-ratio: 2 / 3;
+    margin: 0 auto;
+    box-shadow: 0 0 0 100vmax var(--bg-warm);
+    clip-path: inset(0 -100vmax);
+  }
+}
+@media (max-width: 768px) {
+  .sticky-shop {
+    display: flex; justify-content: space-between; align-items: center;
+    position: fixed; left: 12px; right: 12px; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); z-index: 99;
+    padding: 14px 22px; border-radius: 100px; background: var(--text); color: #fff;
+    font-size: 12px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; text-decoration: none;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  }
+  .look-detail .bottom-spacer { height: 140px; }
+}
