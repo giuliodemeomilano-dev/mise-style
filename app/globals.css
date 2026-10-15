@@ -530,7 +530,7 @@ a.nav-logo { color: var(--text); }
 @media (max-width: 768px) {
   .hero { padding: 22px 20px 14px; }
   .hero::before, .hero::after { display: none; }
-  .hero-eyebrow { margin-bottom: 8px; font-size: 10px; letter-spacing: 3px; }
+  .hero-eyebrow { margin-bottom: 8px; font-size: 10px; letter-spacing: 2px; text-wrap: balance; }
   .hero h1 { font-size: 30px; margin-bottom: 0; }
   .hero-sub, .hero-cta { display: none; }
   .marquee-wrapper { padding: 10px 0; }
