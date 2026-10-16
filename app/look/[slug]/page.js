@@ -287,7 +287,7 @@ export default async function LookPage({ params }) {
         <section className="look-pieces for-less" id="for-less">
           <h2><Tr id="for_less_h">The same look for less</Tr></h2>
           <p className="for-less-sub">
-            <Tr id="for_less_sub" v={{ t: forLess.total, o: Math.round(total), s: forLess.saving }}>€{forLess.total} instead of €{Math.round(total)}: similar pieces, same colours, you save €{forLess.saving}.</Tr>
+            <Tr id="for_less_sub" v={{ t: forLess.total, o: eur(total).slice(1), s: forLess.saving }}>€{forLess.total} instead of {eur(total)}: similar pieces, same colours, you save €{forLess.saving}.</Tr>
           </p>
           <div className="ptile-grid">
             {forLess.pieces.map((p) => (
