@@ -23,6 +23,7 @@ import EmailSignup from '@/app/components/EmailSignup'
 import PieceTile from '@/app/components/PieceTile'
 import Tr from '@/app/components/Tr'
 import { storeName } from '@/lib/store-name'
+import { eur } from '@/lib/price'
 
 export const revalidate = 3600
 
@@ -227,14 +228,14 @@ export default async function LookPage({ params }) {
             <h1>{look.title}</h1>
             <p className="look-meta"><Tr id="pieces_stores" v={{ n: look.pieces.length, s: storeCount }}>{look.pieces.length} pieces · {storeCount} stores</Tr></p>
             <div className="look-actions">
-              <a href="#pieces" className="shop-cta"><Tr id="shop_outfit">Shop the outfit</Tr> <span>€{total}</span></a>
+              <a href="#pieces" className="shop-cta"><Tr id="shop_outfit">Shop the outfit</Tr> <span>{eur(total)}</span></a>
               <SaveButton slug={look.slug} className="save-inline" label={['Save', 'Saved']} tr />
             </div>
             {forLess && (
               <a href="#for-less" className="for-less-link"><Tr id="for_less_link" v={{ t: forLess.total, s: forLess.saving }}>Get the look for less: €{forLess.total}, save €{forLess.saving}</Tr></a>
             )}
             {look.description && <p className="look-hero-desc">{look.description}</p>}
-            <p className="look-hero-total"><Tr id="outfit_total">Outfit total</Tr> · <strong>€{total}</strong></p>
+            <p className="look-hero-total"><Tr id="outfit_total">Outfit total</Tr> · <strong>{eur(total)}</strong></p>
             {look.tags && look.tags.length > 0 && (
               <div className="look-tags">
                 {look.tags.map((tag, i) => (
@@ -251,9 +252,9 @@ export default async function LookPage({ params }) {
               <Link href="/" className="back-link-inline"><Tr id="all_outfits">← All outfits</Tr></Link>
               <p className="look-kicker"><Tr id="kicker" v={kv}>{seoLabel(look)}</Tr></p>
               <h1>{look.title}</h1>
-              <p className="look-meta"><Tr id="pieces_stores_total" v={{ n: look.pieces.length, s: storeCount, t: total }}>{look.pieces.length} pieces · {storeCount} stores · €{total}</Tr></p>
+              <p className="look-meta"><Tr id="pieces_stores_total" v={{ n: look.pieces.length, s: storeCount, t: eur(total).slice(1) }}>{look.pieces.length} pieces · {storeCount} stores · {eur(total)}</Tr></p>
               <div className="look-actions">
-                <a href="#pieces" className="shop-cta"><Tr id="shop_outfit">Shop the outfit</Tr> <span>€{total}</span></a>
+                <a href="#pieces" className="shop-cta"><Tr id="shop_outfit">Shop the outfit</Tr> <span>{eur(total)}</span></a>
                 <SaveButton slug={look.slug} className="save-inline" label={['Save', 'Saved']} tr />
               </div>
             </div>
@@ -365,7 +366,7 @@ export default async function LookPage({ params }) {
           Instagram saw the photo and no way to buy. Giulio, 2026-10-15. */}
       <a href="#pieces" className="sticky-shop">
         <span><Tr id="shop_outfit">Shop the outfit</Tr></span>
-        <span>€{total}</span>
+        <span>{eur(total)}</span>
       </a>
       <div className="bottom-spacer"></div>
     </main>
