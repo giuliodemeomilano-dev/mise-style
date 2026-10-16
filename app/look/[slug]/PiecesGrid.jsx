@@ -39,6 +39,7 @@ import { useLang } from '@/app/components/LangProvider'
 import { UI } from '@/lib/ui-strings'
 import { tr } from '@/lib/tr'
 import { storeName } from '@/lib/store-name'
+import { eur } from '@/lib/price'
 
 // extras: per piece id, worked out on the server: { inStock, alt, style, brand }.
 // alt is a similar piece in stock, shown only when the original is sold out, so
@@ -162,7 +163,7 @@ export default function PiecesGrid({ pieces: initialPieces, outfitId, extras = {
               <div className="piece-info">
                 <div className="piece-brand">{piece.brand}</div>
                 <div className="piece-name">{piece.name}</div>
-                <div className="piece-price">€{piece.price}</div>
+                <div className="piece-price">{eur(piece.price)}</div>
                 {/* Stile originale, a richiesta di Giulio: il bottone nero pieno non gli
                     piaceva. Resta solo il cambio di testo quando il negozio e' gia' stato
                     aperto, che e' la parte utile. */}
@@ -190,7 +191,7 @@ export default function PiecesGrid({ pieces: initialPieces, outfitId, extras = {
                 <span className="piece-alt-text">
                   <span className="piece-alt-kicker">{u.similar_in_stock}</span>
                   <span className="piece-alt-name">{ex.alt.brand}, {ex.alt.name}</span>
-                  <span className="piece-alt-price">€{ex.alt.price}</span>
+                  <span className="piece-alt-price">{eur(ex.alt.price)}</span>
                 </span>
               </a>
             )}
@@ -209,7 +210,7 @@ export default function PiecesGrid({ pieces: initialPieces, outfitId, extras = {
           </div>
         )})}
       </div>
-      <div className="pieces-total">{x('outfit_total', 'Outfit total')} · €{total.toFixed(2)}</div>
+      <div className="pieces-total">{x('outfit_total', 'Outfit total')} · {eur(total)}</div>
     </section>
   )
 }
