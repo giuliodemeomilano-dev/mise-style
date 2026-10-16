@@ -426,11 +426,12 @@ a.nav-logo { color: var(--text); }
 @media (max-width: 480px) { .nl-row { flex-direction: column; } .nl-input { flex: none; width: 100%; } .nl-btn { width: 100%; } }
 
 /* look page */
-.look-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.look-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 22px; }
+.look-actions .shop-cta { margin-top: 0; }
 .save-inline { display: inline-flex; align-items: center; gap: 8px; height: 46px; padding: 0 18px; border: 1px solid var(--border); border-radius: 99px; background: transparent; font-family: var(--font-body); font-size: 13px; color: var(--text); cursor: pointer; }
 .save-inline svg { width: 18px; height: 18px; stroke: var(--text); fill: none; stroke-width: 1.6; }
 .save-inline.liked svg { fill: var(--accent); stroke: var(--accent); }
-.for-less-link { display: inline-block; margin-top: 14px; font-size: 14px; color: var(--accent); text-decoration: none; border-bottom: 1px solid currentColor; }
+.for-less-link { display: inline-block; align-self: flex-start; margin-top: 16px; font-size: 14px; color: var(--accent); text-decoration: none; border-bottom: 1px solid currentColor; }
 .look-reel { display: flex; justify-content: center; padding: 8px 20px 0; }
 .look-reel video { width: 100%; max-width: 340px; aspect-ratio: 9/16; border-radius: var(--radius); background: #000; box-shadow: var(--shadow-md); }
 .for-less-sub { text-align: center; color: var(--text-secondary); margin: -6px 0 22px; }
@@ -458,7 +459,8 @@ a.nav-logo { color: var(--text); }
 
 /* piece tiles (brand, style, for less) */
 .ptile-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-@media (min-width: 720px) { .ptile-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; } }
+/* Centred, Giulio 2026-10-16: three tiles in a four-column grid sat to the left. */
+@media (min-width: 720px) { .ptile-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 260px)); justify-content: center; gap: 20px; } }
 .ptile { display: block; text-decoration: none; color: var(--text); }
 .ptile-img { position: relative; aspect-ratio: 1; border-radius: var(--radius-sm); overflow: hidden; background: #fff; margin-bottom: 10px; }
 .ptile-img.is-cut-bg { background: var(--bg-warm); }
