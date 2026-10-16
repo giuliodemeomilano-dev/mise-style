@@ -2,6 +2,7 @@ import Link from 'next/link'
 import SaveButton from './SaveButton'
 import { cutFit } from '@/lib/fit'
 import Tr from './Tr'
+import { eur } from '@/lib/price'
 
 // The compact outfit card used on the brand, style, search and saved pages:
 // the model photo, the title and the pieces in a strip, plus the heart.
@@ -32,7 +33,7 @@ export default function LookCard({ look, highlight }) {
               <img src={p.packshot} className={p.cut ? 'is-cut' : undefined} style={cutFit(p.box, 0.78)} alt={p.name} loading="lazy" />
               <div className="strip-label">
                 <div className="strip-brand">{p.brand}</div>
-                <div className="strip-price">€{p.price}</div>
+                <div className="strip-price">{eur(p.price)}</div>
               </div>
             </div>
           ))}
