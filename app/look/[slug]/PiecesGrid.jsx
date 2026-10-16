@@ -34,7 +34,6 @@ function pieceFit(box) {
 
 
 import { useRef, useState, useEffect } from 'react'
-import NotifyForm from '@/app/components/NotifyForm'
 import { useLang } from '@/app/components/LangProvider'
 import { UI } from '@/lib/ui-strings'
 import { tr } from '@/lib/tr'
@@ -196,11 +195,7 @@ export default function PiecesGrid({ pieces: initialPieces, outfitId, extras = {
               </a>
             )}
             <div className="piece-extras">
-              {soldOut ? (
-                <NotifyForm productId={piece.id} outfitId={outfitId} kind="restock" compact />
-              ) : (
-                ex.inStock !== undefined && <NotifyForm productId={piece.id} outfitId={outfitId} kind="price" price={piece.price} compact />
-              )}
+              {/* Price and restock alerts removed, Giulio 2026-10-16: nothing ever sent them and nobody used them. */}
               {ex.style && (
                 <a className="piece-style-link" href={'/style/' + ex.style.slug}>
                   {ex.style.group ? x('style_ideas', ex.style.label, ex.style) : ex.style.label} →
