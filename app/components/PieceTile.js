@@ -1,4 +1,5 @@
 import { cutFit } from '@/lib/fit'
+import { eur } from '@/lib/price'
 
 // One shoppable piece, linking through /go/ so the click is counted and the
 // affiliate tag is applied. outfitId is the look the piece came from.
@@ -15,7 +16,7 @@ export default function PieceTile({ piece, outfitId }) {
       </div>
       <div className="ptile-brand">{piece.brand}</div>
       <div className="ptile-name">{piece.name}</div>
-      <div className="ptile-price">€{piece.price}</div>
+      <div className="ptile-price">{eur(piece.price)}</div>
     </a>
   )
 }
