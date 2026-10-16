@@ -282,7 +282,7 @@ export default function HomeContent({ looks }) {
               </div>
               <div className="model-info-below">
                 <div className="model-title-dark">{look.title}</div>
-                <div className="model-meta-dark">{look.pieces.length} {t.pieces} · {storeCount} {t.stores} · €{total}</div>
+                <div className="model-meta-dark">{look.pieces.length} {t.pieces} · {storeCount} {t.stores} · {eur(total)}</div>
               </div>
                   <div className="pieces-strip">
                     {look.pieces.map((p, i) => (
@@ -307,7 +307,7 @@ export default function HomeContent({ looks }) {
                       <div className="card-total-label">{t.total_look}</div>
                       <div className="card-total-detail">{look.pieces.length} {t.pieces} · {storeCount} {t.stores}</div>
                     </div>
-                    <div className="card-total-price">€{total}</div>
+                    <div className="card-total-price">{eur(total)}</div>
                   </div>
                   {look.less && (
                     <Link href={`/look/${look.slug}#for-less`} className="card-for-less">
@@ -364,13 +364,13 @@ export default function HomeContent({ looks }) {
               ))}
               <div className="modal-footer">
                 <span className="modal-footer-label">{t.total}</span>
-                <span className="modal-footer-price">€{Number(modalLook.total) || modalLook.pieces.reduce((s, p) => s + (p.price || 0), 0)}</span>
+                <span className="modal-footer-price">{eur(Number(modalLook.total) || modalLook.pieces.reduce((s, p) => s + (p.price || 0), 0))}</span>
               </div>
               <button
                 className="modal-buy"
               onClick={() => window.open(`/look/${modalLook.slug}`, "_blank", "noopener,noreferrer")}
               >
-                {t.buy_btn} <span style={{ marginLeft: 10 }}>€{Number(modalLook.total) || modalLook.pieces.reduce((s, p) => s + (p.price || 0), 0)}</span>
+                {t.buy_btn} <span style={{ marginLeft: 10 }}>{eur(Number(modalLook.total) || modalLook.pieces.reduce((s, p) => s + (p.price || 0), 0))}</span>
               </button>
             </div>
           </div>
