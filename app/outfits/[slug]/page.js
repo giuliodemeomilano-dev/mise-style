@@ -5,6 +5,7 @@ import { CATEGORIES, findCategory, liveCategories } from '@/lib/categories'
 import { getCategoryCopy } from '@/lib/category-copy'
 import { cutFit } from '@/lib/fit'
 import Tr, { EnOnly } from '@/app/components/Tr'
+import { eur } from '@/lib/price'
 
 export const revalidate = 3600
 
@@ -110,7 +111,7 @@ export default async function CategoryPage({ params }) {
                 <div className="model-info-below">
                   <div className="model-title-dark">{look.title}</div>
                   <div className="model-meta-dark">
-                    <Tr id="count_total" v={{ n: look.count, t: look.total }}>{look.count} pieces · €{look.total}</Tr>
+                    <Tr id="count_total" v={{ n: look.count, t: eur(look.total).slice(1) }}>{look.count} pieces · {eur(look.total)}</Tr>
                   </div>
                 </div>
               </Link>
