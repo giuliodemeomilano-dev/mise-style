@@ -6,6 +6,7 @@ import { useLang } from './LangProvider'
 import { useSaved } from '@/lib/useSaved'
 import EmailSignup from './EmailSignup'
 import { storeName } from '@/lib/store-name'
+import { eur } from '@/lib/price'
 
 // Only brands that are really on the site today. Veja and Jacquemus were dropped
 // from the roster, ARKET has no usable images (Giulio, 2026-10-15).
@@ -289,7 +290,7 @@ export default function HomeContent({ looks }) {
                         <img src={p.packshot} className={p.cut ? 'is-cut' : undefined} style={cutFit(p.box, 0.78, undefined, true)} alt={p.name} loading="lazy" />
                         <div className="strip-label">
                           <div className="strip-brand">{p.brand}</div>
-                          <div className="strip-price">€{p.price}</div>
+                          <div className="strip-price">{eur(p.price)}</div>
                         </div>
                       </div>
                     ))}
@@ -358,7 +359,7 @@ export default function HomeContent({ looks }) {
                     <div className="modal-item-brand">{p.brand}</div>
                     <div className="modal-item-store">↗ {storeName(p.store)}</div>
                   </div>
-                  <div className="modal-item-price">€{p.price}</div>
+                  <div className="modal-item-price">{eur(p.price)}</div>
                 </a>
               ))}
               <div className="modal-footer">
