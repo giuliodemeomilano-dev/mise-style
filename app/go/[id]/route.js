@@ -121,6 +121,29 @@ export async function GET(request, { params }) {
   else if (!lang) botReason = 'no_language'
   else if (fetchMode && fetchMode !== 'navigate') botReason = 'not_navigation'
   else if (pinChecker) botReason = 'pin_validator'
+
+  // Click farm (seen 16 and 17 Oct 2026): every afternoon around 14:25 a crawler
+  // sends 10 to 15 clicks in a few minutes, each from a different country through
+  // residential proxies, all desktop browsers, all on old looks. Each click looks
+  // human on its own, so we look at the burst: 5 or more desktop clicks from 4 or
+  // more countries in the last 10 minutes. A real visitor in that window can be
+  // caught too; that is rare and costs nothing but a mislabelled row.
+  if (!botReason && !isMobile) {
+    try {
+      const since = new Date(Date.now() - 10 * 60 * 1000).toISOString()
+      const { data: recent } = await supabaseAdmin
+        .from('clicks')
+        .select('country, user_agent')
+        .gte('clicked_at', since)
+        .limit(200)
+      const desktop = (recent || []).filter((r) => !/(iPhone|iPad|Android|Mobile)/i.test(r.user_agent || ''))
+      const countries = new Set(desktop.map((r) => r.country).filter(Boolean))
+      if (country) countries.add(country)
+      if (desktop.length + 1 >= 5 && countries.size >= 4) botReason = 'burst'
+    } catch (e) {
+      // the check must never block the redirect
+    }
+  }
   const isBot = botReason !== null
 
   // Genera un session ID lato server (semplice, basato su IP+UA hash)
@@ -154,7 +177,9 @@ export async function GET(request, { params }) {
   // El pais del visitante antes que el pais desde el que se copio la foto. Si la
   // marca no esta en el mapa la URL sale intacta, asi que esto no puede romper nada.
   const localized = localizeStoreUrl(product.affiliate_url, country)
-  const target = wrapAffiliate(localized, subId)
+  // Bots go straight to the store, never through Awin: invalid clicks on an
+  // affiliate link can get the publisher account flagged. Giulio, 2026-10-17.
+  const target = isBot ? localized : wrapAffiliate(localized, subId)
 
   return NextResponse.redirect(target, { status: 302 })
 }
