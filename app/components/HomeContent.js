@@ -325,7 +325,7 @@ export default function HomeContent({ looks }) {
         {ordered.length > shown && (
           <div className="load-more-wrap">
             <button className="load-more" onClick={() => setShown((n) => n + 12)}>
-              Load more outfits <span>{ordered.length - shown} left</span>
+              {t.load_more} <span>{ordered.length - shown} {t.load_more_left}</span>
             </button>
           </div>
         )}
