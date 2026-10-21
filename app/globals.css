@@ -84,9 +84,13 @@ body { background: var(--bg); font-family: var(--font-body); color: var(--text);
    bar and the bottom bar about a third of the screen was permanently chrome.
    It scrolls away now: you meet the outfits sooner and the filters are one
    flick back up. */
+/* On a tablet the sticky block (gender toggle, pills, budget) was about 240px
+   tall and sat over the cards and the Load more button. Up to 1024px it now
+   scrolls away like on a phone; the layout stays the desktop one. */
+@media (max-width: 1024px) { .filter-section { position: static; top: auto; } }
 @media (max-width: 768px) { .filter-inner { flex-direction: column; align-items: stretch; } .budget-wrap { justify-content: center; } .filter-section { position: static; top: auto; padding: 12px 16px 10px; background: var(--bg); backdrop-filter: none; } .nav { background: var(--bg); backdrop-filter: none; } .gender-toggle { margin-bottom: 10px; } }
 
-.looks-section { max-width: 1400px; margin: 0 auto; padding: 32px 28px 100px; }
+.looks-section { max-width: 1400px; margin: 0 auto; padding: 32px 28px 40px; }
 .new-today-line { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 20px; }
 .looks-grid { display: grid; grid-template-columns: 1fr; gap: 32px; }
 @media (min-width: 640px) { .looks-grid { grid-template-columns: 1fr 1fr; } }
@@ -337,7 +341,7 @@ img.is-cut, .piece-image img { filter: drop-shadow(0 5px 9px rgba(58, 44, 30, 0.
    scroll on desktop and 92.417 px on a phone, with this morning's six looks
    indistinguishable from the 126 older ones. Now it opens on the newest twelve
    and the rest arrives on request. */
-.load-more-wrap { display: flex; justify-content: center; padding: 8px 0 60px; }
+.load-more-wrap { display: flex; justify-content: center; padding: 24px 0 8px; }
 .load-more { display: inline-flex; align-items: center; gap: 14px; cursor: pointer;
   background: none; border: 1px solid var(--text); color: var(--text);
   padding: 15px 30px; border-radius: 100px; font-size: 11px; letter-spacing: 0.18em;
@@ -409,7 +413,7 @@ a.nav-logo { color: var(--text); }
 .search-pill svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.8; }
 
 /* newsletter */
-.nl-box { max-width: 640px; margin: 64px auto 24px; padding: 36px 28px; background: var(--bg-warm); border-radius: var(--radius); text-align: center; }
+.nl-box { max-width: 640px; margin: 24px auto 24px; padding: 36px 28px; background: var(--bg-warm); border-radius: var(--radius); text-align: center; }
 .nl-title { font-family: var(--font-display); font-weight: 400; font-size: clamp(24px, 4vw, 32px); margin: 0 0 8px; }
 .nl-sub { color: var(--text-secondary); font-size: 15px; line-height: 1.6; margin: 0 auto 20px; max-width: 460px; }
 .nl-form { max-width: 440px; margin: 0 auto; }
