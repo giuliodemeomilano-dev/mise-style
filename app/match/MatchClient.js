@@ -74,7 +74,11 @@ function shrink(file, max = 1024) {
       const c = document.createElement('canvas')
       c.width = Math.round(img.width * k)
       c.height = Math.round(img.height * k)
-      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height)
+      const g = c.getContext('2d')
+      // White under transparent PNGs, or they turn black as JPEG
+      g.fillStyle = '#fff'
+      g.fillRect(0, 0, c.width, c.height)
+      g.drawImage(img, 0, 0, c.width, c.height)
       URL.revokeObjectURL(url)
       resolve(c.toDataURL('image/jpeg', 0.85))
     }
