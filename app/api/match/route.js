@@ -29,7 +29,7 @@ function limited(ip) {
 const PROMPT = `You look at ONE photo of a clothing item, shoe or bag that a person owns.
 Answer ONLY with a JSON object, no other text:
 {"is_item": true|false, "group": "<one of: ${MATCH_GROUPS.join(', ')}>", "colour": "<one of: ${MATCH_COLOURS.join(', ')}>", "gender": "women"|"men"|"any", "label": "<3 to 5 words in English, e.g. ecru straight midi skirt>"}
-Rules: pick the single most visible item. Knits and sweaters are knitwear, blouses and bodysuits are tops, blazers are jackets. "colour" is its main colour; denim is blue. If the photo shows no clothing, shoe or bag, answer {"is_item": false}.`
+Rules: pick the single most visible item. Knits and sweaters are knitwear, blouses and bodysuits are tops, blazers are jackets. Slip-on shoes without laces are loafers; boat-shoes only when a leather lace runs around the side. "colour" is its main colour; denim is blue. If the photo shows no clothing, shoe or bag, answer {"is_item": false}.`
 
 export async function POST(request) {
   try {
