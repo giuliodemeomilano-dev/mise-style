@@ -21,6 +21,7 @@ export default function BottomNav() {
     { icon: '◆', label: t.nav_discover, href: '/#looks', on: pathname === '/' },
     { icon: '♀', label: t.bnav_women, href: WOMEN, on: pathname === WOMEN },
     { icon: '♂', label: t.bnav_men, href: MEN, on: pathname === MEN },
+    { icon: '◎', label: t.bnav_match, href: '/match', on: pathname === '/match' },
     {
       icon: '✦',
       label: t.bnav_ideas,
