@@ -188,6 +188,12 @@ export default function HomeContent({ looks }) {
         </div>
       </section>
 
+      <a href="/match" className="match-banner">
+        <span className="match-banner-new">{t.match_new}</span>
+        <span className="match-banner-text">{t.match_banner}</span>
+        <span className="match-banner-cta">{t.match_cta} →</span>
+      </a>
+
       <div className="marquee-wrapper">
         <div className="marquee-track">
           {[...BRANDS, ...BRANDS].map((brand, i) => (
