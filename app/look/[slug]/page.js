@@ -252,7 +252,7 @@ export default async function LookPage({ params }) {
               <SaveButton slug={look.slug} className="save-inline" label={['Save', 'Saved']} tr />
             </div>
             {forLess && (
-              <a href="#for-less" className="for-less-link"><Tr id="for_less_link" v={{ t: forLess.total, s: forLess.saving }}>Get the look for less: €{forLess.total}, save €{forLess.saving}</Tr></a>
+              <a href="#for-less" className="for-less-link"><Tr id="for_less_link" v={{ t: forLess.total, s: forLess.saving }}>Get a similar look for €{forLess.total}, save €{forLess.saving}</Tr></a>
             )}
             {look.description && <p className="look-hero-desc">{look.description}</p>}
             <p className="look-hero-total"><Tr id="outfit_total">Outfit total</Tr> · <strong>{eur(total)}</strong></p>
@@ -305,7 +305,7 @@ export default async function LookPage({ params }) {
 
       {forLess && (
         <section className="look-pieces for-less" id="for-less">
-          <h2><Tr id="for_less_h">The same look for less</Tr></h2>
+          <h2><Tr id="for_less_h">A similar look for less</Tr></h2>
           <p className="for-less-sub">
             <Tr id="for_less_sub" v={{ t: forLess.total, o: eur(total).slice(1), s: forLess.saving }}>€{forLess.total} instead of {eur(total)}: similar pieces, same colours, you save €{forLess.saving}.</Tr>
           </p>
