@@ -25,7 +25,8 @@ import Tr from '@/app/components/Tr'
 import { storeName } from '@/lib/store-name'
 import { eur } from '@/lib/price'
 
-export const revalidate = 3600
+// 6 ore invece di 1: con 3600 il piano Vercel sforava le scritture ISR (638K su 200K, 2026-10-30).
+export const revalidate = 21600
 
 const OCCASION_LABEL = {
   office: 'Office',
@@ -223,6 +224,25 @@ export default async function LookPage({ params }) {
             <img src={look.model_image_url} style={cutFit(look.model_box, 0.94, 2 / 3)} alt={look.title} />
           </div>
           <div className="look-hero-text">
+            {/* Shop rapido sotto la foto. Chi arrivava dagli annunci Instagram vedeva solo la foto e
+                i pulsanti per comprare stavano due schermate piu' giu': 95 visite, 1 clic verso i negozi.
+                Qui ogni capo porta al negozio con un tocco. Giulio, 2026-10-30. */}
+            <div className="quick-shop" style={{ display: 'grid', gridTemplateColumns: 'repeat(' + Math.min(look.pieces.length, 3) + ', 1fr)', gap: 8, margin: '0 0 18px' }}>
+              {look.pieces.slice(0, 3).map((p) => (
+                <a
+                  key={p.id}
+                  href={'/go/' + p.id + '?outfit=' + look.id + '&src=quick'}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '8px 6px', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 12, background: '#fff', color: 'inherit', textDecoration: 'none' }}
+                >
+                  <img src={p.packshot} alt={p.name} style={{ width: '100%', height: 72, objectFit: 'contain' }} />
+                  <span style={{ fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-muted)', marginTop: 6, lineHeight: 1.2 }}>{p.brand}</span>
+                  <span style={{ fontSize: 15, fontWeight: 600, marginTop: 2 }}>{eur(p.price)}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: '#b5452f', marginTop: 4, lineHeight: 1.2 }}><Tr id="shop_at" v={{ store: storeName(p.store) }}>{'Shop at ' + storeName(p.store)}</Tr></span>
+                </a>
+              ))}
+            </div>
             <Link href="/" className="back-link-inline"><Tr id="all_outfits">← All outfits</Tr></Link>
             <p className="look-kicker"><Tr id="kicker" v={kv}>{seoLabel(look)}</Tr></p>
             <h1>{look.title}</h1>

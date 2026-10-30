@@ -2,7 +2,8 @@ import { supabase } from '@/lib/supabase'
 import HomeContent from './components/HomeContent'
 import { getLooks as getCatalogLooks, getProducts, lookForLess, inSeasonProductIds } from '@/lib/catalog'
 
-export const revalidate = 60
+// 10 minuti invece di 60 secondi: troppe scritture ISR sul piano Vercel (2026-10-30).
+export const revalidate = 600
 
 async function getLooks() {
   const { data: outfits, error } = await supabase
