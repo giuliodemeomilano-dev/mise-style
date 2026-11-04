@@ -29,37 +29,36 @@ for (let from = 0; from < 20000; from += 1000) {
 }
 console.log('cf-cutouts:', paths.size, 'cut-outs to prepare')
 
-const deadline = Date.now() + 9 * 60 * 1000
-let done = 0, cut = 0, failed = 0
+const deadline = Date.now() + 13 * 60 * 1000
+let done = 0, failed = 0
+const verdicts = {}
+const errors = []
 const list = [...paths]
 async function one(p) {
   const key = keyOf(p)
   try {
+    const dbg = await GET(new Request('http://cf.local' + p + (p.includes('?') ? '&' : '?') + 'debug=1'))
+    const j = await dbg.json().catch(() => ({ verdict: 'bad-json' }))
+    verdicts[j.verdict] = (verdicts[j.verdict] || 0) + 1
+    if (j.verdict === 'threw' && errors.length < 5) errors.push(j.error)
+    const ok = j.verdict === 'cut' || j.verdict === 'already-transparent'
+    fs.writeFileSync(path.join(outDir, key + '.json'), JSON.stringify({ verdict: j.verdict, box: ok ? j.box || null : null }))
+    if (!ok) { done++; return }
     const res = await GET(new Request('http://cf.local' + p))
     if (!res.ok) { failed++; return }
     const buf = Buffer.from(await res.arrayBuffer())
-    const img = sharp(buf)
-    const meta = await img.metadata()
-    let verdict = 'refuse', box = null
-    if (meta.hasAlpha) {
-      const { info } = await sharp(buf).trim({ threshold: 1 }).toBuffer({ resolveWithObject: true })
-      const W = meta.width, H = meta.height
-      const t = -(info.trimOffsetTop || 0), l = -(info.trimOffsetLeft || 0)
-      const f = (n) => Number(n).toFixed(4)
-      box = [f(W / H), f(t / H), f((t + info.height) / H), f(l / W), f((l + info.width) / W)].join(',')
-      verdict = 'cut'
-      cut++
-    }
-    await sharp(buf).webp({ quality: 82, alphaQuality: 90 }).toFile(path.join(outDir, key + '.webp'))
-    fs.writeFileSync(path.join(outDir, key + '.json'), JSON.stringify({ verdict, box }))
+    await sharp(buf).webp({ quality: 85, alphaQuality: 95 }).toFile(path.join(outDir, key + '.webp'))
     done++
   } catch (e) {
     failed++
+    if (errors.length < 5) errors.push(String(e).slice(0, 200))
   }
 }
 let i = 0
 async function worker() {
   while (i < list.length && Date.now() < deadline) await one(list[i++])
 }
-await Promise.all(Array.from({ length: 6 }, worker))
-console.log(`cf-cutouts: ${done} written (${cut} with transparency), ${failed} failed, ${list.length - i} skipped for time`)
+await Promise.all(Array.from({ length: 8 }, worker))
+console.log(`cf-cutouts: ${done} done, ${failed} failed, ${list.length - i} skipped for time`)
+console.log('cf-cutouts verdicts: ' + JSON.stringify(verdicts))
+if (errors.length) console.log('cf-cutouts errors: ' + errors.join(' | '))
