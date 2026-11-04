@@ -6,6 +6,8 @@
 // What changes on Cloudflare:
 // - every page is pre-rendered at build time (no ISR, no server)
 // - /go/<id> and /api/cutout become Pages Functions (see /functions)
+// - cut-outs are pre-computed (scripts/cf-cutouts.mjs) and pins are rendered as
+//   static PNGs at /pin/<slug>.png (scripts/cf-pin-route.js)
 // - API routes for admin, Pinterest, swaps etc. are not deployed
 import fs from 'node:fs'
 import path from 'node:path'
@@ -13,6 +15,11 @@ import { execSync } from 'node:child_process'
 
 const root = process.cwd()
 const app = path.join(root, 'app')
+
+// 0. Keep the cut-out and pin renderers: they run at build time (see 6 and 7).
+fs.mkdirSync(path.join(root, 'lib', 'cf'), { recursive: true })
+fs.copyFileSync(path.join(app, 'api', 'cutout', 'route.js'), path.join(root, 'lib', 'cf', 'cutout-route.js'))
+fs.copyFileSync(path.join(app, 'api', 'pin', '[slug]', 'route.js'), path.join(root, 'lib', 'cf', 'pin-route.js'))
 
 // 1. Server-only routes out of the static build.
 for (const dir of ['api', 'go', 'admin']) {
@@ -105,23 +112,28 @@ export default {
 `
 )
 
-// 6. No server cut-out on Cloudflare: /api/cutout redirects to the original
-// packshot, and multiply blending hides its white sweep on the cream page.
-fs.appendFileSync(
-  path.join(app, 'globals.css'),
-  `
-img[src^="/api/cutout"] { mix-blend-mode: multiply; }
-`
-)
+// 6. Cut-outs, pre-computed into public/cutouts and served by functions/api/cutout.js.
+try {
+  execSync('node scripts/cf-cutouts.mjs', { stdio: 'inherit' })
+} catch (e) {
+  console.log('cf-cutouts failed, the site falls back to packshots:', e.message)
+}
+
+// 7. Pinterest pins as static PNGs: /pin/<slug>.png for the looks of the last 10 days.
+fs.mkdirSync(path.join(app, 'pin', '[file]'), { recursive: true })
+fs.copyFileSync(path.join(root, 'scripts', 'cf-pin-route.js'), path.join(app, 'pin', '[file]', 'route.js'))
 
 execSync('npx next build', { stdio: 'inherit' })
 
-// 7. Cloudflare Pages extras.
+// 8. Cloudflare Pages extras.
 const out = path.join(root, 'out')
 fs.writeFileSync(
   path.join(out, '_headers'),
   `/_next/static/*
   Cache-Control: public, max-age=31536000, immutable
+/pin/*
+  Content-Type: image/png
+  Cache-Control: public, max-age=3600
 `
 )
 console.log('cf-build: done')
