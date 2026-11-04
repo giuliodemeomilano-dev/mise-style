@@ -128,6 +128,36 @@ fs.copyFileSync(path.join(root, 'scripts', 'cf-pin-route.js'), path.join(app, 'p
 
 execSync('npx next build', { stdio: 'inherit' })
 
+// 7b. Point the pages straight at the static cut-out files. Saves a Function call
+// per image and gives the images new URLs, so browsers that cached the first
+// (redirecting) version of /api/cutout get the transparent files.
+{
+  const crypto = await import('node:crypto')
+  const outRoot = path.join(root, 'out')
+  const keyOf = (p) => crypto.createHash('sha1').update(p).digest('hex').slice(0, 20)
+  const files = []
+  const walkOut = (d) => {
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      const f = path.join(d, e.name)
+      if (e.isDirectory()) { if (e.name !== 'cutouts' && e.name !== '_next') walkOut(f) }
+      else if (/\.(html|txt)$/.test(e.name)) files.push(f)
+    }
+  }
+  walkOut(outRoot)
+  let swapped = 0
+  for (const f of files) {
+    const s0 = fs.readFileSync(f, 'utf8')
+    const s1 = s0.replace(/\/api\/cutout\?[^"'\\\s<>)]+/g, (m) => {
+      const stored = m.replace(/&amp;/g, '&')
+      const k = keyOf(stored)
+      if (fs.existsSync(path.join(outRoot, 'cutouts', k + '.webp'))) { swapped++; return '/cutouts/' + k + '.webp' }
+      return m
+    })
+    if (s1 !== s0) fs.writeFileSync(f, s1)
+  }
+  console.log('cf-build: ' + swapped + ' cut-out links pointed at static files')
+}
+
 // 8. Cloudflare Pages extras.
 const out = path.join(root, 'out')
 fs.writeFileSync(
@@ -137,6 +167,8 @@ fs.writeFileSync(
 /pin/*
   Content-Type: image/png
   Cache-Control: public, max-age=3600
+/cutouts/*
+  Cache-Control: public, max-age=604800
 `
 )
 console.log('cf-build: done')
