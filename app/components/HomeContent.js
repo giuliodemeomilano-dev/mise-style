@@ -317,7 +317,7 @@ export default function HomeContent({ looks }) {
                   </div>
                   {look.less && (
                     <Link href={`/look/${look.slug}#for-less`} className="card-for-less">
-                      {(t.for_less_card || 'Or the same look for €{n}').replace('{n}', look.less.total)}
+                      {(t.for_less_card || 'Or a similar look for €{n}').replace('{n}', look.less.total)}
                     </Link>
                   )}
                   <button className="btn-shop" onClick={() => openModal(look)}>
